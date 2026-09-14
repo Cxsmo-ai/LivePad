@@ -7,7 +7,7 @@ def test_compound_xinput_state_detection():
         "left_trigger": 255,
         "right_trigger": 255,
         "left_x": 0,
-        "left_y": -32768,
+        "left_y": 32767,
         "right_x": 11468,
         "right_y": 0,
     }

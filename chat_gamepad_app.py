@@ -514,7 +514,7 @@ def _run_hardware_smoke(app: QApplication, window: ChatGamepadWindow, report_pat
             if state["left_trigger"] >= 200
             and state["right_trigger"] >= 200
             and state["buttons"] & 0x0040
-            and abs(state["left_y"]) >= 20_000
+            and state["left_y"] >= 20_000
             and abs(state["right_x"]) >= 5_000
         ]
 

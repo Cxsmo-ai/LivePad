@@ -152,11 +152,6 @@ static void SubmitState(HMController controller, HMProfile profile, JsonElement 
         lt,
         rt);
 
-    if (profile.AvailableAxes.Contains(HMAxis.Z))
-    {
-        axes[HMAxis.Z] = Math.Clamp((rt - lt + 1f) / 2f, 0f, 1f);
-    }
-
     var state = new HMGamepadState
     {
         Axes = axes,
@@ -176,11 +171,6 @@ static void SubmitNeutral(HMController controller, HMProfile profile)
         leftTrigger: 0f,
         rightTrigger: 0f);
 
-    if (profile.AvailableAxes.Contains(HMAxis.Z))
-    {
-        axes[HMAxis.Z] = 0.5f;
-    }
-
     var state = new HMGamepadState
     {
         Axes = axes,
@@ -192,6 +182,9 @@ static void SubmitNeutral(HMController controller, HMProfile profile)
 static float ToAxis(JsonElement root, string name)
 {
     var value = root.TryGetProperty(name, out var property) ? property.GetSingle() : 0f;
+    // Standard HID vertical axis is 0.0 at top and 1.0 at bottom; invert so +1.0 is up/forward
+    if (name is "ly" or "ry")
+        value = -value;
     return Math.Clamp((value + 1f) / 2f, 0f, 1f);
 }
 

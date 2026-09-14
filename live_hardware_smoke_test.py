@@ -34,7 +34,7 @@ def _is_compound_state(state: dict) -> bool:
         state["left_trigger"] >= 200
         and state["right_trigger"] >= 200
         and bool(state["buttons"] & 0x0040)
-        and abs(state["left_y"]) >= 20_000
+        and state["left_y"] >= 20_000
         and abs(state["right_x"]) >= 5_000
     )
 
