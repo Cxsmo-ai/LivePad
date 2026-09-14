@@ -57,11 +57,9 @@ New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
 Copy-Item -LiteralPath $packagedApp -Destination $releaseExe -Force
 Copy-Item -LiteralPath $extensionZip -Destination $releaseExtension -Force
 $hash = (Get-FileHash -LiteralPath $releaseExe -Algorithm SHA256).Hash.ToLowerInvariant()
-Set-Content -LiteralPath $releaseChecksum -Value "$hash  HIDMaestroStreamerEdition.exe" `
-    -Encoding utf8NoBOM
+Set-Content -LiteralPath $releaseChecksum -Value "$hash  HIDMaestroStreamerEdition.exe" -Encoding UTF8
 $extensionHash = (Get-FileHash -LiteralPath $releaseExtension -Algorithm SHA256).Hash.ToLowerInvariant()
-Set-Content -LiteralPath $releaseExtensionChecksum -Value "$extensionHash  HIDMaestroControllerChat.zip" `
-    -Encoding utf8NoBOM
+Set-Content -LiteralPath $releaseExtensionChecksum -Value "$extensionHash  HIDMaestroControllerChat.zip" -Encoding UTF8
 Write-Host "Single-file release: $releaseExe"
 Write-Host "SHA-256: $hash"
 Write-Host "Separate viewer extension: $releaseExtension"

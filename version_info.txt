@@ -1,0 +1,33 @@
+# UTF-8
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 1, 0, 0),
+    prodvers=(1, 1, 0, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    VarFileInfo([VarStruct('Translation', [1033, 1200])]),
+    StringFileInfo([
+      StringTable(
+        '040904b0',
+        [
+          StringStruct('CompanyName', 'Cxsmo_AI'),
+          StringStruct('FileDescription', 'HID Maestro Streamer Edition'),
+          StringStruct('FileVersion', '1.1.0.0'),
+          StringStruct('InternalName', 'HIDMaestroStreamerEdition'),
+          StringStruct('LegalCopyright', 'Copyright (C) 2026 Cxsmo_AI. All rights reserved.'),
+          StringStruct('OriginalFilename', 'HIDMaestroStreamerEdition.exe'),
+          StringStruct('ProductName', 'HID Maestro Streamer Edition'),
+          StringStruct('ProductVersion', '1.1.0'),
+          StringStruct('Comments', 'Live Stream Chat Plays Xbox Controller Emulation by Cxsmo_AI')
+        ]
+      )
+    ])
+  ]
+)
+

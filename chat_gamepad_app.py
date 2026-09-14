@@ -18,11 +18,12 @@ from datetime import datetime
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
-from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -513,8 +514,17 @@ class ChatGamepadWindow(QMainWindow):
 
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         super().__init__()
-        self.setWindowTitle("HID Maestro Streamer Edition")
+        self.setWindowTitle("HID Maestro Streamer Edition • Cxsmo_AI")
         self.resize(920, 840)
+        icon_candidates = [
+            Path(__file__).resolve().parent / "assets" / "app_icon.png",
+            Path(getattr(sys, "_MEIPASS", sys.executable)).resolve() / "assets" / "app_icon.png",
+            Path(sys.executable).resolve().parent / "assets" / "app_icon.png",
+        ]
+        for icon_path in icon_candidates:
+            if icon_path.exists():
+                self.setWindowIcon(QIcon(str(icon_path)))
+                break
         self.bridge = BridgeProcess()
         self.tiktok_worker: TikTokWorker | None = None
         self.youtube_worker: YouTubeWorker | None = None
@@ -557,6 +567,46 @@ class ChatGamepadWindow(QMainWindow):
         root = QVBoxLayout(central)
         scroll.setWidget(central)
         self.setCentralWidget(scroll)
+
+        # Brand Header Banner
+        header = QFrame()
+        header.setObjectName("brandHeader")
+        header.setStyleSheet(
+            "QFrame#brandHeader {"
+            "  background: #191B20;"
+            "  border: 1px solid #2C3037;"
+            "  border-radius: 8px;"
+            "  padding: 10px 14px;"
+            "}"
+        )
+        header_layout = QVBoxLayout(header)
+        header_layout.setContentsMargins(10, 8, 10, 8)
+        header_layout.setSpacing(3)
+
+        title_row = QHBoxLayout()
+        title_label = QLabel("HID MAESTRO STREAMER EDITION")
+        title_label.setStyleSheet("color: #FFFFFF; font-size: 15px; font-weight: 800; letter-spacing: 0.04em;")
+        title_row.addWidget(title_label)
+
+        badge_label = QLabel("BY CXSMO_AI")
+        badge_label.setStyleSheet(
+            "background: rgba(99, 102, 241, 0.22);"
+            "border: 1px solid #6366F1;"
+            "color: #A5B4FC;"
+            "padding: 2px 8px;"
+            "border-radius: 4px;"
+            "font-size: 11px;"
+            "font-weight: 700;"
+        )
+        title_row.addWidget(badge_label)
+        title_row.addStretch()
+
+        subtitle = QLabel("Live Stream Chat Plays Xbox Controller Emulation • Powered by SAENXT & HIDMaestro")
+        subtitle.setStyleSheet("color: #A6ADB8; font-size: 11px;")
+
+        header_layout.addLayout(title_row)
+        header_layout.addWidget(subtitle)
+        root.addWidget(header)
 
         # Status Bar / Dashboard
         status = QGroupBox("System and Stream Status")
@@ -768,6 +818,11 @@ class ChatGamepadWindow(QMainWindow):
         apply_commands.clicked.connect(self._apply_command_settings)
         commands_layout.addWidget(apply_commands)
         root.addWidget(commands_group)
+
+        footer = QLabel("HID Maestro Streamer Edition • Created by Cxsmo_AI • Pure Virtual Controller")
+        footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        footer.setStyleSheet("color: #6B7280; font-size: 11px; padding: 8px 0 2px 0;")
+        root.addWidget(footer)
 
     @staticmethod
     def _readonly_item(value: str) -> QTableWidgetItem:

@@ -13,6 +13,8 @@ a = Analysis(
         ("bridge/vendor/THIRD-PARTY-NOTICES.txt", "licenses/HIDMaestro"),
         ("profiles/cod.json", "profiles"),
         ("QUICK_START.txt", "."),
+        ("assets/app_icon.png", "assets"),
+        ("assets/app_icon.ico", "assets"),
     ],
     hiddenimports=[
         "gamepad_tester", "stream_icons", "youtube_client", "tiktok_client", "twitch_client"
@@ -57,4 +59,6 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon="assets/app_icon.ico",
+    version="version_info.txt",
 )
