@@ -77,6 +77,8 @@ def parse_pad_frame(text: str) -> PadFrame | None:
     candidate = text.strip().casefold()
     if candidate.startswith("!"):
         candidate = candidate[1:]
+    if candidate == "pad" or candidate.startswith("pad "):
+        return _parse_friendly_pad_frame(candidate)
     if not (candidate == "hm1" or candidate.startswith("hm1 ")):
         return None
     if len(candidate) > 160:
@@ -123,6 +125,81 @@ def parse_pad_frame(text: str) -> PadFrame | None:
         ry=ry_i / 100.0,
         lt=lt_i / 100.0,
         rt=rt_i / 100.0,
+        held_mask=held_mask,
+        tap_mask=tap_mask,
+        lease_ms=lease_ms,
+    )
+
+
+def _parse_friendly_pad_frame(candidate: str) -> PadFrame:
+    """Parse TikTok-compatible, word-shaped full-state controller packets.
+
+    Example: ``pad mu1k4879 q1 e1ao w80 lr35 rt100 h40 t1``.
+    Direction tokens avoid comma-heavy numeric strings that TikTok may silently filter.
+    """
+
+    if len(candidate) > 150:
+        raise ValueError("controller frame is too long")
+    parts = candidate.split()
+    if len(parts) < 4 or parts[0] != "pad":
+        raise ValueError("friendly controller frame is incomplete")
+    session = _base36(parts[1], maximum=(1 << 63) - 1)
+    if not parts[2].startswith("q") or not parts[3].startswith("e"):
+        raise ValueError("friendly controller frame is missing order fields")
+    sequence = _base36(parts[2][1:], maximum=(1 << 31) - 1)
+    lease_ms = _base36(parts[3][1:], maximum=5000)
+    if lease_ms < 250:
+        raise ValueError("lease must be between 250 and 5000 milliseconds")
+
+    values: dict[str, int] = {"lx": 0, "ly": 0, "rx": 0, "ry": 0, "lt": 0, "rt": 0}
+    held_mask = 0
+    tap_mask = 0
+    directions = {
+        "w": ("ly", 1), "s": ("ly", -1), "a": ("lx", -1), "d": ("lx", 1),
+        "ll": ("rx", -1), "lr": ("rx", 1), "lu": ("ry", 1), "ld": ("ry", -1),
+    }
+    seen: set[str] = set()
+    for token in parts[4:]:
+        match = re.fullmatch(r"(ll|lr|lu|ld|lt|rt|w|s|a|d)(\d{1,3})", token)
+        if match:
+            prefix, amount_text = match.groups()
+            amount = int(amount_text)
+            if not 1 <= amount <= 100:
+                raise ValueError("friendly analog value out of range")
+            if prefix in ("lt", "rt"):
+                control, value = prefix, amount
+            else:
+                control, direction = directions[prefix]
+                value = amount * direction
+            if control in seen:
+                raise ValueError("friendly controller frame repeats a control")
+            seen.add(control)
+            values[control] = value
+            continue
+        if re.fullmatch(r"[ht][0-9a-f]{1,4}", token):
+            control = token[0]
+            if control in seen:
+                raise ValueError("friendly controller frame repeats a mask")
+            seen.add(control)
+            mask = int(token[1:], 16)
+            if mask & ~VALID_BUTTON_MASK:
+                raise ValueError("button mask contains unsupported controls")
+            if control == "h":
+                held_mask = mask
+            else:
+                tap_mask = mask
+            continue
+        raise ValueError("unknown friendly controller token")
+
+    return PadFrame(
+        session=session,
+        sequence=sequence,
+        lx=values["lx"] / 100.0,
+        ly=values["ly"] / 100.0,
+        rx=values["rx"] / 100.0,
+        ry=values["ry"] / 100.0,
+        lt=values["lt"] / 100.0,
+        rt=values["rt"] / 100.0,
         held_mask=held_mask,
         tap_mask=tap_mask,
         lease_ms=lease_ms,

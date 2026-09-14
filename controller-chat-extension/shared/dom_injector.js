@@ -64,7 +64,9 @@
   }
 
   async function injectPacket(packet, platform) {
-    if (!/^!?hm1 [0-9a-z]+ [0-9a-z]+ -?\d+,-?\d+,-?\d+,-?\d+,\d+,\d+ [0-9a-f]+ [0-9a-f]+ \d+$/.test(packet)) {
+    const compact = /^!?hm1 [0-9a-z]+ [0-9a-z]+ -?\d+,-?\d+,-?\d+,-?\d+,\d+,\d+ [0-9a-f]+ [0-9a-f]+ \d+$/;
+    const friendly = /^!?pad [0-9a-z]+ q[0-9a-z]+ e[0-9a-z]+(?: (?:ll|lr|lu|ld|lt|rt|w|s|a|d)\d{1,3})*(?: h[0-9a-f]{1,4})?(?: t[0-9a-f]{1,4})?$/;
+    if (!compact.test(packet) && !friendly.test(packet)) {
       return { ok: false, error: "Invalid controller packet" };
     }
     const set = selectors(platform);

@@ -105,13 +105,16 @@
       const keepaliveDue = now - this.lastSentAt >= Math.min(4500, cadence * 2);
       if (now - this.lastSentAt < cadence || (!this.dirty && !keepaliveDue)) return null;
       const leaseMs = clamp(Math.ceil(cadence * 1.4), 500, 5000);
-      return Protocol.encodeFrame({
+      const frame = {
         session: this.session,
         sequence: this.sequence + 1,
         ...this.current,
         tapMask: this.pendingTapMask,
         leaseMs
-      });
+      };
+      return platform === "tiktok"
+        ? Protocol.encodeFriendlyFrame(frame)
+        : Protocol.encodeFrame(frame);
     }
 
     markSent(now, packet) {

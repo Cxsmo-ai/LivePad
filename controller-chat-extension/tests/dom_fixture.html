@@ -22,12 +22,14 @@
   <p id="result">Not run</p>
   <script src="../shared/dom_injector.js"></script>
   <script>
-    const packet="hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470";
+    const compactPacket="hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470";
+    const friendlyPacket="pad mfr5z7k0 q1 e14u w80 lr35 lt100 rt100 h40 t1";
     async function run(platform){
       document.querySelectorAll(".fixture").forEach(x=>x.style.display="none");
       const section=document.getElementById(platform);section.style.display="block";
       const composer=section.querySelector("[contenteditable],textarea");composer.textContent="";
       section.querySelector("button").onclick=()=>{document.getElementById("result").textContent=`PASS ${platform}: ${composer.textContent || composer.value}`;};
+      const packet=platform==="tiktok"?friendlyPacket:compactPacket;
       const result=await HMInjector.injectPacket(packet,platform);
       if(!result.ok)document.getElementById("result").textContent=`FAIL ${platform}: ${result.error}`;
     }

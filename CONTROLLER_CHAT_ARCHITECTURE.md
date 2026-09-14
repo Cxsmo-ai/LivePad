@@ -86,6 +86,19 @@ Button bits are stable: A `0x0001`, B `0x0002`, X `0x0004`, Y `0x0008`, LB `0x00
 `0x0020`, L3 `0x0040`, R3 `0x0080`, Back `0x0100`, Start `0x0200`, Guide `0x0400`, D-pad Up
 `0x0800`, Down `0x1000`, Left `0x2000`, and Right `0x4000`.
 
+TikTok currently accepts a second, chat-friendly spelling of the same frame because its LIVE chat
+can silently suppress comma-heavy machine-looking strings:
+
+```text
+pad mu1k4879 q2f e1ao w80 a20 lr35 ld10 lt75 rt100 h41 t5
+```
+
+`q` carries the base-36 sequence, `e` carries the base-36 lease, `w/s/a/d` describe left-stick
+directions, `ll/lr/lu/ld` describe look directions, `lt/rt` are triggers, and `h/t` are the held
+and tap masks. It decodes to the same `PadFrame` object and receives identical validation,
+ordering, replay protection, atomic replacement, and lease expiry. Twitch and YouTube retain the
+denser `hm1` spelling.
+
 ## Browser sampling and shaping
 
 The W3C Gamepad specification recommends sampling alongside `requestAnimationFrame`, at the

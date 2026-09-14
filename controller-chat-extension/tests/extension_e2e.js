@@ -69,12 +69,13 @@ async function main() {
     });
     await tiktok.goto("https://www.tiktok.com/@hm-extension-test/live");
     await tiktok.waitForTimeout(300);
+    const friendlyPacket = "pad mfr5z7k0 q1 e14u w80 lr35 lt100 rt100 h40 t1";
     const tiktokInjection = await popup.evaluate(async ({ packet }) => {
       const [tab] = await chrome.tabs.query({ url: "https://www.tiktok.com/@hm-extension-test/live" });
       return chrome.tabs.sendMessage(tab.id, { type: "HM_INJECT_PACKET", packet, platform: "tiktok" }, { frameId: 0 });
-    }, { packet });
+    }, { packet: friendlyPacket });
     assert.equal(tiktokInjection.ok, true);
-    assert.equal(await tiktok.locator("#sent").textContent(), packet);
+    assert.equal(await tiktok.locator("#sent").textContent(), friendlyPacket);
 
     assert.deepEqual(manifestErrors, []);
     console.log(JSON.stringify({ extensionId, screenshotPath, twitchInjected: true, tiktokInjected: true }));

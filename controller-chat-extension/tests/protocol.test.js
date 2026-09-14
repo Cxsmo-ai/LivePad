@@ -86,3 +86,18 @@ test("an input edge sampled during DOM send is not lost", () => {
   assert.equal(next.tapMask, Protocol.BUTTONS.a);
   assert.equal(next.heldMask, Protocol.BUTTONS.a);
 });
+
+test("TikTok uses a chat-friendly packet without comma-heavy numeric runs", () => {
+  const engine = new Gamepad.FrameEngine({ session: 12345 });
+  const buttons = [];
+  buttons[10] = button(1);
+  engine.update(fakePad({ axes: [-0.2, -0.8, 0.35, 0.1], buttons }), { deadzone: 0, quantizeStep: 1 });
+  const packet = engine.packet(0, "tiktok");
+  assert.match(packet, /^pad [0-9a-z]+ q1 e[0-9a-z]+ /);
+  assert.equal(packet.includes(","), false);
+  const decoded = Protocol.decodeFrame(packet);
+  assert.deepEqual(
+    [decoded.lx, decoded.ly, decoded.rx, decoded.ry, decoded.heldMask],
+    [-20, 80, 35, -10, Protocol.BUTTONS.l3]
+  );
+});

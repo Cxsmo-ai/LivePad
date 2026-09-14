@@ -33,11 +33,13 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
   `hm1` frames sent only through Twitch, YouTube, or TikTok chat.
 - Controller frames include both held state and queued tap edges, monotonic sessions/sequences,
   replay rejection, bounded leases, explicit neutral frames, and corrected positive-forward Y.
+- TikTok uses a chat-friendly `pad ... w80 lr35` frame because current LIVE chat silently filters
+  comma-heavy controller strings; the host decodes both wire spellings into the same atomic state.
 - The desktop app remains one EXE, while viewers receive a separate load-unpacked Chrome extension ZIP.
 
 ## Automated verification
 
-- 67 Python tests and 7 JavaScript controller-protocol tests pass.
+- 73 Python tests and 8 JavaScript controller-protocol tests pass.
 - Deterministic DOM fixtures pass for all three platforms; a real Manifest V3 Chromium run loads
   the service worker and injects a frame through the actual content script.
 - C# bridge builds with zero warnings and zero errors.
