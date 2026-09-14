@@ -49,6 +49,7 @@ live-hardware-report.json
 dinput_probe.py
 monitor_winmm.py
 read_joy.py
+upload_release.py
 *.log
 
 # Large downloaded release archive; the extracted official SDK DLL is kept.

@@ -25,6 +25,12 @@ if (mockMode)
 else
 {
     context = new HMContext();
+    if (!context.IsDriverInstalled)
+    {
+        Console.WriteLine("HIDMaestro driver not found on this system. Performing one-time driver setup...");
+        context.InstallDriver();
+        Console.WriteLine("HIDMaestro virtual controller driver installed successfully.");
+    }
     var loadedProfiles = context.LoadDefaultProfiles();
     profile = context.GetProfile(profileId)
         ?? throw new InvalidOperationException($"HIDMaestro profile '{profileId}' was not found");
@@ -41,7 +47,6 @@ else
     };
     submitNeutral();
     Console.WriteLine($"Loaded {loadedProfiles} profiles; serving {profileId}");
-    Console.WriteLine("Driver installation is intentionally not automatic.");
 }
 
 using var pipe = new NamedPipeServerStream(
