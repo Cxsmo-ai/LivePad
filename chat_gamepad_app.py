@@ -53,89 +53,89 @@ from youtube_client import YouTubeLiveManager
 
 DARK_STYLESHEET = """
 QMainWindow, QWidget#centralRoot {
-    background-color: #050705;
-    color: #EDF0EB;
+    background-color: #16181D;
+    color: #E8EAEE;
 }
 QScrollArea {
-    background-color: #050705;
+    background-color: #16181D;
     border: none;
 }
 QScrollArea > QWidget > QWidget {
-    background-color: #050705;
+    background-color: #16181D;
 }
 QGroupBox {
-    background-color: #0D110D;
-    border: 1px solid #1E261E;
+    background-color: #1F2228;
+    border: 1px solid #2C3037;
     border-radius: 8px;
     margin-top: 22px;
     padding: 14px 10px 10px 10px;
     font-size: 13px;
     font-weight: bold;
-    color: #EDF0EB;
+    color: #E8EAEE;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
     padding: 3px 10px;
     left: 14px;
-    color: #B7FF42;
-    background-color: #0D110D;
-    border: 1px solid #1E261E;
+    color: #818CF8;
+    background-color: #1F2228;
+    border: 1px solid #2C3037;
     border-radius: 5px;
 }
 QLabel {
-    color: #EDF0EB;
+    color: #E8EAEE;
     font-size: 12px;
 }
 QLineEdit {
-    background-color: #070A07;
-    border: 1px solid #1E261E;
+    background-color: #14161A;
+    border: 1px solid #34383F;
     border-radius: 5px;
-    color: #EDF0EB;
+    color: #E8EAEE;
     padding: 6px 10px;
-    selection-background-color: #B7FF42;
-    selection-color: #050705;
+    selection-background-color: #6366F1;
+    selection-color: #FFFFFF;
 }
 QLineEdit:focus {
-    border: 1px solid #B7FF42;
+    border: 1px solid #818CF8;
 }
 QLineEdit:disabled {
-    background-color: #0A0D0A;
-    color: #60685E;
-    border-color: #151C15;
+    background-color: #191B20;
+    color: #6B7280;
+    border-color: #24272D;
 }
 QComboBox {
-    background-color: #070A07;
-    border: 1px solid #1E261E;
+    background-color: #14161A;
+    border: 1px solid #34383F;
     border-radius: 5px;
-    color: #EDF0EB;
+    color: #E8EAEE;
     padding: 5px 10px;
     min-height: 22px;
 }
 QComboBox:focus {
-    border: 1px solid #B7FF42;
+    border: 1px solid #818CF8;
 }
 QComboBox::drop-down {
     subcontrol-origin: padding;
     subcontrol-position: top right;
     width: 24px;
-    border-left: 1px solid #1E261E;
+    border-left: 1px solid #2C3037;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
-    background-color: #0D110D;
+    background-color: #191B20;
 }
 QComboBox QAbstractItemView {
-    background-color: #0D110D;
-    border: 1px solid #1E261E;
+    background-color: #1F2228;
+    border: 1px solid #2C3037;
     border-radius: 5px;
-    color: #EDF0EB;
-    selection-background-color: #B7FF42;
-    selection-color: #050705;
+    color: #E8EAEE;
+    selection-background-color: #6366F1;
+    selection-color: #FFFFFF;
     padding: 4px;
     outline: none;
 }
 QCheckBox {
-    color: #EDF0EB;
+    color: #E8EAEE;
     font-size: 12px;
     font-weight: 500;
     spacing: 8px;
@@ -143,52 +143,52 @@ QCheckBox {
 QCheckBox::indicator {
     width: 18px;
     height: 18px;
-    border: 1px solid #1E261E;
+    border: 1px solid #34383F;
     border-radius: 4px;
-    background-color: #070A07;
+    background-color: #14161A;
 }
 QCheckBox::indicator:hover {
-    border: 1px solid #B7FF42;
+    border: 1px solid #818CF8;
 }
 QCheckBox::indicator:checked {
-    background-color: #B7FF42;
-    border: 1px solid #B7FF42;
+    background-color: #6366F1;
+    border: 1px solid #818CF8;
 }
 QPushButton {
-    background-color: #B7FF42;
-    color: #050705;
+    background-color: #6366F1;
+    color: #FFFFFF;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 600;
     border-radius: 5px;
     padding: 7px 14px;
-    border: 1px solid #B7FF42;
+    border: 1px solid transparent;
 }
 QPushButton:hover {
-    background-color: #C8FF66;
+    background-color: #4F46E5;
 }
 QPushButton:pressed {
-    background-color: #A3EA30;
+    background-color: #4338CA;
 }
 QPushButton:disabled {
-    background-color: #0A0D0A;
-    color: #60685E;
-    border: 1px solid #151C15;
+    background-color: #191B20;
+    color: #6B7280;
+    border: 1px solid #2C3037;
 }
 QPushButton#secondaryBtn {
-    background-color: #0E140E;
-    color: #A98AFF;
-    border: 1px solid #1E261E;
+    background-color: #191B20;
+    color: #818CF8;
+    border: 1px solid #2C3037;
 }
 QPushButton#secondaryBtn:hover {
-    background-color: #162016;
-    border-color: #2A382A;
-    color: #D2C5FF;
+    background-color: #24272D;
+    border-color: #34383F;
+    color: #A5B4FC;
 }
 QPushButton#secondaryBtn:pressed {
-    background-color: #070A07;
+    background-color: #14161A;
 }
 QPushButton#dangerBtn {
-    background-color: #140808;
+    background-color: #1F2228;
     color: #F87171;
     border: 1px solid #EF4444;
 }
@@ -197,7 +197,7 @@ QPushButton#dangerBtn:hover {
     color: #FFFFFF;
 }
 QPushButton#warningBtn {
-    background-color: #141208;
+    background-color: #1F2228;
     color: #FBBF24;
     border: 1px solid #F59E0B;
 }
@@ -206,69 +206,69 @@ QPushButton#warningBtn:hover {
     color: #14161A;
 }
 QTextBrowser {
-    background-color: #070A07;
-    border: 1px solid #1E261E;
+    background-color: #14161A;
+    border: 1px solid #2C3037;
     border-radius: 6px;
-    color: #EDF0EB;
+    color: #E8EAEE;
     padding: 8px;
     font-family: 'Segoe UI', sans-serif;
     font-size: 12px;
 }
 QTableWidget {
-    background-color: #070A07;
-    alternate-background-color: #0D110D;
-    border: 1px solid #1E261E;
+    background-color: #14161A;
+    alternate-background-color: #191B20;
+    border: 1px solid #2C3037;
     border-radius: 6px;
-    gridline-color: #182018;
-    color: #EDF0EB;
+    gridline-color: #24272D;
+    color: #E8EAEE;
     font-size: 12px;
 }
 QTableWidget::item {
     padding: 4px 8px;
 }
 QTableWidget::item:selected {
-    background-color: #B7FF42;
-    color: #050705;
+    background-color: #6366F1;
+    color: #FFFFFF;
 }
 QHeaderView::section {
-    background-color: #0D110D;
-    color: #98A195;
+    background-color: #1F2228;
+    color: #A6ADB8;
     font-weight: 600;
     border: none;
-    border-bottom: 1px solid #1E261E;
-    border-right: 1px solid #182018;
+    border-bottom: 1px solid #2C3037;
+    border-right: 1px solid #24272D;
     padding: 6px 10px;
 }
 QScrollBar:vertical {
-    background: #050705;
+    background: #16181D;
     width: 10px;
     margin: 0px;
     border-radius: 5px;
 }
 QScrollBar::handle:vertical {
-    background: #1E261E;
+    background: #2C3037;
     min-height: 24px;
     border-radius: 5px;
 }
 QScrollBar::handle:vertical:hover {
-    background: #2E3B2E;
+    background: #34383F;
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
 }
 QScrollBar:horizontal {
-    background: #050705;
+    background: #16181D;
     height: 10px;
     margin: 0px;
     border-radius: 5px;
 }
 QScrollBar::handle:horizontal {
-    background: #1E261E;
+    background: #2C3037;
     min-width: 24px;
     border-radius: 5px;
 }
 QScrollBar::handle:horizontal:hover {
-    background: #2E3B2E;
+    background: #34383F;
 }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
     width: 0px;
@@ -504,13 +504,13 @@ class ChatGamepadWindow(QMainWindow):
         label.setText(text)
         lower = text.lower()
         if ("connected" in lower and not "disconnected" in lower) or "ready" in lower or text == "Active":
-            label.setStyleSheet("color: #B7FF42; font-weight: bold;")
+            label.setStyleSheet("color: #4ADE80; font-weight: bold;")
         elif "connecting" in lower or "reconnecting" in lower or "paused" in lower:
             label.setStyleSheet("color: #FBBF24; font-weight: bold;")
         elif "disconnected" in lower or "unavailable" in lower:
-            label.setStyleSheet("color: #7E877C;")
+            label.setStyleSheet("color: #A6ADB8;")
         else:
-            label.setStyleSheet("color: #EDF0EB;")
+            label.setStyleSheet("color: #E8EAEE;")
 
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         super().__init__()
@@ -573,8 +573,8 @@ class ChatGamepadWindow(QMainWindow):
         header.setObjectName("brandHeader")
         header.setStyleSheet(
             "QFrame#brandHeader {"
-            "  background: #0D110D;"
-            "  border: 1px solid #1E261E;"
+            "  background: #191B20;"
+            "  border: 1px solid #2C3037;"
             "  border-radius: 8px;"
             "  padding: 10px 14px;"
             "}"
@@ -585,14 +585,14 @@ class ChatGamepadWindow(QMainWindow):
 
         title_row = QHBoxLayout()
         title_label = QLabel("DEEPASCENSION LIVEPAD")
-        title_label.setStyleSheet("color: #EDF0EB; font-size: 16px; font-weight: 800; letter-spacing: 0.06em;")
+        title_label.setStyleSheet("color: #E8EAEE; font-size: 16px; font-weight: 800; letter-spacing: 0.06em;")
         title_row.addWidget(title_label)
 
         badge_label = QLabel("BY CXSMO_AI")
         badge_label.setStyleSheet(
-            "background: rgba(183, 255, 66, 0.15);"
-            "border: 1px solid #B7FF42;"
-            "color: #B7FF42;"
+            "background: rgba(99, 102, 241, 0.18);"
+            "border: 1px solid #6366F1;"
+            "color: #818CF8;"
             "padding: 2px 8px;"
             "border-radius: 4px;"
             "font-size: 11px;"
@@ -603,7 +603,7 @@ class ChatGamepadWindow(QMainWindow):
         title_row.addStretch()
 
         subtitle = QLabel("Low-Latency Live Chat Virtual Xbox Controller • deepascension.net")
-        subtitle.setStyleSheet("color: #98A195; font-size: 11px;")
+        subtitle.setStyleSheet("color: #A6ADB8; font-size: 11px;")
 
         header_layout.addLayout(title_row)
         header_layout.addWidget(subtitle)
@@ -822,7 +822,7 @@ class ChatGamepadWindow(QMainWindow):
 
         footer = QLabel("DeepAscension LivePad • Created by Cxsmo_AI • Pure Virtual Controller Engine")
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        footer.setStyleSheet("color: #60685E; font-size: 11px; padding: 8px 0 2px 0;")
+        footer.setStyleSheet("color: #6B7280; font-size: 11px; padding: 8px 0 2px 0;")
         root.addWidget(footer)
 
     @staticmethod

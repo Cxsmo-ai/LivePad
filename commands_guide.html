@@ -6,22 +6,22 @@
   <title>DeepAscension LivePad — Streamer & Viewer Guide</title>
   <style>
     :root {
-      --bg: #050705;
-      --card: #0D110D;
-      --card-alt: #080B08;
-      --nav: #0A0E0A;
-      --border: #1E261E;
-      --border-subtle: #141A14;
-      --text-primary: #EDF0EB;
-      --text-secondary: #98A195;
-      --text-muted: #60685E;
-      --lime: #B7FF42;
-      --lime-hover: #C8FF66;
-      --violet: #A98AFF;
-      --violet-light: #D2C5FF;
-      --input-bg: #070A07;
-      --input-border: #1E261E;
-      --green: #B7FF42;
+      --bg: #16181D;
+      --card: #1F2228;
+      --card-alt: #191B20;
+      --nav: #1A1C22;
+      --border: #2C3037;
+      --border-subtle: #24272D;
+      --text-primary: #E8EAEE;
+      --text-secondary: #A6ADB8;
+      --text-muted: #6B7280;
+      --accent: #6366F1;
+      --accent-hover: #4F46E5;
+      --accent-light: #818CF8;
+      --accent-bright: #A5B4FC;
+      --input-bg: #14161A;
+      --input-border: #34383F;
+      --green: #4ADE80;
       --yellow: #FBBF24;
       --red: #F87171;
     }
@@ -29,7 +29,7 @@
     body {
       background-color: var(--bg);
       color: var(--text-primary);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Manrope", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       line-height: 1.6;
       padding: 24px 16px;
     }
@@ -45,33 +45,33 @@
       margin-bottom: 24px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
     .badge {
       display: inline-block;
       align-self: flex-start;
-      background: rgba(183, 255, 66, 0.12);
-      border: 1px solid var(--lime);
-      color: var(--lime);
-      padding: 3px 12px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-weight: 800;
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid var(--accent);
+      color: var(--accent-bright);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.05em;
     }
     h1 {
       font-size: 28px;
       font-weight: 800;
-      color: #FFFFFF;
+      color: #E8EAEE;
       letter-spacing: -0.02em;
     }
     p.lead {
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: 15px;
     }
     p.lead strong {
-      color: var(--lime);
+      color: var(--accent-light);
     }
     .card {
       background: var(--card);
@@ -81,15 +81,17 @@
       margin-bottom: 24px;
     }
     h2 {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
-      color: var(--lime);
+      color: var(--accent-light);
       margin-bottom: 16px;
-      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .kid-box {
       background: var(--card-alt);
-      border-left: 3px solid var(--lime);
+      border-left: 4px solid var(--accent);
       padding: 16px 20px;
       border-radius: 0 8px 8px 0;
       margin-bottom: 20px;
@@ -99,7 +101,7 @@
       color: var(--text-primary);
     }
     .kid-box strong {
-      color: var(--lime);
+      color: var(--green);
     }
     table {
       width: 100%;
@@ -117,35 +119,35 @@
       color: var(--text-secondary);
       font-weight: 600;
       text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.06em;
+      font-size: 12px;
+      letter-spacing: 0.05em;
     }
     tr:last-child td {
       border-bottom: none;
     }
     tr:hover td {
-      background: rgba(183, 255, 66, 0.025);
+      background: rgba(255, 255, 255, 0.02);
     }
     code {
       background: var(--input-bg);
       border: 1px solid var(--input-border);
-      color: var(--lime);
+      color: var(--accent-bright);
       padding: 2px 7px;
-      border-radius: 4px;
+      border-radius: 5px;
       font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
       font-size: 13px;
     }
     .tag {
       display: inline-block;
       padding: 2px 8px;
-      border-radius: 3px;
+      border-radius: 4px;
       font-size: 11px;
       font-weight: 600;
     }
-    .tag-move { background: rgba(56, 189, 248, 0.12); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .tag-aim { background: rgba(169, 138, 255, 0.15); color: #A98AFF; border: 1px solid rgba(169, 138, 255, 0.3); }
-    .tag-combat { background: rgba(239, 68, 68, 0.12); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
-    .tag-action { background: rgba(183, 255, 66, 0.12); color: #B7FF42; border: 1px solid rgba(183, 255, 66, 0.3); }
+    .tag-move { background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .tag-aim { background: rgba(129, 140, 248, 0.15); color: #818CF8; border: 1px solid rgba(129, 140, 248, 0.3); }
+    .tag-combat { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .tag-action { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.3); }
     .combo-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -160,7 +162,7 @@
     }
     .combo-card code {
       font-size: 14px;
-      color: var(--lime);
+      color: var(--green);
     }
     .combo-card p {
       font-size: 13px;
@@ -179,13 +181,13 @@
     footer {
       text-align: center;
       color: var(--text-muted);
-      font-size: 11px;
+      font-size: 12px;
       margin-top: 32px;
       padding-top: 16px;
       border-top: 1px solid var(--border-subtle);
     }
     footer a {
-      color: var(--lime);
+      color: var(--accent-light);
       text-decoration: none;
     }
   </style>
@@ -195,7 +197,7 @@
     <header>
       <div class="badge">DEEPASCENSION LIVEPAD</div>
       <h1>Live Stream Chat Plays &bull; COD Zombies Guide</h1>
-      <p class="lead">Official guide for <strong>DeepAscension LivePad</strong> created by <strong>Cxsmo_AI</strong> &bull; <a href="https://deepascension.net" target="_blank" style="color:var(--lime);text-decoration:none;">deepascension.net</a><br>Control Call of Duty: Black Ops Zombies or any Xbox controller PC game in real time through TikTok, YouTube, and Twitch chat.</p>
+      <p class="lead">Official guide for <strong>DeepAscension LivePad</strong> created by <strong>Cxsmo_AI</strong> &bull; <a href="https://deepascension.net" target="_blank" style="color:var(--accent-light);text-decoration:none;">deepascension.net</a><br>Control Call of Duty: Black Ops Zombies or any Xbox controller PC game in real time through TikTok, YouTube, and Twitch chat.</p>
     </header>
 
     <div class="card">

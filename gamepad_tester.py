@@ -12,16 +12,16 @@ from controller.state import ControllerState
 class GamepadTesterWidget(QWidget):
     """Render every Xbox 360 control from the authoritative resolved state."""
 
-    _ACTIVE = QColor("#B7FF42")
-    _ACTIVE_ACCENT = QColor("#A98AFF")
-    _CANVAS_BG = QColor("#050705")
-    _BODY_SURFACE = QColor("#111711")
-    _CONTROL_SURFACE = QColor("#0D110D")
-    _OUTLINE = QColor("#2A382A")
-    _OUTLINE_SUBTLE = QColor("#1B231B")
-    _TEXT = QColor("#EDF0EB")
-    _MUTED = QColor("#98A195")
-    _FAINT = QColor("#60685E")
+    _ACTIVE = QColor("#6366F1")
+    _ACTIVE_ACCENT = QColor("#818CF8")
+    _CANVAS_BG = QColor("#16181D")
+    _BODY_SURFACE = QColor("#1F2228")
+    _CONTROL_SURFACE = QColor("#191B20")
+    _OUTLINE = QColor("#2C3037")
+    _OUTLINE_SUBTLE = QColor("#24272D")
+    _TEXT = QColor("#E8EAEE")
+    _MUTED = QColor("#A6ADB8")
+    _FAINT = QColor("#6B7280")
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
@@ -120,7 +120,7 @@ class GamepadTesterWidget(QWidget):
         painter.setPen(QPen(self._ACTIVE_ACCENT if active else self._OUTLINE, 2))
         painter.setBrush(self._ACTIVE if active else self._CONTROL_SURFACE)
         painter.drawRoundedRect(rect, 10, 10)
-        painter.setPen(QColor("#FFFFFF") if active else self._TEXT)
+        painter.setPen(QColor("#14161A") if active else self._TEXT)
         painter.setFont(QFont("Segoe UI", 10, QFont.Weight.Bold))
         painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
 
@@ -143,8 +143,8 @@ class GamepadTesterWidget(QWidget):
         painter.drawLine(QPointF(center.x(), center.y() - radius + 7), QPointF(center.x(), center.y() + radius - 7))
 
         dot = QPointF(center.x() + x * 30, center.y() - y * 30)
-        painter.setPen(QPen(QColor("#FFFFFF"), 1.5))
-        painter.setBrush(self._ACTIVE_ACCENT)
+        painter.setPen(QPen(self._ACTIVE_ACCENT, 1.5))
+        painter.setBrush(self._ACTIVE)
         painter.drawEllipse(dot, 9, 9)
         painter.setPen(self._TEXT)
         painter.setFont(QFont("Segoe UI", 9, QFont.Weight.Bold))
@@ -154,10 +154,10 @@ class GamepadTesterWidget(QWidget):
         painter.drawText(QRectF(center.x() - 70, center.y() + 65, 140, 18), Qt.AlignmentFlag.AlignCenter, f"X {x:+.2f}   Y {y:+.2f}")
 
     def _draw_face_buttons(self, painter: QPainter, center: QPointF) -> None:
-        self._draw_round_button(painter, QPointF(center.x(), center.y() - 43), "Y", "y", QColor("#FACC15"))
-        self._draw_round_button(painter, QPointF(center.x() + 43, center.y()), "B", "b", QColor("#EF4444"))
-        self._draw_round_button(painter, QPointF(center.x(), center.y() + 43), "A", "a", QColor("#22C55E"))
-        self._draw_round_button(painter, QPointF(center.x() - 43, center.y()), "X", "x", QColor("#3B82F6"))
+        self._draw_round_button(painter, QPointF(center.x(), center.y() - 43), "Y", "y", QColor("#FBBF24"))
+        self._draw_round_button(painter, QPointF(center.x() + 43, center.y()), "B", "b", QColor("#F87171"))
+        self._draw_round_button(painter, QPointF(center.x(), center.y() + 43), "A", "a", QColor("#4ADE80"))
+        self._draw_round_button(painter, QPointF(center.x() - 43, center.y()), "X", "x", QColor("#38BDF8"))
 
     def _draw_round_button(
         self, painter: QPainter, center: QPointF, label: str, button: str, color: QColor
@@ -166,7 +166,7 @@ class GamepadTesterWidget(QWidget):
         painter.setPen(QPen(color, 2.5))
         painter.setBrush(color if active else self._CONTROL_SURFACE)
         painter.drawEllipse(center, 20, 20)
-        painter.setPen(QColor("#FFFFFF") if active else color)
+        painter.setPen(QColor("#14161A") if active else color)
         painter.setFont(QFont("Segoe UI", 11, QFont.Weight.Bold))
         painter.drawText(QRectF(center.x() - 20, center.y() - 20, 40, 40), Qt.AlignmentFlag.AlignCenter, label)
 
@@ -177,7 +177,7 @@ class GamepadTesterWidget(QWidget):
         painter.setPen(QPen(self._ACTIVE_ACCENT if active else self._OUTLINE, 2))
         painter.setBrush(self._ACTIVE if active else self._CONTROL_SURFACE)
         painter.drawEllipse(QPointF(450, 185), 25, 25)
-        painter.setPen(QColor("#FFFFFF") if active else self._MUTED)
+        painter.setPen(self._TEXT if active else self._MUTED)
         painter.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))
         painter.drawText(QRectF(425, 160, 50, 50), Qt.AlignmentFlag.AlignCenter, "GUIDE")
 
@@ -186,7 +186,7 @@ class GamepadTesterWidget(QWidget):
         painter.setPen(QPen(self._ACTIVE_ACCENT if active else self._OUTLINE, 1.5))
         painter.setBrush(self._ACTIVE if active else self._CONTROL_SURFACE)
         painter.drawEllipse(center, 13, 13)
-        painter.setPen(QColor("#FFFFFF") if active else self._MUTED)
+        painter.setPen(self._TEXT if active else self._MUTED)
         painter.setFont(QFont("Segoe UI", 7, QFont.Weight.Bold))
         painter.drawText(QRectF(center.x() - 30, center.y() - 34, 60, 14), Qt.AlignmentFlag.AlignCenter, label)
 
@@ -203,7 +203,7 @@ class GamepadTesterWidget(QWidget):
             painter.setPen(QPen(self._ACTIVE_ACCENT if active else self._OUTLINE, 1.5))
             painter.setBrush(self._ACTIVE if active else self._CONTROL_SURFACE)
             painter.drawRoundedRect(rect, 4, 4)
-            painter.setPen(QColor("#FFFFFF") if active else self._MUTED)
+            painter.setPen(QColor("#14161A") if active else self._MUTED)
             painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, symbol)
         painter.setPen(self._MUTED)
         painter.setFont(QFont("Segoe UI", 8, QFont.Weight.Bold))

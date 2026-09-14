@@ -63,8 +63,8 @@
     Object.assign(hud.style, {
       position: "fixed", right: "16px", bottom: "16px", zIndex: "2147483647",
       display: "none", maxWidth: "360px", padding: "9px 12px",
-      border: "1px solid #1E261E", borderRadius: "7px", background: "#0D110D",
-      color: "#EDF0EB", font: "600 12px/1.35 Segoe UI, sans-serif",
+      border: "1px solid #2C3037", borderRadius: "7px", background: "#191B20",
+      color: "#E8EAEE", font: "600 12px/1.35 Segoe UI, sans-serif",
       boxShadow: "0 8px 28px rgba(0,0,0,.45)", pointerEvents: "none"
     });
     document.documentElement.appendChild(hud);
@@ -74,8 +74,8 @@
     ensureHud();
     if (!hud) return;
     hud.style.display = armed || danger ? "block" : "none";
-    hud.style.borderColor = danger ? "#EF4444" : "#B7FF42";
-    hud.style.color = danger ? "#F87171" : "#B7FF42";
+    hud.style.borderColor = danger ? "#EF4444" : "#6366F1";
+    hud.style.color = danger ? "#F87171" : "#A5B4FC";
     hud.textContent = text;
   }
 
