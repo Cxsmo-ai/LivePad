@@ -180,7 +180,10 @@
   });
 
   async function injectPacket(packet, platform) {
-    return HMInjector.injectPacket(packet, platform);
+    const submit = platform === "tiktok"
+      ? () => chrome.runtime.sendMessage({ type: "HM_TIKTOK_SUBMIT" })
+      : null;
+    return HMInjector.injectPacket(packet, platform, submit);
   }
 
   if (isTop) requestAnimationFrame(poll);

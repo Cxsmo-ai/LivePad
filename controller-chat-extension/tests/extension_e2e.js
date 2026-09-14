@@ -39,7 +39,7 @@ async function main() {
         contentType: "text/html",
         body: `<!doctype html><html><body style="background:#16181D">
           <div data-a-target="chat-input" contenteditable="true" style="width:400px;height:50px"></div>
-          <button data-a-target="chat-send-button" onclick="document.querySelector('#sent').textContent=document.querySelector('[contenteditable]').textContent">Send</button>
+          <button data-a-target="chat-send-button" onclick="const input=document.querySelector('[contenteditable]');document.querySelector('#sent').textContent=input.textContent;input.textContent=''">Send</button>
           <output id="sent"></output>
         </body></html>`
       });
@@ -61,9 +61,26 @@ async function main() {
         body: `<!doctype html><html><body style="background:#16181D">
           <div data-e2e="live-chat-input-container">
             <div data-e2e="room-chat-input-field" contenteditable="plaintext-only" style="width:400px;height:50px"></div>
-            <div data-e2e="room-chat-send-btn" role="button" style="width:40px;height:30px" onclick="document.querySelector('#sent').textContent=document.querySelector('[contenteditable]').textContent">Send</div>
           </div>
           <output id="sent"></output>
+          <script>
+            document.querySelector('[contenteditable]').addEventListener('input', () => {
+              if (document.querySelector('[data-e2e="room-chat-send-btn"]')) return;
+              setTimeout(() => {
+                const button = document.createElement('div');
+                button.dataset.e2e = 'room-chat-send-btn';
+                button.setAttribute('role', 'button');
+                button.style.cssText = 'width:40px;height:30px';
+                button.textContent = 'Send';
+                button.onclick = () => {
+                  const input = document.querySelector('[contenteditable]');
+                  document.querySelector('#sent').textContent = input.textContent;
+                  input.textContent = '';
+                };
+                document.querySelector('[data-e2e="live-chat-input-container"]').appendChild(button);
+              }, 180);
+            });
+          </script>
         </body></html>`
       });
     });
@@ -76,9 +93,30 @@ async function main() {
     }, { packet: friendlyPacket });
     assert.equal(tiktokInjection.ok, true);
     assert.equal(await tiktok.locator("#sent").textContent(), friendlyPacket);
+    assert.equal(await tiktok.locator("[contenteditable]").textContent(), "");
+
+    const rejected = await context.newPage();
+    await rejected.route("https://www.tiktok.com/@hm-extension-reject/live", async (route) => {
+      await route.fulfill({
+        contentType: "text/html",
+        body: `<!doctype html><html><body>
+          <div data-e2e="room-chat-input-field" contenteditable="plaintext-only" style="width:400px;height:50px"></div>
+          <div data-e2e="room-chat-send-btn" role="button" style="width:40px;height:30px">Send</div>
+        </body></html>`
+      });
+    });
+    await rejected.goto("https://www.tiktok.com/@hm-extension-reject/live");
+    await rejected.waitForTimeout(300);
+    const rejectedInjection = await popup.evaluate(async ({ packet }) => {
+      const [tab] = await chrome.tabs.query({ url: "https://www.tiktok.com/@hm-extension-reject/live" });
+      return chrome.tabs.sendMessage(tab.id, { type: "HM_INJECT_PACKET", packet, platform: "tiktok" }, { frameId: 0 });
+    }, { packet: friendlyPacket });
+    assert.equal(rejectedInjection.ok, false);
+    assert.match(rejectedInjection.error, /did not accept/);
+    assert.equal(await rejected.locator("[contenteditable]").textContent(), "");
 
     assert.deepEqual(manifestErrors, []);
-    console.log(JSON.stringify({ extensionId, screenshotPath, twitchInjected: true, tiktokInjected: true }));
+    console.log(JSON.stringify({ extensionId, screenshotPath, twitchInjected: true, tiktokDelayedSend: true, failedSendRecovered: true }));
   } finally {
     await context.close();
     fs.rmSync(profilePath, { recursive: true, force: true });
