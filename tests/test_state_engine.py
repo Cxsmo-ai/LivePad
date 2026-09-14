@@ -49,3 +49,10 @@ def test_left_stick_diagonal_is_radially_normalized():
     state = engine.resolve(1)
     assert state.lx == pytest.approx(2 ** -0.5)
     assert state.ly == pytest.approx(2 ** -0.5)
+
+
+def test_move_backward_resolves_to_negative_ly():
+    engine = StateEngine()
+    engine.schedule(Command("move_backward", 1.0, 500), "viewer", 0)
+    state = engine.resolve(1)
+    assert state.ly == -1.0
