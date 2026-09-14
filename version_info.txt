@@ -17,14 +17,14 @@ VSVersionInfo(
         '040904b0',
         [
           StringStruct('CompanyName', 'Cxsmo_AI'),
-          StringStruct('FileDescription', 'HID Maestro Streamer Edition'),
+          StringStruct('FileDescription', 'DeepAscension LivePad'),
           StringStruct('FileVersion', '1.1.0.0'),
-          StringStruct('InternalName', 'HIDMaestroStreamerEdition'),
+          StringStruct('InternalName', 'LivePad'),
           StringStruct('LegalCopyright', 'Copyright (C) 2026 Cxsmo_AI. All rights reserved.'),
-          StringStruct('OriginalFilename', 'HIDMaestroStreamerEdition.exe'),
-          StringStruct('ProductName', 'HID Maestro Streamer Edition'),
+          StringStruct('OriginalFilename', 'LivePad.exe'),
+          StringStruct('ProductName', 'DeepAscension LivePad'),
           StringStruct('ProductVersion', '1.1.0'),
-          StringStruct('Comments', 'Live Stream Chat Plays Xbox Controller Emulation by Cxsmo_AI')
+          StringStruct('Comments', 'Live Stream Chat Plays Xbox Controller Engine by Cxsmo_AI')
         ]
       )
     ])

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "HID Maestro Controller Chat",
+  "name": "DeepAscension LivePad — Controller Extension",
   "version": "1.1.0",
-  "description": "Turns a physical gamepad into compact HID Maestro controller frames sent through live chat.",
+  "description": "Turns a physical gamepad into low-latency live chat controller frames for DeepAscension LivePad.",
   "permissions": ["storage", "tabs", "webNavigation", "scripting"],
   "host_permissions": [
     "https://www.twitch.tv/*",
@@ -13,7 +13,7 @@
     "service_worker": "service_worker.js"
   },
   "action": {
-    "default_title": "HID Maestro Controller Chat",
+    "default_title": "DeepAscension LivePad",
     "default_popup": "popup.html"
   },
   "content_scripts": [

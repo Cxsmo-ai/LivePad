@@ -12,16 +12,16 @@ from controller.state import ControllerState
 class GamepadTesterWidget(QWidget):
     """Render every Xbox 360 control from the authoritative resolved state."""
 
-    _ACTIVE = QColor("#6366F1")
-    _ACTIVE_ACCENT = QColor("#818CF8")
-    _CANVAS_BG = QColor("#121418")
-    _BODY_SURFACE = QColor("#252A33")
-    _CONTROL_SURFACE = QColor("#1A1E24")
-    _OUTLINE = QColor("#4B5565")
-    _OUTLINE_SUBTLE = QColor("#333A46")
-    _TEXT = QColor("#E8EAEE")
-    _MUTED = QColor("#A6ADB8")
-    _FAINT = QColor("#6B7280")
+    _ACTIVE = QColor("#B7FF42")
+    _ACTIVE_ACCENT = QColor("#A98AFF")
+    _CANVAS_BG = QColor("#050705")
+    _BODY_SURFACE = QColor("#111711")
+    _CONTROL_SURFACE = QColor("#0D110D")
+    _OUTLINE = QColor("#2A382A")
+    _OUTLINE_SUBTLE = QColor("#1B231B")
+    _TEXT = QColor("#EDF0EB")
+    _MUTED = QColor("#98A195")
+    _FAINT = QColor("#60685E")
 
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)

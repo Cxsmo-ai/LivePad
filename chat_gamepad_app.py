@@ -51,91 +51,91 @@ from tiktok_client import TikTokLiveManager
 from twitch_client import TwitchLiveManager
 from youtube_client import YouTubeLiveManager
 
-SAENXT_DARK_STYLESHEET = """
+DARK_STYLESHEET = """
 QMainWindow, QWidget#centralRoot {
-    background-color: #16181D;
-    color: #E8EAEE;
+    background-color: #050705;
+    color: #EDF0EB;
 }
 QScrollArea {
-    background-color: #16181D;
+    background-color: #050705;
     border: none;
 }
 QScrollArea > QWidget > QWidget {
-    background-color: #16181D;
+    background-color: #050705;
 }
 QGroupBox {
-    background-color: #1F2228;
-    border: 1px solid #2C3037;
+    background-color: #0D110D;
+    border: 1px solid #1E261E;
     border-radius: 8px;
     margin-top: 22px;
     padding: 14px 10px 10px 10px;
     font-size: 13px;
     font-weight: bold;
-    color: #E8EAEE;
+    color: #EDF0EB;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
     padding: 3px 10px;
     left: 14px;
-    color: #818CF8;
-    background-color: #1F2228;
-    border: 1px solid #2C3037;
+    color: #B7FF42;
+    background-color: #0D110D;
+    border: 1px solid #1E261E;
     border-radius: 5px;
 }
 QLabel {
-    color: #E8EAEE;
+    color: #EDF0EB;
     font-size: 12px;
 }
 QLineEdit {
-    background-color: #14161A;
-    border: 1px solid #34383F;
+    background-color: #070A07;
+    border: 1px solid #1E261E;
     border-radius: 5px;
-    color: #E8EAEE;
+    color: #EDF0EB;
     padding: 6px 10px;
-    selection-background-color: #6366F1;
-    selection-color: #FFFFFF;
+    selection-background-color: #B7FF42;
+    selection-color: #050705;
 }
 QLineEdit:focus {
-    border: 1px solid #818CF8;
+    border: 1px solid #B7FF42;
 }
 QLineEdit:disabled {
-    background-color: #191B20;
-    color: #6B7280;
-    border-color: #24272D;
+    background-color: #0A0D0A;
+    color: #60685E;
+    border-color: #151C15;
 }
 QComboBox {
-    background-color: #14161A;
-    border: 1px solid #34383F;
+    background-color: #070A07;
+    border: 1px solid #1E261E;
     border-radius: 5px;
-    color: #E8EAEE;
+    color: #EDF0EB;
     padding: 5px 10px;
     min-height: 22px;
 }
 QComboBox:focus {
-    border: 1px solid #818CF8;
+    border: 1px solid #B7FF42;
 }
 QComboBox::drop-down {
     subcontrol-origin: padding;
     subcontrol-position: top right;
     width: 24px;
-    border-left: 1px solid #2C3037;
+    border-left: 1px solid #1E261E;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
-    background-color: #191B20;
+    background-color: #0D110D;
 }
 QComboBox QAbstractItemView {
-    background-color: #1F2228;
-    border: 1px solid #2C3037;
+    background-color: #0D110D;
+    border: 1px solid #1E261E;
     border-radius: 5px;
-    color: #E8EAEE;
-    selection-background-color: #6366F1;
-    selection-color: #FFFFFF;
+    color: #EDF0EB;
+    selection-background-color: #B7FF42;
+    selection-color: #050705;
     padding: 4px;
     outline: none;
 }
 QCheckBox {
-    color: #E8EAEE;
+    color: #EDF0EB;
     font-size: 12px;
     font-weight: 500;
     spacing: 8px;
@@ -143,52 +143,52 @@ QCheckBox {
 QCheckBox::indicator {
     width: 18px;
     height: 18px;
-    border: 1px solid #34383F;
+    border: 1px solid #1E261E;
     border-radius: 4px;
-    background-color: #14161A;
+    background-color: #070A07;
 }
 QCheckBox::indicator:hover {
-    border: 1px solid #818CF8;
+    border: 1px solid #B7FF42;
 }
 QCheckBox::indicator:checked {
-    background-color: #6366F1;
-    border: 1px solid #818CF8;
+    background-color: #B7FF42;
+    border: 1px solid #B7FF42;
 }
 QPushButton {
-    background-color: #6366F1;
-    color: #FFFFFF;
+    background-color: #B7FF42;
+    color: #050705;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     border-radius: 5px;
     padding: 7px 14px;
-    border: 1px solid transparent;
+    border: 1px solid #B7FF42;
 }
 QPushButton:hover {
-    background-color: #4F46E5;
+    background-color: #C8FF66;
 }
 QPushButton:pressed {
-    background-color: #4338CA;
+    background-color: #A3EA30;
 }
 QPushButton:disabled {
-    background-color: #191B20;
-    color: #6B7280;
-    border: 1px solid #2C3037;
+    background-color: #0A0D0A;
+    color: #60685E;
+    border: 1px solid #151C15;
 }
 QPushButton#secondaryBtn {
-    background-color: #191B20;
-    color: #818CF8;
-    border: 1px solid #2C3037;
+    background-color: #0E140E;
+    color: #A98AFF;
+    border: 1px solid #1E261E;
 }
 QPushButton#secondaryBtn:hover {
-    background-color: #24272D;
-    border-color: #34383F;
-    color: #A5B4FC;
+    background-color: #162016;
+    border-color: #2A382A;
+    color: #D2C5FF;
 }
 QPushButton#secondaryBtn:pressed {
-    background-color: #14161A;
+    background-color: #070A07;
 }
 QPushButton#dangerBtn {
-    background-color: #191B20;
+    background-color: #140808;
     color: #F87171;
     border: 1px solid #EF4444;
 }
@@ -197,7 +197,7 @@ QPushButton#dangerBtn:hover {
     color: #FFFFFF;
 }
 QPushButton#warningBtn {
-    background-color: #191B20;
+    background-color: #141208;
     color: #FBBF24;
     border: 1px solid #F59E0B;
 }
@@ -206,69 +206,69 @@ QPushButton#warningBtn:hover {
     color: #14161A;
 }
 QTextBrowser {
-    background-color: #14161A;
-    border: 1px solid #2C3037;
+    background-color: #070A07;
+    border: 1px solid #1E261E;
     border-radius: 6px;
-    color: #E8EAEE;
+    color: #EDF0EB;
     padding: 8px;
     font-family: 'Segoe UI', sans-serif;
     font-size: 12px;
 }
 QTableWidget {
-    background-color: #14161A;
-    alternate-background-color: #191B20;
-    border: 1px solid #2C3037;
+    background-color: #070A07;
+    alternate-background-color: #0D110D;
+    border: 1px solid #1E261E;
     border-radius: 6px;
-    gridline-color: #24272D;
-    color: #E8EAEE;
+    gridline-color: #182018;
+    color: #EDF0EB;
     font-size: 12px;
 }
 QTableWidget::item {
     padding: 4px 8px;
 }
 QTableWidget::item:selected {
-    background-color: #6366F1;
-    color: #FFFFFF;
+    background-color: #B7FF42;
+    color: #050705;
 }
 QHeaderView::section {
-    background-color: #1F2228;
-    color: #A6ADB8;
+    background-color: #0D110D;
+    color: #98A195;
     font-weight: 600;
     border: none;
-    border-bottom: 1px solid #2C3037;
-    border-right: 1px solid #24272D;
+    border-bottom: 1px solid #1E261E;
+    border-right: 1px solid #182018;
     padding: 6px 10px;
 }
 QScrollBar:vertical {
-    background: #16181D;
+    background: #050705;
     width: 10px;
     margin: 0px;
     border-radius: 5px;
 }
 QScrollBar::handle:vertical {
-    background: #2C3037;
+    background: #1E261E;
     min-height: 24px;
     border-radius: 5px;
 }
 QScrollBar::handle:vertical:hover {
-    background: #34383F;
+    background: #2E3B2E;
 }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
 }
 QScrollBar:horizontal {
-    background: #16181D;
+    background: #050705;
     height: 10px;
     margin: 0px;
     border-radius: 5px;
 }
 QScrollBar::handle:horizontal {
-    background: #2C3037;
+    background: #1E261E;
     min-width: 24px;
     border-radius: 5px;
 }
 QScrollBar::handle:horizontal:hover {
-    background: #34383F;
+    background: #2E3B2E;
 }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
     width: 0px;
@@ -276,7 +276,7 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 """
 
 
-_SINGLE_INSTANCE_NAME = "Local\\HIDMaestroStreamerEdition.SingleInstance"
+_SINGLE_INSTANCE_NAME = "Local\\DeepAscensionLivePad.SingleInstance"
 
 
 def _config_root() -> Path:
@@ -504,17 +504,17 @@ class ChatGamepadWindow(QMainWindow):
         label.setText(text)
         lower = text.lower()
         if ("connected" in lower and not "disconnected" in lower) or "ready" in lower or text == "Active":
-            label.setStyleSheet("color: #4ADE80; font-weight: bold;")
+            label.setStyleSheet("color: #B7FF42; font-weight: bold;")
         elif "connecting" in lower or "reconnecting" in lower or "paused" in lower:
             label.setStyleSheet("color: #FBBF24; font-weight: bold;")
         elif "disconnected" in lower or "unavailable" in lower:
-            label.setStyleSheet("color: #A6ADB8;")
+            label.setStyleSheet("color: #7E877C;")
         else:
-            label.setStyleSheet("color: #E8EAEE;")
+            label.setStyleSheet("color: #EDF0EB;")
 
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         super().__init__()
-        self.setWindowTitle("HID Maestro Streamer Edition • Cxsmo_AI")
+        self.setWindowTitle("LivePad • DeepAscension by Cxsmo_AI")
         self.resize(920, 840)
         icon_candidates = [
             Path(__file__).resolve().parent / "assets" / "app_icon.png",
@@ -559,7 +559,7 @@ class ChatGamepadWindow(QMainWindow):
             self.f12_shortcut.activated.connect(self._emergency_stop)
 
     def _build_ui(self) -> None:
-        self.setStyleSheet(SAENXT_DARK_STYLESHEET)
+        self.setStyleSheet(DARK_STYLESHEET)
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         central = QWidget()
@@ -573,8 +573,8 @@ class ChatGamepadWindow(QMainWindow):
         header.setObjectName("brandHeader")
         header.setStyleSheet(
             "QFrame#brandHeader {"
-            "  background: #191B20;"
-            "  border: 1px solid #2C3037;"
+            "  background: #0D110D;"
+            "  border: 1px solid #1E261E;"
             "  border-radius: 8px;"
             "  padding: 10px 14px;"
             "}"
@@ -584,25 +584,26 @@ class ChatGamepadWindow(QMainWindow):
         header_layout.setSpacing(3)
 
         title_row = QHBoxLayout()
-        title_label = QLabel("HID MAESTRO STREAMER EDITION")
-        title_label.setStyleSheet("color: #FFFFFF; font-size: 15px; font-weight: 800; letter-spacing: 0.04em;")
+        title_label = QLabel("DEEPASCENSION LIVEPAD")
+        title_label.setStyleSheet("color: #EDF0EB; font-size: 16px; font-weight: 800; letter-spacing: 0.06em;")
         title_row.addWidget(title_label)
 
         badge_label = QLabel("BY CXSMO_AI")
         badge_label.setStyleSheet(
-            "background: rgba(99, 102, 241, 0.22);"
-            "border: 1px solid #6366F1;"
-            "color: #A5B4FC;"
+            "background: rgba(183, 255, 66, 0.15);"
+            "border: 1px solid #B7FF42;"
+            "color: #B7FF42;"
             "padding: 2px 8px;"
             "border-radius: 4px;"
             "font-size: 11px;"
             "font-weight: 700;"
+            "letter-spacing: 0.05em;"
         )
         title_row.addWidget(badge_label)
         title_row.addStretch()
 
-        subtitle = QLabel("Live Stream Chat Plays Xbox Controller Emulation • Powered by SAENXT & HIDMaestro")
-        subtitle.setStyleSheet("color: #A6ADB8; font-size: 11px;")
+        subtitle = QLabel("Low-Latency Live Chat Virtual Xbox Controller • deepascension.net")
+        subtitle.setStyleSheet("color: #98A195; font-size: 11px;")
 
         header_layout.addLayout(title_row)
         header_layout.addWidget(subtitle)
@@ -819,9 +820,9 @@ class ChatGamepadWindow(QMainWindow):
         commands_layout.addWidget(apply_commands)
         root.addWidget(commands_group)
 
-        footer = QLabel("HID Maestro Streamer Edition • Created by Cxsmo_AI • Pure Virtual Controller")
+        footer = QLabel("DeepAscension LivePad • Created by Cxsmo_AI • Pure Virtual Controller Engine")
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        footer.setStyleSheet("color: #6B7280; font-size: 11px; padding: 8px 0 2px 0;")
+        footer.setStyleSheet("color: #60685E; font-size: 11px; padding: 8px 0 2px 0;")
         root.addWidget(footer)
 
     @staticmethod
