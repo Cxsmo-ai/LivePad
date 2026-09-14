@@ -208,8 +208,8 @@ class ChatGamepadWindow(QMainWindow):
         self.test_input.returnPressed.connect(self._apply_test_command)
         self.test_button = QPushButton("Apply")
         self.test_button.clicked.connect(self._apply_test_command)
-        self.hold_button = QPushButton("Hold 3s")
-        self.hold_button.setToolTip("Hold compound command for 3 seconds so you can easily observe it in joy.cpl")
+        self.hold_button = QPushButton("Hold 10s")
+        self.hold_button.setToolTip("Hold Button A and movement for 10 seconds to activate browsers and joy.cpl")
         self.hold_button.clicked.connect(self._apply_hold_test)
         self.joy_button = QPushButton("Open joy.cpl")
         self.joy_button.setToolTip("Open Windows Game Controllers control panel")
@@ -365,18 +365,19 @@ class ChatGamepadWindow(QMainWindow):
 
     def _apply_hold_test(self) -> None:
         commands = [
-            Command("move_forward", 1.0, 3000),
-            Command("button_l3", 1.0, 3000),
-            Command("left_trigger", 1.0, 3000),
-            Command("right_trigger", 1.0, 3000),
-            Command("look_right", 0.35, 3000),
+            Command("move_forward", 1.0, 10000),
+            Command("button_a", 1.0, 10000),
+            Command("button_l3", 1.0, 10000),
+            Command("left_trigger", 1.0, 10000),
+            Command("right_trigger", 1.0, 10000),
+            Command("look_right", 0.35, 10000),
         ]
         now_ns = time.monotonic_ns()
         for cmd in commands:
             self.runtime.engine.schedule(cmd, "local-hold", now_ns)
         self.runtime.flush(now_ns)
         self._render_state(self.runtime.engine.resolve(now_ns))
-        self._log("HOLD TEST (3s) active: LY+1.0, RX+0.35, LT 100%, RT 100%, L3 — check joy.cpl")
+        self._log("HOLD TEST (10s) active: Button A, LY+1.0, RX+0.35, LT 100%, RT 100%, L3 — switch to joy.cpl or Gamepad Tester")
 
     def _open_joy_cpl(self) -> None:
         try:

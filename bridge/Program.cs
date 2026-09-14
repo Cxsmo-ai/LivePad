@@ -141,16 +141,25 @@ static async Task WatchdogLoop(Action submitNeutral, Func<long> lastHeartbeat, C
 
 static void SubmitState(HMController controller, HMProfile profile, JsonElement root)
 {
+    var lt = ToTrigger(root, "lt");
+    var rt = ToTrigger(root, "rt");
+    var axes = HMGamepadStateHelpers.StandardAxes(
+        profile,
+        ToAxis(root, "lx"),
+        ToAxis(root, "ly"),
+        ToAxis(root, "rx"),
+        ToAxis(root, "ry"),
+        lt,
+        rt);
+
+    if (profile.AvailableAxes.Contains(HMAxis.Z))
+    {
+        axes[HMAxis.Z] = Math.Clamp((rt - lt + 1f) / 2f, 0f, 1f);
+    }
+
     var state = new HMGamepadState
     {
-        Axes = HMGamepadStateHelpers.StandardAxes(
-            profile,
-            ToAxis(root, "lx"),
-            ToAxis(root, "ly"),
-            ToAxis(root, "rx"),
-            ToAxis(root, "ry"),
-            ToTrigger(root, "lt"),
-            ToTrigger(root, "rt")),
+        Axes = axes,
         Buttons = ParseButtons(root),
     };
     controller.SubmitState(in state);
@@ -158,16 +167,23 @@ static void SubmitState(HMController controller, HMProfile profile, JsonElement 
 
 static void SubmitNeutral(HMController controller, HMProfile profile)
 {
+    var axes = HMGamepadStateHelpers.StandardAxes(
+        profile,
+        leftStickX: 0.5f,
+        leftStickY: 0.5f,
+        rightStickX: 0.5f,
+        rightStickY: 0.5f,
+        leftTrigger: 0f,
+        rightTrigger: 0f);
+
+    if (profile.AvailableAxes.Contains(HMAxis.Z))
+    {
+        axes[HMAxis.Z] = 0.5f;
+    }
+
     var state = new HMGamepadState
     {
-        Axes = HMGamepadStateHelpers.StandardAxes(
-            profile,
-            leftStickX: 0.5f,
-            leftStickY: 0.5f,
-            rightStickX: 0.5f,
-            rightStickY: 0.5f,
-            leftTrigger: 0f,
-            rightTrigger: 0f),
+        Axes = axes,
         Buttons = HMButton.None,
     };
     controller.SubmitState(in state);
