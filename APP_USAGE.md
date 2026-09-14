@@ -33,6 +33,17 @@ To sample a public LIVE without posting or sending controller output:
 .\.venv\Scripts\python.exe .\live_stream_smoke_test.py CREATOR_USERNAME --duration 30
 ```
 
+For an elevated, exact-comment end-to-end validation through the real virtual controller:
+
+```powershell
+.\.venv\Scripts\python.exe .\live_hardware_smoke_test.py CREATOR_USERNAME `
+    --timeout 90 --report .\live-hardware-report.json
+```
+
+The harness ignores every comment except `w sprint ads fire right 35`, verifies all five actions
+through XInput, clears the controller, verifies neutral state, and exits. Posting the exact test
+comment is intentionally a separate user-authorized browser action.
+
 The packaged executable also has an unattended real-hardware mode. It requests UAC, applies the
 required five-part compound command, verifies it through XInput, verifies CLEAR and the bridge
 watchdog, writes a JSON report, and exits:

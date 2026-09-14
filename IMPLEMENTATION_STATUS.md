@@ -35,6 +35,7 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
 - The final windowed PyInstaller build passes its packaged bridge/startup/shutdown smoke test.
 - A public `@typicalgamer` LIVE sample received 10 comments from 6 viewers in 30 seconds. Local processing measured 0.0368 ms median and 0.1518 ms p95.
 - The real HIDMaestro controller exposed the five-part compound command through XInput, then returned to centered sticks with all triggers and buttons released after CLEAR.
+- A user-authorized public test comment completed the full TikTok LIVE -> TikTokLive -> parser -> named pipe -> HIDMaestro -> XInput path. All five actions were visible in XInput at 66.318 ms and the controller returned to neutral after CLEAR.
 
 ## Real hardware verification
 
