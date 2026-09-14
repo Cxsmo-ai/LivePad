@@ -1,6 +1,10 @@
 (function () {
   "use strict";
 
+  const runtimeKey = `__HM_CONTROLLER_CHAT_${chrome.runtime.getManifest().version.replaceAll(".", "_")}`;
+  if (globalThis[runtimeKey]) return;
+  globalThis[runtimeKey] = true;
+
   const isTop = window.top === window;
   const extensionVersion = chrome.runtime.getManifest().version;
   const DEFAULT_SETTINGS = Object.freeze({ deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0 });
@@ -46,6 +50,7 @@
       packet: lastPacket,
       lastError,
       lastSentAt,
+      version: extensionVersion,
       state: engine.current
     };
   }

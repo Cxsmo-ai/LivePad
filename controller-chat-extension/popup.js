@@ -47,11 +47,13 @@ function render(status) {
     setStatus(elements.platform, "Unsupported page", "bad");
     setStatus(elements.controller, "Unavailable", "bad");
     setStatus(elements.relay, "Disarmed", "warn");
+    if (status?.error) setMessage(status.error, true);
     armed = false;
     return;
   }
   armed = Boolean(status.armed);
-  setStatus(elements.platform, String(status.platform || "unknown").toUpperCase(), status.platform === "unsupported" ? "bad" : "good");
+  const platformLabel = String(status.platform || "unknown").toUpperCase();
+  setStatus(elements.platform, status.version ? `${platformLabel} · v${status.version}` : platformLabel, status.platform === "unsupported" ? "bad" : "good");
   setStatus(elements.controller, status.gamepad?.id || "Press any button", status.gamepad ? "good" : "warn");
   setStatus(elements.relay, armed ? "Armed" : "Disarmed", armed ? "good" : "warn");
   elements.arm.textContent = armed ? "DISARM AND SEND NEUTRAL" : "ARM CONTROLLER CHAT";
@@ -61,10 +63,43 @@ function render(status) {
   else if (armed) setMessage("Controller activity is being compressed into chat-safe full-state frames.");
 }
 
+function supportsCurrentTab() {
+  try {
+    const host = new URL(currentTab?.url || "").hostname.toLowerCase();
+    return ["tiktok.com", "twitch.tv", "youtube.com"].some((domain) => host === domain || host.endsWith(`.${domain}`));
+  } catch (_) {
+    return false;
+  }
+}
+
+async function attachContentRuntime() {
+  if (!currentTab?.id || !supportsCurrentTab() || !extensionApi.scripting?.executeScript) return false;
+  await extensionApi.scripting.executeScript({
+    target: { tabId: currentTab.id, allFrames: true },
+    files: [
+      "shared/protocol.js",
+      "shared/gamepad_engine.js",
+      "shared/dom_injector.js",
+      "content.js"
+    ]
+  });
+  return true;
+}
+
 async function sendToTop(message) {
   if (!currentTab?.id) return { ok: false, error: "No active tab" };
-  try { return await extensionApi.tabs.sendMessage(currentTab.id, message, { frameId: 0 }); }
-  catch (_) { return { ok: false, error: "Reload this supported stream page after installing the extension" }; }
+  try {
+    return await extensionApi.tabs.sendMessage(currentTab.id, message, { frameId: 0 });
+  } catch (_) {
+    try {
+      if (!await attachContentRuntime()) {
+        return { ok: false, error: "Open a supported Twitch, YouTube, or TikTok LIVE tab" };
+      }
+      return await extensionApi.tabs.sendMessage(currentTab.id, message, { frameId: 0 });
+    } catch (error) {
+      return { ok: false, error: `Could not attach to this LIVE tab: ${String(error?.message || error)}` };
+    }
+  }
 }
 
 async function refresh() {

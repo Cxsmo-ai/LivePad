@@ -29,7 +29,7 @@ async function main() {
     popup.on("console", (message) => { if (message.type() === "error") manifestErrors.push(message.text()); });
     await popup.setViewportSize({ width: 370, height: 650 });
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-    assert.equal(await popup.evaluate(() => chrome.runtime.getManifest().version), "1.0.2");
+    assert.equal(await popup.evaluate(() => chrome.runtime.getManifest().version), "1.0.3");
     await popup.getByRole("heading", { name: "Controller Chat" }).waitFor();
     await popup.screenshot({ path: screenshotPath });
     assert.equal(await popup.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor), "rgb(22, 24, 29)");
@@ -87,6 +87,16 @@ async function main() {
     });
     await tiktok.goto("https://www.tiktok.com/@hm-extension-test/live");
     await tiktok.waitForTimeout(300);
+    await tiktok.bringToFront();
+    const attachmentStatus = await popup.evaluate(async () => {
+      await refresh();
+      const attached = await attachContentRuntime();
+      const status = await sendToTop({ type: "HM_GET_STATUS" });
+      return { attached, status };
+    });
+    assert.equal(attachmentStatus.attached, true);
+    assert.equal(attachmentStatus.status.ok, true);
+    assert.equal(attachmentStatus.status.version, "1.0.3");
     const friendlyPacket = "pad mfr5z7k0 q1 e14u w80 lr35 lt100 rt100 h40 t1";
     const tiktokInjection = await popup.evaluate(async ({ packet }) => {
       const [tab] = await chrome.tabs.query({ url: "https://www.tiktok.com/@hm-extension-test/live" });
