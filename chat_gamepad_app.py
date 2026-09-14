@@ -47,9 +47,6 @@ from gamepad_tester import GamepadTesterWidget
 from ipc.named_pipe import NamedPipeClient
 from runtime import ControllerRuntime
 from stream_icons import format_chat_html, register_chat_icons
-from tiktok_client import TikTokLiveManager
-from twitch_client import TwitchLiveManager
-from youtube_client import YouTubeLiveManager
 
 DARK_STYLESHEET = """
 QMainWindow, QWidget#centralRoot {
@@ -322,7 +319,7 @@ class TikTokWorker(QThread):
         self.username = username.lstrip("@")
         self.auto_reconnect = auto_reconnect
         self.stop_requested = False
-        self.manager: TikTokLiveManager | None = None
+        self.manager = None
         self.loop: asyncio.AbstractEventLoop | None = None
         self.stop_event: asyncio.Event | None = None
 
@@ -336,6 +333,7 @@ class TikTokWorker(QThread):
             self.loop = None
 
     async def _run(self) -> None:
+        from tiktok_client import TikTokLiveManager
         self.stop_event = asyncio.Event()
         self.manager = TikTokLiveManager(self.username)
 
@@ -388,7 +386,7 @@ class YouTubeWorker(QThread):
         self.chat_type = chat_type
         self.auto_reconnect = auto_reconnect
         self.stop_requested = False
-        self.manager: YouTubeLiveManager | None = None
+        self.manager = None
         self.loop: asyncio.AbstractEventLoop | None = None
         self.stop_event: asyncio.Event | None = None
 
@@ -402,6 +400,7 @@ class YouTubeWorker(QThread):
             self.loop = None
 
     async def _run(self) -> None:
+        from youtube_client import YouTubeLiveManager
         self.stop_event = asyncio.Event()
         self.manager = YouTubeLiveManager(self.target, chat_type=self.chat_type)
         self.manager.on_event("comment", self.comment_received.emit)
@@ -447,7 +446,7 @@ class TwitchWorker(QThread):
         self.channel = channel.strip()
         self.auto_reconnect = auto_reconnect
         self.stop_requested = False
-        self.manager: TwitchLiveManager | None = None
+        self.manager = None
         self.loop: asyncio.AbstractEventLoop | None = None
         self.stop_event: asyncio.Event | None = None
 
@@ -461,6 +460,7 @@ class TwitchWorker(QThread):
             self.loop = None
 
     async def _run(self) -> None:
+        from twitch_client import TwitchLiveManager
         self.stop_event = asyncio.Event()
         self.manager = TwitchLiveManager(self.channel)
         self.manager.on_event("comment", self.comment_received.emit)

@@ -29,6 +29,7 @@ a = Analysis(
 
 qt_bin = Path(PyQt6.__file__).parent / "Qt6" / "bin"
 vc_runtime_names = {"vcruntime140.dll", "vcruntime140_1.dll"}
+excluded_binaries = {"opengl32sw.dll", "qt6pdf.dll"}
 a.binaries = [
     (destination, str(qt_bin / Path(destination).name), kind)
     if destination.casefold() in vc_runtime_names
@@ -37,6 +38,7 @@ a.binaries = [
     if not destination.casefold().startswith("api-ms-win-")
     and destination.casefold() != "ucrtbase.dll"
     and not Path(destination).name.casefold().startswith("icu")
+    and Path(destination).name.casefold() not in excluded_binaries
 ]
 pyz = PYZ(a.pure)
 
@@ -50,7 +52,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,
