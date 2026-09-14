@@ -110,6 +110,24 @@ COD ZOMBIES & FPS COMMAND LIST
    tac / tactical   - Left Bumper (LB)
    nade / grenade   - Right Bumper (RB)
 
+5. Controller Tester & Extra Xbox Buttons:
+   The Resolved Controller State panel is a live gamepad tester. It shows
+   exact LX, LY, RX, RY, LT, and RT values plus every standard button:
+   A/B/X/Y, LB/RB, L3/R3, View, Start, Guide, and all D-pad directions.
+
+   start / menu     - Start / Menu button
+   view             - Back / View button ("back" remains move backward)
+   guide             - Xbox Guide button
+   dpadup            - D-pad Up
+   dpaddown          - D-pad Down
+   dpadleft          - D-pad Left
+   dpadright         - D-pad Right
+
+   The stick dots move to the exact resolved position. Active controls
+   illuminate cyan, triggers fill proportionally, and D-pad diagonals show
+   both directions at once. This always displays the final combined state
+   sent to HIDMaestro, not merely the last chat command received.
+
 ----------------------------------------------------------------------
 COMPOUND COMBOS (CONCURRENT INPUT LEASES)
 ----------------------------------------------------------------------

@@ -14,7 +14,7 @@ a = Analysis(
         ("profiles/cod.json", "profiles"),
         ("QUICK_START.txt", "."),
     ],
-    hiddenimports=["stream_icons", "youtube_client", "tiktok_client"],
+    hiddenimports=["gamepad_tester", "stream_icons", "youtube_client", "tiktok_client"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -56,4 +56,3 @@ exe = EXE(
     codesign_identity=None,
     entitlements_file=None,
 )
-

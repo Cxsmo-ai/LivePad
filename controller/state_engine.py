@@ -40,6 +40,9 @@ class StateEngine:
         "button_a": "a", "button_b": "b", "button_x": "x", "button_y": "y",
         "button_lb": "lb", "button_rb": "rb", "button_l3": "l3", "button_r3": "r3",
         "button_start": "start", "button_back": "back",
+        "button_guide": "guide",
+        "button_dpad_up": "dpad_up", "button_dpad_down": "dpad_down",
+        "button_dpad_left": "dpad_left", "button_dpad_right": "dpad_right",
     }
 
     def __init__(self):

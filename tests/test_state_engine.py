@@ -56,3 +56,10 @@ def test_move_backward_resolves_to_negative_ly():
     engine.schedule(Command("move_backward", 1.0, 500), "viewer", 0)
     state = engine.resolve(1)
     assert state.ly == -1.0
+
+
+def test_dpad_and_guide_are_resolved_like_real_xbox_buttons():
+    engine = StateEngine()
+    for action in ("button_dpad_up", "button_dpad_right", "button_guide"):
+        engine.schedule(Command(action, 1.0, 500), "viewer", 0)
+    assert engine.resolve(1).buttons == frozenset({"dpad_up", "dpad_right", "guide"})

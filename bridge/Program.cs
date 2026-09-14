@@ -161,6 +161,7 @@ static void SubmitState(HMController controller, HMProfile profile, JsonElement 
     {
         Axes = axes,
         Buttons = ParseButtons(root),
+        Hat = ParseHat(root),
     };
     controller.SubmitState(in state);
 }
@@ -180,6 +181,7 @@ static void SubmitNeutral(HMController controller, HMProfile profile)
     {
         Axes = axes,
         Buttons = HMButton.None,
+        Hat = HMHat.None,
     };
     controller.SubmitState(in state);
 }
@@ -219,8 +221,42 @@ static HMButton ParseButtons(JsonElement root)
             "r3" => HMButton.RightStick,
             "start" => HMButton.Start,
             "back" => HMButton.Back,
+            "guide" => HMButton.Guide,
             _ => HMButton.None,
         };
     }
     return result;
+}
+
+static HMHat ParseHat(JsonElement root)
+{
+    if (!root.TryGetProperty("buttons", out var buttons) || buttons.ValueKind != JsonValueKind.Array)
+        return HMHat.None;
+
+    var up = false;
+    var down = false;
+    var left = false;
+    var right = false;
+    foreach (var value in buttons.EnumerateArray())
+    {
+        switch (value.GetString()?.ToLowerInvariant())
+        {
+            case "dpad_up": up = true; break;
+            case "dpad_down": down = true; break;
+            case "dpad_left": left = true; break;
+            case "dpad_right": right = true; break;
+        }
+    }
+
+    if (up == down) up = down = false;
+    if (left == right) left = right = false;
+    if (up && right) return HMHat.NorthEast;
+    if (down && right) return HMHat.SouthEast;
+    if (down && left) return HMHat.SouthWest;
+    if (up && left) return HMHat.NorthWest;
+    if (up) return HMHat.North;
+    if (right) return HMHat.East;
+    if (down) return HMHat.South;
+    if (left) return HMHat.West;
+    return HMHat.None;
 }

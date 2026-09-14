@@ -30,6 +30,7 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QPushButton,
+    QScrollArea,
     QTableWidget,
     QTableWidgetItem,
     QTextBrowser,
@@ -41,6 +42,7 @@ from app_config import AppConfig
 from bridge_process import BridgeProcess
 from chat.parser import Command, CommandParser
 from controller.state import ControllerState
+from gamepad_tester import GamepadTesterWidget
 from ipc.named_pipe import NamedPipeClient
 from runtime import ControllerRuntime
 from stream_icons import format_chat_html, register_chat_icons
@@ -248,9 +250,12 @@ class ChatGamepadWindow(QMainWindow):
             self.f12_shortcut.activated.connect(self._emergency_stop)
 
     def _build_ui(self) -> None:
-        central = QWidget(self)
+        scroll = QScrollArea(self)
+        scroll.setWidgetResizable(True)
+        central = QWidget()
         root = QVBoxLayout(central)
-        self.setCentralWidget(central)
+        scroll.setWidget(central)
+        self.setCentralWidget(scroll)
 
         # Status Bar / Dashboard
         status = QGroupBox("System & Stream Status")
@@ -342,15 +347,10 @@ class ChatGamepadWindow(QMainWindow):
         root.addWidget(streams_group)
 
         # Resolved Controller State
-        controller = QGroupBox("Resolved Xbox 360 Controller State")
-        grid = QGridLayout(controller)
-        self.state_labels: dict[str, QLabel] = {}
-        for row, name in enumerate(("lx", "ly", "rx", "ry", "lt", "rt", "buttons")):
-            grid.addWidget(QLabel(f"<b>{name.upper()}:</b>"), row, 0)
-            value = QLabel("released" if name == "buttons" else "0.00")
-            value.setMinimumWidth(220)
-            self.state_labels[name] = value
-            grid.addWidget(value, row, 1)
+        controller = QGroupBox("Resolved Xbox 360 Controller — Live Gamepad Tester")
+        grid = QVBoxLayout(controller)
+        self.gamepad_tester = GamepadTesterWidget()
+        grid.addWidget(self.gamepad_tester)
         root.addWidget(controller)
 
         # Test Mode
@@ -681,13 +681,7 @@ class ChatGamepadWindow(QMainWindow):
             return False
 
     def _render_state(self, state: ControllerState) -> None:
-        self.state_labels["lx"].setText(f"{state.lx:+.2f}")
-        self.state_labels["ly"].setText(f"{state.ly:+.2f}")
-        self.state_labels["rx"].setText(f"{state.rx:+.2f}")
-        self.state_labels["ry"].setText(f"{state.ry:+.2f}")
-        self.state_labels["lt"].setText(f"{state.lt:.2f}")
-        self.state_labels["rt"].setText(f"{state.rt:.2f}")
-        self.state_labels["buttons"].setText(", ".join(sorted(state.buttons)) or "released")
+        self.gamepad_tester.set_state(state)
 
     def _log(self, message: str) -> None:
         timestamp_str = datetime.now().strftime("%H:%M:%S")
@@ -851,13 +845,18 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true", help="run the GUI with a mock bridge and exit")
     parser.add_argument(
+        "--mock",
+        action="store_true",
+        help="keep the GUI open with a mock bridge for visual testing",
+    )
+    parser.add_argument(
         "--hardware-smoke",
         action="store_true",
         help="exercise the real HIDMaestro controller through XInput and exit",
     )
     parser.add_argument("--hardware-report", type=Path, help="hardware smoke-test JSON output path")
     args = parser.parse_args(argv)
-    if getattr(sys, "frozen", False) and os.name == "nt" and not args.smoke:
+    if getattr(sys, "frozen", False) and os.name == "nt" and not args.smoke and not args.mock:
         if not ctypes.windll.shell32.IsUserAnAdmin():
             parameters = subprocess.list2cmdline(sys.argv[1:])
             result = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, parameters, None, 1)
@@ -867,7 +866,10 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     try:
         app = QApplication([sys.argv[0]])
-        window = ChatGamepadWindow(mock_bridge=args.smoke, automation_mode=args.hardware_smoke)
+        window = ChatGamepadWindow(
+            mock_bridge=args.smoke or args.mock,
+            automation_mode=args.hardware_smoke,
+        )
         if args.smoke:
             # Test local command
             window.test_input.setText("w sprint ads fire right 35")

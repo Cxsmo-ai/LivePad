@@ -84,3 +84,19 @@ def test_seconds_duration_suffix_and_legacy_bare_numbers():
         ("look_left", 0.25, 400),
         ("button_x", 1.0, 1200),
     ]
+
+
+def test_every_extra_xbox_control_has_a_chat_command():
+    result = CommandParser().parse(
+        "start view guide dpadup dpaddown dpadleft dpadright"
+    )
+    assert [command.action for command in result.commands] == [
+        "button_start",
+        "button_back",
+        "button_guide",
+        "button_dpad_up",
+        "button_dpad_down",
+        "button_dpad_left",
+        "button_dpad_right",
+    ]
+    assert result.invalid_tokens == ()

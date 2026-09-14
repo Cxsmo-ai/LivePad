@@ -10,6 +10,8 @@ SUPPORTED_ACTIONS = frozenset({
     "button_a", "button_b", "button_x", "button_y",
     "button_lb", "button_rb", "button_l3", "button_r3",
     "button_start", "button_back",
+    "button_guide", "button_dpad_up", "button_dpad_down",
+    "button_dpad_left", "button_dpad_right",
 })
 
 
@@ -69,5 +71,11 @@ DEFAULT_COMMANDS = {
     "nade": _command("button_rb", 1.0, 120, allow_duration=True),
     "grenade": _command("button_rb", 1.0, 120, allow_duration=True),
     "menu": _command("button_start", 1.0, 120, allow_duration=True),
+    "start": _command("button_start", 1.0, 120, allow_duration=True),
     "view": _command("button_back", 1.0, 120, allow_duration=True),
+    "guide": _command("button_guide", 1.0, 120, allow_duration=True),
+    "dpadup": _command("button_dpad_up", 1.0, 120, allow_duration=True),
+    "dpaddown": _command("button_dpad_down", 1.0, 120, allow_duration=True),
+    "dpadleft": _command("button_dpad_left", 1.0, 120, allow_duration=True),
+    "dpadright": _command("button_dpad_right", 1.0, 120, allow_duration=True),
 }
