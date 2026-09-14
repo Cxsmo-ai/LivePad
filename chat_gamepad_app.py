@@ -41,6 +41,32 @@ from runtime import ControllerRuntime
 from tiktok_client import TikTokLiveManager
 
 
+_SINGLE_INSTANCE_NAME = "Local\\TikForeverChatGamepad.SingleInstance"
+
+
+def _acquire_single_instance() -> int | None:
+    """Keep one app/bridge owner per interactive Windows session."""
+    if os.name != "nt":
+        return 1
+    kernel32 = ctypes.windll.kernel32
+    kernel32.CreateMutexW.argtypes = (ctypes.c_void_p, ctypes.c_bool, ctypes.c_wchar_p)
+    kernel32.CreateMutexW.restype = ctypes.c_void_p
+    kernel32.CloseHandle.argtypes = (ctypes.c_void_p,)
+    kernel32.CloseHandle.restype = ctypes.c_bool
+    handle = kernel32.CreateMutexW(None, False, _SINGLE_INSTANCE_NAME)
+    if not handle:
+        raise ctypes.WinError()
+    if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+        kernel32.CloseHandle(handle)
+        return None
+    return int(handle)
+
+
+def _release_single_instance(handle: int | None) -> None:
+    if os.name == "nt" and handle:
+        ctypes.windll.kernel32.CloseHandle(handle)
+
+
 class TikTokWorker(QThread):
     comment_received = pyqtSignal(dict)
     state_changed = pyqtSignal(str)
@@ -559,35 +585,41 @@ def main(argv: list[str] | None = None) -> int:
             parameters = subprocess.list2cmdline(sys.argv[1:])
             result = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, parameters, None, 1)
             return 0 if result > 32 else 1
-    app = QApplication([sys.argv[0]])
-    window = ChatGamepadWindow(mock_bridge=args.smoke, automation_mode=args.hardware_smoke)
-    if args.smoke:
-        window.test_input.setText("w sprint ads fire right 35")
-        window._apply_test_command()
-        state = window.runtime.engine.resolve()
-        compound_success = (
-            state.ly == 1.0 and state.rx == 0.35 and state.lt == 1.0
-            and state.rt == 1.0 and state.buttons == frozenset({"l3"})
-            and window.bridge_status.text() == "Ready (mock)"
-        )
-        window._emergency_stop()
-        safety_success = window.chat_paused and window.runtime.engine.resolve() == ControllerState()
-        window._toggle_pause()
-        window._apply_test_command()
-        resumed_success = window.runtime.engine.resolve().ly == 1.0
-        success = compound_success and safety_success and resumed_success
-        QTimer.singleShot(75, window.close)
-        QTimer.singleShot(100, app.quit)
-        app.exec()
-        return 0 if success else 1
-    if args.hardware_smoke:
-        report_path = args.hardware_report or (
-            Path(sys.executable).resolve().parent / "hardware-smoke-report.json"
-        )
-        _run_hardware_smoke(app, window, report_path)
+    instance_handle = _acquire_single_instance()
+    if instance_handle is None:
+        return 0
+    try:
+        app = QApplication([sys.argv[0]])
+        window = ChatGamepadWindow(mock_bridge=args.smoke, automation_mode=args.hardware_smoke)
+        if args.smoke:
+            window.test_input.setText("w sprint ads fire right 35")
+            window._apply_test_command()
+            state = window.runtime.engine.resolve()
+            compound_success = (
+                state.ly == 1.0 and state.rx == 0.35 and state.lt == 1.0
+                and state.rt == 1.0 and state.buttons == frozenset({"l3"})
+                and window.bridge_status.text() == "Ready (mock)"
+            )
+            window._emergency_stop()
+            safety_success = window.chat_paused and window.runtime.engine.resolve() == ControllerState()
+            window._toggle_pause()
+            window._apply_test_command()
+            resumed_success = window.runtime.engine.resolve().ly == 1.0
+            success = compound_success and safety_success and resumed_success
+            QTimer.singleShot(75, window.close)
+            QTimer.singleShot(100, app.quit)
+            app.exec()
+            return 0 if success else 1
+        if args.hardware_smoke:
+            report_path = args.hardware_report or (
+                Path(sys.executable).resolve().parent / "hardware-smoke-report.json"
+            )
+            _run_hardware_smoke(app, window, report_path)
+            return app.exec()
+        window.show()
         return app.exec()
-    window.show()
-    return app.exec()
+    finally:
+        _release_single_instance(instance_handle)
 
 
 if __name__ == "__main__":
