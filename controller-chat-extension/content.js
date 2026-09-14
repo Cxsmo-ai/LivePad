@@ -51,6 +51,7 @@
       lastError,
       lastSentAt,
       version: extensionVersion,
+      timing: HMGamepad.timingFor(platformFromLocation(), settings.cadenceMs),
       state: engine.current
     };
   }
@@ -128,7 +129,7 @@
   async function disarm(sendNeutral = true) {
     if (armed && sendNeutral) {
       engine.neutral();
-      const cadence = Math.max(1000, Number(settings.cadenceMs || HMGamepad.PLATFORM_CADENCE_MS[platformFromLocation()] || 1200));
+      const cadence = HMGamepad.timingFor(platformFromLocation(), settings.cadenceMs).cadenceMs;
       const sendAt = Math.max(performance.now(), engine.lastSentAt + cadence + 5);
       const delay = Math.max(0, sendAt - performance.now());
       setTimeout(() => {

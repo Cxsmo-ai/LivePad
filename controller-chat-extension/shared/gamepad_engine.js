@@ -7,7 +7,19 @@
     8: "back", 9: "start", 10: "l3", 11: "r3",
     12: "dpad_up", 13: "dpad_down", 14: "dpad_left", 15: "dpad_right", 16: "guide"
   });
-  const PLATFORM_CADENCE_MS = Object.freeze({ twitch: 1050, youtube: 2800, tiktok: 1200 });
+  const PLATFORM_TIMINGS = Object.freeze({
+    // Twitch's regular-user bucket is 20 messages per 30 seconds, so its
+    // automatic cadence stays just above 1.5 seconds. TikTok and YouTube do
+    // not publish an equivalent browser-chat interval; these are conservative
+    // application defaults that can be tuned in the popup.
+    twitch: Object.freeze({ cadenceMs: 1550, keepaliveMs: 2500 }),
+    youtube: Object.freeze({ cadenceMs: 2000, keepaliveMs: 3500 }),
+    tiktok: Object.freeze({ cadenceMs: 350, keepaliveMs: 900 })
+  });
+  const PLATFORM_CADENCE_MS = Object.freeze(Object.fromEntries(
+    Object.entries(PLATFORM_TIMINGS).map(([platform, timing]) => [platform, timing.cadenceMs])
+  ));
+  const NEUTRAL_FINGERPRINT = "0/0/0/0/0/0/0";
 
   function clamp(value, minimum, maximum) {
     return Math.max(minimum, Math.min(maximum, value));
@@ -69,6 +81,14 @@
     return [state.lx, state.ly, state.rx, state.ry, state.lt, state.rt, state.heldMask].join("/");
   }
 
+  function timingFor(platform, configuredCadence) {
+    const defaults = PLATFORM_TIMINGS[platform] || { cadenceMs: 1000, keepaliveMs: 2500 };
+    const cadenceMs = clamp(Number(configuredCadence || defaults.cadenceMs), 250, 10000);
+    const keepaliveMs = clamp(Math.max(defaults.keepaliveMs, cadenceMs * 1.5), 750, 4000);
+    const leaseMs = clamp(keepaliveMs + Math.max(500, Math.min(1000, cadenceMs * 2)), 750, 5000);
+    return { cadenceMs, keepaliveMs, leaseMs };
+  }
+
   class FrameEngine {
     constructor(options = {}) {
       this.session = options.session || Protocol.createSession();
@@ -76,7 +96,7 @@
       this.pendingTapMask = 0;
       this.previousHeldMask = 0;
       this.current = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, heldMask: 0, tapMask: 0 };
-      this.lastSentFingerprint = "";
+      this.lastSentFingerprint = NEUTRAL_FINGERPRINT;
       this.lastSentAt = -Infinity;
       this.dirty = false;
     }
@@ -99,18 +119,20 @@
     }
 
     packet(now, platform, configuredCadence) {
-      const cadence = clamp(
-        Number(configuredCadence || PLATFORM_CADENCE_MS[platform] || 1200), 1000, 10000
-      );
-      const keepaliveDue = now - this.lastSentAt >= Math.min(4500, cadence * 2);
-      if (now - this.lastSentAt < cadence || (!this.dirty && !keepaliveDue)) return null;
-      const leaseMs = clamp(Math.ceil(cadence * 1.4), 500, 5000);
+      const timing = timingFor(platform, configuredCadence);
+      const elapsed = now - this.lastSentAt;
+      const active = fingerprint(this.current) !== NEUTRAL_FINGERPRINT;
+      if (this.dirty) {
+        if (elapsed < timing.cadenceMs) return null;
+      } else {
+        if (!active || elapsed < timing.keepaliveMs) return null;
+      }
       const frame = {
         session: this.session,
         sequence: this.sequence + 1,
         ...this.current,
         tapMask: this.pendingTapMask,
-        leaseMs
+        leaseMs: timing.leaseMs
       };
       return platform === "tiktok"
         ? Protocol.encodeFriendlyFrame(frame)
@@ -128,7 +150,7 @@
     }
   }
 
-  const api = Object.freeze({ BUTTON_INDEX, PLATFORM_CADENCE_MS, radialDeadzone, quantizePercent, sampleStandardGamepad, FrameEngine });
+  const api = Object.freeze({ BUTTON_INDEX, PLATFORM_CADENCE_MS, PLATFORM_TIMINGS, radialDeadzone, quantizePercent, sampleStandardGamepad, timingFor, FrameEngine });
   root.HMGamepad = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

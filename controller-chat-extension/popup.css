@@ -23,5 +23,6 @@ label{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:12px;m
 label output{justify-self:end;color:#E8EAEE}
 label:first-of-type{grid-template-columns:1fr 28px}label:first-of-type input{grid-column:1/-1;width:100%;margin-top:-4px;accent-color:#6366F1}
 select{width:150px;padding:6px 8px;border:1px solid #34383F;border-radius:5px;background:#14161A;color:#E8EAEE;font:500 11px "Segoe UI",sans-serif}
+.timing-note{margin-top:7px;color:#6B7280;font-size:10px;line-height:1.4}
 code{display:block;min-height:42px;padding:9px;border:1px solid #2C3037;border-radius:6px;background:#14161A;color:#A5B4FC;font:11px/1.4 Consolas,monospace;overflow-wrap:anywhere}
 .foot{margin-top:13px;color:#6B7280;font-size:10px;line-height:1.45}

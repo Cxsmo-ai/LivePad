@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "HID Maestro Controller Chat",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Turns a physical gamepad into compact HID Maestro controller frames sent through live chat.",
   "permissions": ["storage", "tabs", "webNavigation", "scripting"],
   "host_permissions": [

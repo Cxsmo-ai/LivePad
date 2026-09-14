@@ -62,14 +62,41 @@ test("frame engine coalesces changes and carries missed taps", () => {
   assert.ok(packet.length < 80);
 });
 
-test("platform cadence is enforced and keepalive is a full snapshot", () => {
+test("platform cadence is enforced and active keepalive is a full snapshot", () => {
   const engine = new Gamepad.FrameEngine({ session: 456 });
   engine.update(fakePad({ axes: [0, -1, 0, 0] }), { deadzone: 0 });
   const first = engine.packet(0, "twitch");
   assert.ok(first);
   engine.markSent(0, first);
-  assert.equal(engine.packet(1000, "twitch"), null);
-  assert.ok(engine.packet(2100, "twitch"));
+  assert.equal(engine.packet(2499, "twitch"), null);
+  const keepalive = engine.packet(2500, "twitch");
+  assert.ok(keepalive);
+  assert.equal(Protocol.decodeFrame(keepalive).leaseMs, 3500);
+});
+
+test("TikTok changed input can send in 350 ms", () => {
+  const engine = new Gamepad.FrameEngine({ session: 457 });
+  engine.update(fakePad({ axes: [0, -1, 0, 0] }), { deadzone: 0 });
+  const first = engine.packet(0, "tiktok");
+  engine.markSent(0, first);
+  engine.update(fakePad({ axes: [1, -1, 0, 0] }), { deadzone: 0 });
+  assert.equal(engine.packet(349, "tiktok"), null);
+  const changed = engine.packet(350, "tiktok");
+  assert.ok(changed);
+  assert.equal(Protocol.decodeFrame(changed).leaseMs, 1600);
+});
+
+test("neutral state does not create initial or repeating chat spam", () => {
+  const engine = new Gamepad.FrameEngine({ session: 458 });
+  engine.update(fakePad(), { deadzone: 0 });
+  assert.equal(engine.packet(0, "tiktok"), null);
+  assert.equal(engine.packet(10000, "tiktok"), null);
+});
+
+test("custom fastest cadence stays bounded and keeps leases continuous", () => {
+  const timing = Gamepad.timingFor("tiktok", 250);
+  assert.deepEqual(timing, { cadenceMs: 250, keepaliveMs: 900, leaseMs: 1400 });
+  assert.ok(timing.leaseMs > timing.keepaliveMs);
 });
 
 test("an input edge sampled during DOM send is not lost", () => {
@@ -82,7 +109,7 @@ test("an input edge sampled during DOM send is not lost", () => {
   engine.markSent(0, inFlight);
   assert.equal(engine.pendingTapMask, Protocol.BUTTONS.a);
   assert.equal(engine.dirty, true);
-  const next = Protocol.decodeFrame(engine.packet(1050, "twitch"));
+  const next = Protocol.decodeFrame(engine.packet(1550, "twitch"));
   assert.equal(next.tapMask, Protocol.BUTTONS.a);
   assert.equal(next.heldMask, Protocol.BUTTONS.a);
 });

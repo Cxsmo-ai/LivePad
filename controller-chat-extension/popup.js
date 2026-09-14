@@ -11,7 +11,8 @@ const previewApi = {
         ok: true, platform: "twitch", armed: previewArmed, visible: true,
         gamepad: { id: "Xbox Wireless Controller", index: 0, mapping: "standard" },
         packet: previewArmed ? "hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470" : "",
-        lastError: "", lastSentAt: 0
+        lastError: "", lastSentAt: 0, version: "1.1.0",
+        timing: { cadenceMs: 1550, keepaliveMs: 2500, leaseMs: 3500 }
       };
     }
   },
@@ -55,12 +56,12 @@ function render(status) {
   const platformLabel = String(status.platform || "unknown").toUpperCase();
   setStatus(elements.platform, status.version ? `${platformLabel} · v${status.version}` : platformLabel, status.platform === "unsupported" ? "bad" : "good");
   setStatus(elements.controller, status.gamepad?.id || "Press any button", status.gamepad ? "good" : "warn");
-  setStatus(elements.relay, armed ? "Armed" : "Disarmed", armed ? "good" : "warn");
+  setStatus(elements.relay, armed ? `Armed · ${status.timing?.cadenceMs || "?"} ms` : "Disarmed", armed ? "good" : "warn");
   elements.arm.textContent = armed ? "DISARM AND SEND NEUTRAL" : "ARM CONTROLLER CHAT";
   elements.arm.classList.toggle("armed", armed);
   elements.packet.textContent = status.packet || "No frame sent yet";
   if (status.lastError) setMessage(status.lastError, true);
-  else if (armed) setMessage("Controller activity is being compressed into chat-safe full-state frames.");
+  else if (armed) setMessage(`Changed inputs send within ${status.timing?.cadenceMs || "the selected cadence"} ms; steady holds refresh separately.`);
 }
 
 function supportsCurrentTab() {

@@ -46,12 +46,19 @@
       <label>Chat cadence
         <select id="cadenceMs">
           <option value="0" selected>Automatic for platform</option>
+          <option value="250">0.25 seconds — experimental</option>
+          <option value="350">0.35 seconds — fast</option>
+          <option value="500">0.5 seconds</option>
+          <option value="1000">1 second</option>
           <option value="1050">1.05 seconds</option>
           <option value="1200">1.2 seconds</option>
+          <option value="1550">1.55 seconds</option>
+          <option value="2000">2 seconds</option>
           <option value="2800">2.8 seconds</option>
           <option value="5000">5 seconds</option>
         </select>
       </label>
+      <p class="timing-note">Automatic uses 350 ms on TikTok, 1.55 s on Twitch, and 2 s on YouTube. Faster custom rates may be throttled by the platform.</p>
     </section>
 
     <section class="packet-panel">

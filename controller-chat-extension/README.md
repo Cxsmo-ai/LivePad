@@ -21,3 +21,7 @@ The automatic cadence follows published platform limits where available. Do not 
 bypass a platform limit. Platform DOM and policies can change, and TikTok/YouTube restrict
 automated service interaction; use only where you have permission and in accordance with the
 platform's current terms.
+
+Automatic changed-state cadence is 350 ms for TikTok, 1.55 seconds for Twitch, and 2 seconds
+for YouTube. Steady active inputs use a separate keepalive and neutral state does not generate
+repeating chat messages. The 250 ms custom setting is experimental and may be throttled.
