@@ -1,4 +1,7 @@
-"""TikTok LIVE comments to a HIDMaestro-backed Xbox controller."""
+"""HID Maestro Streamer Edition.
+
+Unified TikTok LIVE and YouTube LIVE chat controls emulating an XInput Xbox 360 controller.
+"""
 
 from __future__ import annotations
 
@@ -18,6 +21,8 @@ from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
 from PyQt6.QtGui import QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication,
+    QCheckBox,
+    QComboBox,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -25,23 +30,25 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QMainWindow,
     QPushButton,
-    QPlainTextEdit,
     QTableWidget,
     QTableWidgetItem,
+    QTextBrowser,
     QVBoxLayout,
     QWidget,
 )
 
-from bridge_process import BridgeProcess
 from app_config import AppConfig
+from bridge_process import BridgeProcess
 from chat.parser import Command, CommandParser
 from controller.state import ControllerState
 from ipc.named_pipe import NamedPipeClient
 from runtime import ControllerRuntime
+from stream_icons import format_chat_html, register_chat_icons
 from tiktok_client import TikTokLiveManager
+from youtube_client import YouTubeLiveManager
 
 
-_SINGLE_INSTANCE_NAME = "Local\\TikForeverChatGamepad.SingleInstance"
+_SINGLE_INSTANCE_NAME = "Local\\HIDMaestroStreamerEdition.SingleInstance"
 
 
 def _acquire_single_instance(name: str = _SINGLE_INSTANCE_NAME) -> int | None:
@@ -93,7 +100,13 @@ class TikTokWorker(QThread):
     async def _run(self) -> None:
         self.stop_event = asyncio.Event()
         self.manager = TikTokLiveManager(self.username)
-        self.manager.on_event("comment", self.comment_received.emit)
+
+        def _on_comment(data: dict) -> None:
+            data_with_platform = dict(data)
+            data_with_platform.setdefault("platform", "tiktok")
+            self.comment_received.emit(data_with_platform)
+
+        self.manager.on_event("comment", _on_comment)
         self.manager.on_event("connect", lambda _: self.state_changed.emit("Connected"))
         retry_seconds = 1
         while not self.stop_requested:
@@ -126,15 +139,76 @@ class TikTokWorker(QThread):
                 asyncio.run_coroutine_threadsafe(self.manager.disconnect(), self.loop)
 
 
+class YouTubeWorker(QThread):
+    comment_received = pyqtSignal(dict)
+    state_changed = pyqtSignal(str)
+    failed = pyqtSignal(str)
+
+    def __init__(self, target: str, chat_type: str = "live", auto_reconnect: bool = True):
+        super().__init__()
+        self.target = target.strip()
+        self.chat_type = chat_type
+        self.auto_reconnect = auto_reconnect
+        self.stop_requested = False
+        self.manager: YouTubeLiveManager | None = None
+        self.loop: asyncio.AbstractEventLoop | None = None
+        self.stop_event: asyncio.Event | None = None
+
+    def run(self) -> None:
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        try:
+            self.loop.run_until_complete(self._run())
+        finally:
+            self.loop.close()
+            self.loop = None
+
+    async def _run(self) -> None:
+        self.stop_event = asyncio.Event()
+        self.manager = YouTubeLiveManager(self.target, chat_type=self.chat_type)
+        self.manager.on_event("comment", self.comment_received.emit)
+        self.manager.on_event("connect", lambda _: self.state_changed.emit("Connected"))
+        retry_seconds = 2
+        while not self.stop_requested:
+            try:
+                self.state_changed.emit("Connecting" if retry_seconds == 2 else "Reconnecting")
+                await self.manager.connect()
+                retry_seconds = 2
+            except Exception as error:
+                if not self.stop_requested:
+                    self.failed.emit(str(error))
+            finally:
+                self.state_changed.emit("Disconnected")
+
+            if self.stop_requested or not self.auto_reconnect:
+                break
+            self.state_changed.emit(f"Retrying in {retry_seconds}s")
+            try:
+                await asyncio.wait_for(self.stop_event.wait(), timeout=retry_seconds)
+                break
+            except asyncio.TimeoutError:
+                retry_seconds = min(retry_seconds * 2, 30)
+        self.stop_event = None
+
+    def stop(self) -> None:
+        self.stop_requested = True
+        if self.loop is not None:
+            if self.stop_event is not None:
+                self.loop.call_soon_threadsafe(self.stop_event.set)
+            if self.manager is not None:
+                asyncio.run_coroutine_threadsafe(self.manager.disconnect(), self.loop)
+
+
 class ChatGamepadWindow(QMainWindow):
     emergency_stop_requested = pyqtSignal()
 
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         super().__init__()
-        self.setWindowTitle("TikTok Chat Gamepad")
-        self.resize(860, 780)
+        self.setWindowTitle("HID Maestro Streamer Edition")
+        self.resize(920, 840)
         self.bridge = BridgeProcess()
-        self.worker: TikTokWorker | None = None
+        self.tiktok_worker: TikTokWorker | None = None
+        self.youtube_worker: YouTubeWorker | None = None
         self.chat_paused = False
         self.hotkey_listener = None
         config_root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
@@ -144,7 +218,7 @@ class ChatGamepadWindow(QMainWindow):
         self._build_ui()
         if self.config.last_recovery:
             self._log(self.config.last_recovery)
-        self.username.setText(self.config.data["tiktok"]["username"])
+
         self._start_bridge(mock_bridge)
 
         self.state_timer = QTimer(self)
@@ -169,38 +243,109 @@ class ChatGamepadWindow(QMainWindow):
         root = QVBoxLayout(central)
         self.setCentralWidget(central)
 
-        status = QGroupBox("Status")
+        # Status Bar / Dashboard
+        status = QGroupBox("System & Stream Status")
         status_grid = QGridLayout(status)
         self.tiktok_status = QLabel("Disconnected")
+        self.youtube_status = QLabel("Disconnected")
         self.bridge_status = QLabel("Starting")
-        status_grid.addWidget(QLabel("TikTok"), 0, 0)
+        self.chat_plays_status = QLabel("Active")
+
+        status_grid.addWidget(QLabel("<b>TikTok LIVE:</b>"), 0, 0)
         status_grid.addWidget(self.tiktok_status, 0, 1)
-        status_grid.addWidget(QLabel("HIDMaestro bridge"), 1, 0)
+        status_grid.addWidget(QLabel("<b>YouTube LIVE:</b>"), 0, 2)
+        status_grid.addWidget(self.youtube_status, 0, 3)
+
+        status_grid.addWidget(QLabel("<b>HIDMaestro Bridge:</b>"), 1, 0)
         status_grid.addWidget(self.bridge_status, 1, 1)
+        status_grid.addWidget(QLabel("<b>Chat Plays:</b>"), 1, 2)
+        status_grid.addWidget(self.chat_plays_status, 1, 3)
         root.addWidget(status)
 
-        connection = QGroupBox("TikTok LIVE")
-        connection_layout = QHBoxLayout(connection)
-        self.username = QLineEdit()
-        self.username.setPlaceholderText("TikTok username")
-        self.connect_button = QPushButton("Connect")
-        self.connect_button.clicked.connect(self._toggle_connection)
-        connection_layout.addWidget(self.username)
-        connection_layout.addWidget(self.connect_button)
-        root.addWidget(connection)
+        # Stream Integrations Grid
+        streams_group = QGroupBox("Live Stream Sources (TikTok & YouTube)")
+        streams_layout = QVBoxLayout(streams_group)
+        cards_layout = QHBoxLayout()
 
-        controller = QGroupBox("Resolved Xbox controller state")
+        # Left Column: TikTok
+        tt_box = QGroupBox("TikTok LIVE")
+        tt_layout = QVBoxLayout(tt_box)
+        self.tiktok_enabled_cb = QCheckBox("Enable TikTok Stream")
+        self.tiktok_enabled_cb.setChecked(self.config.data.get("tiktok", {}).get("enabled", True))
+        tt_layout.addWidget(self.tiktok_enabled_cb)
+
+        tt_input_layout = QHBoxLayout()
+        tt_input_layout.addWidget(QLabel("Username:"))
+        self.tiktok_username = QLineEdit()
+        self.tiktok_username.setPlaceholderText("@creator_username")
+        self.tiktok_username.setText(self.config.data.get("tiktok", {}).get("username", ""))
+        tt_input_layout.addWidget(self.tiktok_username)
+        tt_layout.addLayout(tt_input_layout)
+
+        self.tiktok_connect_button = QPushButton("Connect TikTok")
+        self.tiktok_connect_button.clicked.connect(self._toggle_tiktok)
+        tt_layout.addWidget(self.tiktok_connect_button)
+        cards_layout.addWidget(tt_box)
+
+        # Right Column: YouTube
+        yt_box = QGroupBox("YouTube LIVE (youtube-chat-next engine)")
+        yt_layout = QVBoxLayout(yt_box)
+        self.youtube_enabled_cb = QCheckBox("Enable YouTube Stream")
+        self.youtube_enabled_cb.setChecked(self.config.data.get("youtube", {}).get("enabled", True))
+        yt_layout.addWidget(self.youtube_enabled_cb)
+
+        yt_input_layout = QHBoxLayout()
+        yt_input_layout.addWidget(QLabel("Handle / URL:"))
+        self.youtube_target = QLineEdit()
+        self.youtube_target.setPlaceholderText("@channel or watch?v=...")
+        self.youtube_target.setText(self.config.data.get("youtube", {}).get("target", ""))
+        yt_input_layout.addWidget(self.youtube_target)
+        yt_layout.addLayout(yt_input_layout)
+
+        yt_type_layout = QHBoxLayout()
+        yt_type_layout.addWidget(QLabel("Chat View:"))
+        self.youtube_chat_type = QComboBox()
+        self.youtube_chat_type.addItem("Live Chat (all messages)", "live")
+        self.youtube_chat_type.addItem("Top Chat (filtered)", "top")
+        current_type = self.config.data.get("youtube", {}).get("chat_type", "live")
+        idx = 1 if current_type == "top" else 0
+        self.youtube_chat_type.setCurrentIndex(idx)
+        yt_type_layout.addWidget(self.youtube_chat_type)
+        yt_layout.addLayout(yt_type_layout)
+
+        self.youtube_connect_button = QPushButton("Connect YouTube")
+        self.youtube_connect_button.clicked.connect(self._toggle_youtube)
+        yt_layout.addWidget(self.youtube_connect_button)
+        cards_layout.addWidget(yt_box)
+
+        streams_layout.addLayout(cards_layout)
+
+        # Bulk Actions
+        bulk_layout = QHBoxLayout()
+        connect_all_btn = QPushButton("CONNECT ALL ENABLED")
+        connect_all_btn.clicked.connect(self._connect_all_enabled)
+        disconnect_all_btn = QPushButton("DISCONNECT ALL")
+        disconnect_all_btn.clicked.connect(self._disconnect_all)
+        bulk_layout.addWidget(connect_all_btn)
+        bulk_layout.addWidget(disconnect_all_btn)
+        streams_layout.addLayout(bulk_layout)
+
+        root.addWidget(streams_group)
+
+        # Resolved Controller State
+        controller = QGroupBox("Resolved Xbox 360 Controller State")
         grid = QGridLayout(controller)
         self.state_labels: dict[str, QLabel] = {}
         for row, name in enumerate(("lx", "ly", "rx", "ry", "lt", "rt", "buttons")):
-            grid.addWidget(QLabel(name.upper()), row, 0)
+            grid.addWidget(QLabel(f"<b>{name.upper()}:</b>"), row, 0)
             value = QLabel("released" if name == "buttons" else "0.00")
             value.setMinimumWidth(220)
             self.state_labels[name] = value
             grid.addWidget(value, row, 1)
         root.addWidget(controller)
 
-        test_group = QGroupBox("Controller test mode")
+        # Test Mode
+        test_group = QGroupBox("Controller Test Mode")
         test_layout = QHBoxLayout(test_group)
         self.test_input = QLineEdit()
         self.test_input.setText("w sprint ads fire right 35")
@@ -220,6 +365,7 @@ class ChatGamepadWindow(QMainWindow):
         test_layout.addWidget(self.joy_button)
         root.addWidget(test_group)
 
+        # Safety Controls
         safety_layout = QHBoxLayout()
         self.pause_button = QPushButton("PAUSE CHAT")
         self.pause_button.clicked.connect(self._toggle_pause)
@@ -229,12 +375,19 @@ class ChatGamepadWindow(QMainWindow):
         safety_layout.addWidget(clear_button)
         root.addLayout(safety_layout)
 
-        self.log = QPlainTextEdit()
+        # Unified Multi-Stream Chat Log
+        chat_group = QGroupBox("Unified Live Chat (TikTok & YouTube)")
+        chat_layout = QVBoxLayout(chat_group)
+        self.log = QTextBrowser()
         self.log.setReadOnly(True)
-        self.log.setMaximumBlockCount(500)
-        root.addWidget(self.log)
+        self.log.setOpenExternalLinks(False)
+        self.log.document().setMaximumBlockCount(1000)
+        register_chat_icons(self.log.document())
+        chat_layout.addWidget(self.log)
+        root.addWidget(chat_group)
 
-        commands_group = QGroupBox("Commands — edit strength, duration, or enabled state")
+        # Commands Configuration Table
+        commands_group = QGroupBox("Commands — Edit Strength, Duration, or Enabled State")
         commands_layout = QVBoxLayout(commands_group)
         self.command_table = QTableWidget()
         self.command_table.setColumnCount(5)
@@ -309,51 +462,119 @@ class ChatGamepadWindow(QMainWindow):
             self.bridge_status.setText("Unavailable — local test only")
             self._log(f"Bridge unavailable: {error}; {details}")
 
-    def _toggle_connection(self) -> None:
-        if self.worker is not None and self.worker.isRunning():
-            self.worker.stop()
-            self.connect_button.setEnabled(False)
-            return
-        username = self.username.text().strip()
+    def _connect_all_enabled(self) -> None:
+        if self.tiktok_enabled_cb.isChecked() and (self.tiktok_worker is None or not self.tiktok_worker.isRunning()):
+            self._start_tiktok()
+        if self.youtube_enabled_cb.isChecked() and (self.youtube_worker is None or not self.youtube_worker.isRunning()):
+            self._start_youtube()
+
+    def _disconnect_all(self) -> None:
+        self._stop_tiktok()
+        self._stop_youtube()
+
+    # --- TikTok Handling ---
+    def _toggle_tiktok(self) -> None:
+        if self.tiktok_worker is not None and self.tiktok_worker.isRunning():
+            self._stop_tiktok()
+        else:
+            self._start_tiktok()
+
+    def _start_tiktok(self) -> None:
+        username = self.tiktok_username.text().strip()
         if not username:
             self._log("Enter a TikTok username first")
             return
-        self.worker = TikTokWorker(
+        self.tiktok_worker = TikTokWorker(
             username,
-            auto_reconnect=bool(self.config.data["tiktok"]["auto_reconnect"]),
+            auto_reconnect=bool(self.config.data.get("tiktok", {}).get("auto_reconnect", True)),
         )
-        self.worker.comment_received.connect(self._handle_comment)
-        self.worker.state_changed.connect(self._on_tiktok_state)
-        self.worker.failed.connect(lambda message: self._log(f"TikTok error: {message}"))
-        self.worker.finished.connect(self._worker_finished)
-        self.worker.start()
-        self.connect_button.setText("Disconnect")
+        self.tiktok_worker.comment_received.connect(lambda data: self._handle_comment(data, "tiktok"))
+        self.tiktok_worker.state_changed.connect(self._on_tiktok_state)
+        self.tiktok_worker.failed.connect(lambda message: self._log(f"TikTok error: {message}"))
+        self.tiktok_worker.finished.connect(self._tiktok_worker_finished)
+        self.tiktok_worker.start()
+        self.tiktok_connect_button.setText("Disconnect TikTok")
 
-    def _worker_finished(self) -> None:
-        self.connect_button.setText("Connect")
-        self.connect_button.setEnabled(True)
-        self.worker = None
+    def _stop_tiktok(self) -> None:
+        if self.tiktok_worker is not None and self.tiktok_worker.isRunning():
+            self.tiktok_worker.stop()
+            self.tiktok_connect_button.setEnabled(False)
+
+    def _tiktok_worker_finished(self) -> None:
+        self.tiktok_connect_button.setText("Connect TikTok")
+        self.tiktok_connect_button.setEnabled(True)
+        self.tiktok_worker = None
 
     def _on_tiktok_state(self, state: str) -> None:
         self.tiktok_status.setText(state)
-        if state == "Disconnected":
+        if state == "Disconnected" and (self.youtube_worker is None or not self.youtube_worker.isRunning()):
             self.runtime.clear()
             self._render_state(ControllerState())
 
-    def _handle_comment(self, event_data: dict) -> None:
-        if self.chat_paused:
-            self._log(f"Ignored while paused: {event_data.get('user', 'unknown')}: {event_data.get('comment', '')}")
+    # --- YouTube Handling ---
+    def _toggle_youtube(self) -> None:
+        if self.youtube_worker is not None and self.youtube_worker.isRunning():
+            self._stop_youtube()
+        else:
+            self._start_youtube()
+
+    def _start_youtube(self) -> None:
+        target = self.youtube_target.text().strip()
+        if not target:
+            self._log("Enter a YouTube handle, live URL, or channel ID first")
             return
-        result = self.runtime.handle_comment(event_data)
-        self._render_state(self.runtime.engine.resolve())
+        chat_type = self.youtube_chat_type.currentData() or "live"
+        self.youtube_worker = YouTubeWorker(
+            target,
+            chat_type=chat_type,
+            auto_reconnect=bool(self.config.data.get("youtube", {}).get("auto_reconnect", True)),
+        )
+        self.youtube_worker.comment_received.connect(lambda data: self._handle_comment(data, "youtube"))
+        self.youtube_worker.state_changed.connect(self._on_youtube_state)
+        self.youtube_worker.failed.connect(lambda message: self._log(f"YouTube error: {message}"))
+        self.youtube_worker.finished.connect(self._youtube_worker_finished)
+        self.youtube_worker.start()
+        self.youtube_connect_button.setText("Disconnect YouTube")
+
+    def _stop_youtube(self) -> None:
+        if self.youtube_worker is not None and self.youtube_worker.isRunning():
+            self.youtube_worker.stop()
+            self.youtube_connect_button.setEnabled(False)
+
+    def _youtube_worker_finished(self) -> None:
+        self.youtube_connect_button.setText("Connect YouTube")
+        self.youtube_connect_button.setEnabled(True)
+        self.youtube_worker = None
+
+    def _on_youtube_state(self, state: str) -> None:
+        self.youtube_status.setText(state)
+        if state == "Disconnected" and (self.tiktok_worker is None or not self.tiktok_worker.isRunning()):
+            self.runtime.clear()
+            self._render_state(ControllerState())
+
+    # --- Unified Comment Processing ---
+    def _handle_comment(self, event_data: dict, platform: str | None = None) -> None:
+        source = platform or event_data.get("platform", "system")
         user = event_data.get("user", "unknown")
         message = event_data.get("comment", "")
+        timestamp_str = datetime.now().strftime("%H:%M:%S")
+
+        if self.chat_paused:
+            html = format_chat_html(timestamp_str, source, user, message, "paused — ignored")
+            self.log.append(html)
+            return
+
+        result = self.runtime.handle_comment(event_data, platform=source)
+        self._render_state(self.runtime.engine.resolve())
+
         result_text = f"{len(result.accepted)} accepted"
         if result.rate_limited:
             result_text += f", {len(result.rate_limited)} rate limited"
         if result.invalid_tokens:
             result_text += f", invalid: {' '.join(result.invalid_tokens)}"
-        self._log(f"{user}: {message} — {result_text}")
+
+        html = format_chat_html(timestamp_str, source, user, message, result_text)
+        self.log.append(html)
 
     def _apply_test_command(self) -> None:
         message = (
@@ -361,7 +582,10 @@ class ChatGamepadWindow(QMainWindow):
             or self.test_input.placeholderText().strip()
             or "w sprint ads fire right 35"
         )
-        self._handle_comment({"user": "local-test", "user_id": "local-test", "comment": message})
+        self._handle_comment(
+            {"user": "local-test", "user_id": "local-test", "comment": message, "platform": "local"},
+            platform="local",
+        )
 
     def _apply_hold_test(self) -> None:
         commands = [
@@ -377,7 +601,7 @@ class ChatGamepadWindow(QMainWindow):
             self.runtime.engine.schedule(cmd, "local-hold", now_ns)
         self.runtime.flush(now_ns)
         self._render_state(self.runtime.engine.resolve(now_ns))
-        self._log("HOLD TEST (10s) active: Button A, LY+1.0, RX+0.35, LT 100%, RT 100%, L3 — switch to joy.cpl or Gamepad Tester")
+        self._log("HOLD TEST (10s) active: Button A, LY+1.0, RX+0.35, LT 100%, RT 100%, L3 — switch to joy.cpl")
 
     def _open_joy_cpl(self) -> None:
         try:
@@ -422,6 +646,7 @@ class ChatGamepadWindow(QMainWindow):
     def _set_paused(self, paused: bool) -> None:
         self.chat_paused = paused
         self.pause_button.setText("RESUME CHAT" if paused else "PAUSE CHAT")
+        self.chat_plays_status.setText("Paused" if paused else "Active")
         if paused:
             self._clear()
         self._log("CHAT PAUSED" if paused else "CHAT RESUMED")
@@ -456,21 +681,31 @@ class ChatGamepadWindow(QMainWindow):
         self.state_labels["buttons"].setText(", ".join(sorted(state.buttons)) or "released")
 
     def _log(self, message: str) -> None:
-        self.log.appendPlainText(f"[{datetime.now():%H:%M:%S}] {message}")
+        timestamp_str = datetime.now().strftime("%H:%M:%S")
+        self.log.append(f'<span style="color:#718096; font-family:monospace;">[{timestamp_str}]</span> <i>{message}</i>')
 
     def closeEvent(self, event) -> None:
         if self.hotkey_listener is not None:
             self.hotkey_listener.stop()
             self.hotkey_listener = None
-        if self.worker is not None and self.worker.isRunning():
-            self.worker.stop()
-            self.worker.wait(2000)
+        if self.tiktok_worker is not None and self.tiktok_worker.isRunning():
+            self.tiktok_worker.stop()
+            self.tiktok_worker.wait(2000)
+        if self.youtube_worker is not None and self.youtube_worker.isRunning():
+            self.youtube_worker.stop()
+            self.youtube_worker.wait(2000)
         try:
             self.runtime.close()
         except OSError:
             pass
         self.bridge.stop()
-        self.config.data["tiktok"]["username"] = self.username.text().strip()
+        self.config.data.setdefault("tiktok", {})
+        self.config.data.setdefault("youtube", {})
+        self.config.data["tiktok"]["enabled"] = self.tiktok_enabled_cb.isChecked()
+        self.config.data["tiktok"]["username"] = self.tiktok_username.text().strip()
+        self.config.data["youtube"]["enabled"] = self.youtube_enabled_cb.isChecked()
+        self.config.data["youtube"]["target"] = self.youtube_target.text().strip()
+        self.config.data["youtube"]["chat_type"] = self.youtube_chat_type.currentData() or "live"
         self.config.save()
         event.accept()
 
@@ -565,8 +800,6 @@ def _run_hardware_smoke(app: QApplication, window: ChatGamepadWindow, report_pat
                 finish()
                 return
 
-            # Reassert the compound state, then stop both Python timers. The C#
-            # bridge must independently neutralize it after its heartbeat timeout.
             window.test_input.setText(report["command"])
             window._apply_test_command()
             window.state_timer.stop()
@@ -627,6 +860,7 @@ def main(argv: list[str] | None = None) -> int:
         app = QApplication([sys.argv[0]])
         window = ChatGamepadWindow(mock_bridge=args.smoke, automation_mode=args.hardware_smoke)
         if args.smoke:
+            # Test local command
             window.test_input.setText("w sprint ads fire right 35")
             window._apply_test_command()
             state = window.runtime.engine.resolve()
@@ -635,12 +869,21 @@ def main(argv: list[str] | None = None) -> int:
                 and state.rt == 1.0 and state.buttons == frozenset({"l3"})
                 and window.bridge_status.text() == "Ready (mock)"
             )
+            # Test TikTok comment through handler
+            window._handle_comment({"user": "TTGamer", "user_id": "101", "comment": "jump reload"}, "tiktok")
+            tt_state = window.runtime.engine.resolve()
+            tt_success = "a" in tt_state.buttons and "x" in tt_state.buttons
+            # Test YouTube comment through handler
+            window._handle_comment({"user": "YTGamer", "user_id": "202", "comment": "melee swap"}, "youtube")
+            yt_state = window.runtime.engine.resolve()
+            yt_success = "r3" in yt_state.buttons and "y" in yt_state.buttons
+
             window._emergency_stop()
             safety_success = window.chat_paused and window.runtime.engine.resolve() == ControllerState()
             window._toggle_pause()
             window._apply_test_command()
             resumed_success = window.runtime.engine.resolve().ly == 1.0
-            success = compound_success and safety_success and resumed_success
+            success = compound_success and tt_success and yt_success and safety_success and resumed_success
             QTimer.singleShot(75, window.close)
             QTimer.singleShot(100, app.quit)
             app.exec()
@@ -659,3 +902,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

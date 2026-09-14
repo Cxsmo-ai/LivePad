@@ -12,7 +12,9 @@ class ChatEvent:
     user_id: str
     message: str
     timestamp_ns: int
+    platform: str = "tiktok"
 
     @classmethod
-    def now(cls, username: str, user_id: str, message: str) -> "ChatEvent":
-        return cls(username, user_id, message, time.monotonic_ns())
+    def now(cls, username: str, user_id: str, message: str, platform: str = "tiktok") -> "ChatEvent":
+        return cls(username, user_id, message, time.monotonic_ns(), platform)
+

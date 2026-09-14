@@ -1,96 +1,126 @@
 ======================================================================
-  TikTok Chat Gamepad (TikForever-HIDMaestro) - Quick Start Guide
+  HID Maestro - Streamer Edition (Quick Start Guide)
 ======================================================================
 
-Everything needed to run this application is already bundled inside this
-folder. You DO NOT need to install Python, .NET, Visual Studio, or any
-manual driver packages.
+Control PC games (Call of Duty, Zombies, Rocket League, Elden Ring, or
+any XInput / Xbox controller game) directly from TikTok LIVE and
+YouTube LIVE chat comments, with zero latency and concurrent commands.
+
+Everything needed to run this application is 100% self-contained in
+this folder. You and your friends DO NOT need to install:
+  - NO Python required
+  - NO Node.js / npm required
+  - NO .NET 10 or .NET SDK required (self-contained bridge bundled)
+  - NO manual HIDMaestro driver or certificate installer required
 
 ----------------------------------------------------------------------
-SYSTEM REQUIREMENTS
+WHAT TO SEND TO YOUR FRIEND
 ----------------------------------------------------------------------
-- Windows 10 or Windows 11 (64-bit)
-- An active internet connection for TikTok LIVE chat
+Send the single zip file:
+  HIDMaestroStreamerEdition-win-x64.zip
 
-----------------------------------------------------------------------
-HOW TO RUN (FIRST TIME SETUP)
-----------------------------------------------------------------------
-1. Extract this entire ZIP archive to a folder (e.g., on your Desktop).
-
-2. Double-click "TikForeverChatGamepad.exe".
-
-3. When Windows prompts for Administrator permission (User Account Control),
-   click "YES".
-   * Note: Windows requires elevation to create the virtual Xbox controller.
-   * On the very first launch on a new PC, the app will automatically install
-     the built-in virtual controller driver in about two seconds.
-
-4. Once the window opens, you will see:
-   - Status: HIDMaestro bridge: Ready - Xbox 360
-
-5. Type your TikTok username (with or without the @) into the "TikTok LIVE"
-   box and click "Connect".
-
-6. Launch your game (Call of Duty: Black Ops 3, or any PC game with controller
-   support) and make sure your in-game input device is set to Gamepad/Controller.
-
-7. That's it! Your TikTok LIVE chat can now control the game using normal
-   chat commands.
+Tell your friend:
+1. Extract the ZIP anywhere (e.g. Desktop).
+2. Double-click "HIDMaestroStreamerEdition.exe".
+3. When Windows asks for Administrator (UAC prompt), click YES.
+   * On first launch, the app automatically deploys the self-signed
+     HIDMaestro user-mode virtual device driver into Windows.
+4. The window will open showing "Ready — Xbox 360". Done!
 
 ----------------------------------------------------------------------
-POPULAR CHAT COMMANDS
+SUPPORTED STREAM PLATFORMS (USE TOGETHER OR ON THEIR OWN)
 ----------------------------------------------------------------------
-Movement:
-  w / forward      - Move forward (Left stick UP)
-  s / back         - Move backward (Left stick DOWN)
-  a                - Strafe left
-  d                - Strafe right
-  sprint           - Click left stick (L3 / sprint)
+1. TikTok LIVE:
+   - Check "[x] Enable TikTok Stream"
+   - Type your TikTok username (e.g. @yourname or yourname)
+   - Click "Connect TikTok"
 
-Camera (Aiming):
-  left             - Look left
-  right            - Look right
-  up               - Look up
-  down             - Look down
-  right 35         - Smooth analog look (turn right at 35% strength)
-  left 50          - Smooth analog look (turn left at 50% strength)
+2. YouTube LIVE (Powered by youtube-chat-next engine):
+   - Check "[x] Enable YouTube Stream"
+   - Enter your channel handle (e.g. @LofiGirl), video URL, or channel ID
+   - Select Chat View: "Live Chat (all messages)" or "Top Chat"
+   - Click "Connect YouTube"
 
-Combat & Actions:
-  fire / shoot     - Pull right trigger (RT)
-  ads / aim        - Pull left trigger (LT)
-  jump             - Button A
-  crouch           - Button B
-  reload           - Button X
-  swap             - Button Y
-  melee            - Click right stick (R3)
-  tac / tactical   - Left bumper (LB)
-  nade / grenade   - Right bumper (RB)
-
-Compound Commands:
-  Viewers can type multiple actions in one comment, such as:
-  "w sprint ads fire right 35"
-  All five actions happen simultaneously without queue lag!
+3. Dual Mode (Together):
+   - Check both boxes and click "CONNECT ALL ENABLED".
+   - Comments from both platforms flow into one unified controller!
+   - Every comment in the Unified Chat displays its platform logo:
+     * TikTok cyan/magenta note logo for TikTok comments
+     * YouTube red badge logo for YouTube comments
 
 ----------------------------------------------------------------------
-SAFETY FEATURES & SHORTCUTS
+COMMAND LIST & NUMBER MODIFIERS
 ----------------------------------------------------------------------
-- Emergency Stop (F12): Press F12 anytime to immediately pause chat and
-  release all controller inputs.
-- Pause Chat: Click the "PAUSE CHAT" button to temporarily stop taking
-  chat inputs.
-- Clear Controller: Click "CLEAR CONTROLLER" to instantly center all
-  sticks and release all buttons and triggers.
-- Test Mode: In the app, click "Hold 10s" to hold forward, aim, fire,
-  and Button A for 10 seconds to test inside your game or control panel.
+1. Movement (Left Stick):
+   w / forward      - Move forward (Left stick UP)
+   s / back         - Move backward (Left stick DOWN)
+   a / left_strafe  - Strafe left (Left stick LEFT)
+   d / right_strafe - Strafe right (Left stick RIGHT)
+   sprint           - Sprint (Click L3 / Left Stick button)
+
+2. Camera & Aiming (Right Stick with Analog Modifiers):
+   left             - Look left (default 40% strength, 150ms)
+   right            - Look right (default 40% strength, 150ms)
+   up               - Look up (default 40% strength, 150ms)
+   down             - Look down (default 40% strength, 150ms)
+
+   Number Modifiers (Strength % 1-100):
+     right 25       - Turn right gently (25% stick deflection)
+     right 50       - Turn right medium (50% stick deflection)
+     right 75       - Turn right fast (75% stick deflection)
+     right 100      - Turn right maximum (100% stick deflection)
+     left 40        - Turn left at 40% strength
+     up 60          - Look up at 60% strength
+     down 30        - Look down at 30% strength
+
+   Duration Modifiers (Direction Strength% DurationMS):
+     right 50 250   - Turn right at 50% strength for 250 milliseconds
+     left 75 400    - Turn left at 75% strength for 400 milliseconds
+
+3. Combat & Actions:
+   fire / shoot     - Pull Right Trigger (RT, 100%)
+   ads / aim        - Pull Left Trigger (LT, 100%)
+   jump             - Button A (Green)
+   crouch           - Button B (Red)
+   reload           - Button X (Blue)
+   swap             - Button Y (Yellow)
+   melee            - Click R3 (Right Stick button)
+   tac / tactical   - Left Bumper (LB)
+   nade / grenade   - Right Bumper (RB)
 
 ----------------------------------------------------------------------
-TROUBLESHOOTING
+HOW TO DO COMBOS (CONCURRENT INPUT LEASES)
 ----------------------------------------------------------------------
-Q: The game doesn't recognize the controller.
-A: Ensure no other physical USB gamepads are plugged in that might take
-   the Player 1 slot. Restart the game with the app running.
+Unlike older apps that sleep between buttons and take only one command,
+HID Maestro uses concurrent input leases. Viewers can type compound
+combos in a single comment:
 
-Q: Windows asked for administrator permissions when opening.
-A: This is normal and required so Windows allows the app to expose a
-   virtual Xbox 360 controller device through XInput.
+  w sprint
+  ads fire
+  w fire
+  w sprint ads fire right 35
+  jump reload swap
+
+When a viewer types:
+  w sprint ads fire right 35
+
+All 5 actions activate at the exact same instant:
+  - Left Stick: 100% Forward
+  - L3: Clicked (Sprint)
+  - Left Trigger: 100% (Aim down sights)
+  - Right Trigger: 100% (Fire weapon)
+  - Right Stick: 35% Deflection Right (Smooth turning)
+
+----------------------------------------------------------------------
+SAFETY FEATURES & CONTROLS
+----------------------------------------------------------------------
+- Emergency Kill Switch (F12): Press F12 at any time in-game or in the
+  app to instantly pause chat and neutralize all controller inputs.
+- PAUSE CHAT: Temporarily ignores incoming stream comments.
+- CLEAR CONTROLLER: Immediately centers sticks, releases buttons and
+  triggers.
+- Hardware Watchdog: If the stream freezes or Python stops responding,
+  the C# bridge automatically resets the controller to neutral within
+  1 second.
 ======================================================================
+

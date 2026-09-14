@@ -1,4 +1,4 @@
-"""Validated, atomic configuration for the chat-gamepad application."""
+"""Validated, atomic configuration for HID Maestro Streamer Edition."""
 
 from __future__ import annotations
 
@@ -14,7 +14,9 @@ from chat.commands import DEFAULT_COMMANDS, SUPPORTED_ACTIONS
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "schema_version": 1,
-    "tiktok": {"username": "", "auto_reconnect": True},
+    "app_name": "HID Maestro Streamer Edition",
+    "tiktok": {"enabled": True, "username": "", "auto_reconnect": True},
+    "youtube": {"enabled": True, "target": "", "chat_type": "live", "auto_reconnect": True},
     "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250},
     "crowd": {"mode": "balanced", "movement_window_ms": 60},
     "commands": deepcopy(DEFAULT_COMMANDS),
@@ -91,6 +93,18 @@ class AppConfig:
             raise ValueError("configuration root must be an object")
         if data.get("schema_version") != 1:
             raise ValueError("unsupported config schema_version")
+        tiktok = data.get("tiktok", {})
+        if not isinstance(tiktok, dict):
+            raise ValueError("tiktok must be an object")
+        if "enabled" in tiktok and not isinstance(tiktok["enabled"], bool):
+            raise ValueError("tiktok.enabled must be a boolean")
+        youtube = data.get("youtube", {})
+        if not isinstance(youtube, dict):
+            raise ValueError("youtube must be an object")
+        if "enabled" in youtube and not isinstance(youtube["enabled"], bool):
+            raise ValueError("youtube.enabled must be a boolean")
+        if "chat_type" in youtube and youtube["chat_type"] not in ("live", "top"):
+            raise ValueError("youtube.chat_type must be 'live' or 'top'")
         controller = data.get("controller", {})
         hz = controller.get("scheduler_hz", 0)
         if not isinstance(hz, int) or not 50 <= hz <= 1000:
@@ -125,3 +139,4 @@ class AppConfig:
             else:
                 base[key] = value
         return base
+

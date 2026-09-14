@@ -3,6 +3,7 @@ $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
 $dotnet = Join-Path $projectRoot '.dotnet\dotnet.exe'
 
+Write-Host "Publishing self-contained HIDMaestro C# bridge..."
 & $dotnet publish (Join-Path $projectRoot 'bridge\TikForever.HIDMaestro.csproj') `
     --configuration Release --runtime win-x64 --self-contained true `
     --output (Join-Path $projectRoot 'build\bridge') --nologo `
@@ -13,10 +14,11 @@ $bridgeExe = Join-Path $projectRoot 'build\bridge\TikForever.HIDMaestro.exe'
 $bridgeZip = Join-Path $projectRoot 'build\bridge\TikForever.HIDMaestro.zip'
 Compress-Archive -LiteralPath $bridgeExe -DestinationPath $bridgeZip -Force
 
-& $python -m PyInstaller --noconfirm --clean (Join-Path $projectRoot 'TikForeverChatGamepad.spec')
+Write-Host "Packaging HID Maestro Streamer Edition with PyInstaller..."
+& $python -m PyInstaller --noconfirm --clean (Join-Path $projectRoot 'HIDMaestroStreamerEdition.spec')
 if ($LASTEXITCODE -ne 0) { throw 'PyInstaller packaging failed' }
 
-$packagedApp = Join-Path $projectRoot 'dist\TikForeverChatGamepad\TikForeverChatGamepad.exe'
+$packagedApp = Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\HIDMaestroStreamerEdition.exe'
 $previousQtPlatform = $env:QT_QPA_PLATFORM
 try {
     $env:QT_QPA_PLATFORM = 'offscreen'
@@ -32,16 +34,21 @@ finally {
 
 Write-Host "Packaged application smoke test passed: $packagedApp"
 
-Copy-Item (Join-Path $projectRoot 'QUICK_START.txt') (Join-Path $projectRoot 'dist\TikForeverChatGamepad\QUICK_START.txt') -Force
+Copy-Item (Join-Path $projectRoot 'QUICK_START.txt') (Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\QUICK_START.txt') -Force
+if (Test-Path (Join-Path $projectRoot 'chat_gamepad.json')) {
+    Copy-Item (Join-Path $projectRoot 'chat_gamepad.json') (Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\chat_gamepad.json') -Force
+}
 
 $releaseDirectory = Join-Path $projectRoot 'release'
-$releaseArchive = Join-Path $releaseDirectory 'TikForeverChatGamepad-win-x64.zip'
+$releaseArchive = Join-Path $releaseDirectory 'HIDMaestroStreamerEdition-win-x64.zip'
 $releaseChecksum = "$releaseArchive.sha256"
 New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
-Compress-Archive -Path (Join-Path $projectRoot 'dist\TikForeverChatGamepad\*') `
+if (Test-Path $releaseArchive) { Remove-Item $releaseArchive -Force }
+Compress-Archive -Path (Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\*') `
     -DestinationPath $releaseArchive -Force
 $hash = (Get-FileHash -LiteralPath $releaseArchive -Algorithm SHA256).Hash.ToLowerInvariant()
-Set-Content -LiteralPath $releaseChecksum -Value "$hash  TikForeverChatGamepad-win-x64.zip" `
+Set-Content -LiteralPath $releaseChecksum -Value "$hash  HIDMaestroStreamerEdition-win-x64.zip" `
     -Encoding utf8NoBOM
 Write-Host "Release archive: $releaseArchive"
 Write-Host "SHA-256: $hash"
+

@@ -8,6 +8,7 @@ from typing import Any, Mapping
 from chat.normalized_event import ChatEvent
 from chat.processor import ChatCommandProcessor, ProcessingResult
 from chat.tiktok_adapter import TikTokCommentAdapter
+from chat.youtube_adapter import YouTubeCommentAdapter
 from controller.safety import SafetyWatchdog
 from controller.state_engine import StateEngine, Submission
 from ipc.named_pipe import NamedPipeClient
@@ -28,7 +29,9 @@ class ControllerRuntime:
             from chat.parser import CommandParser
             parser = CommandParser(config.get("commands"))
         self.processor = ChatCommandProcessor(self.engine, parser=parser)
-        self.comments = TikTokCommentAdapter(self.processor)
+        self.tiktok_comments = TikTokCommentAdapter(self.processor)
+        self.youtube_comments = YouTubeCommentAdapter(self.processor)
+        self.comments = self.tiktok_comments
         self.watchdog = SafetyWatchdog()
         self.pipe = pipe
         self.sequence = 0
@@ -41,8 +44,12 @@ class ControllerRuntime:
                 raise RuntimeError(f"unexpected bridge handshake: {ready}")
         self.watchdog.heartbeat()
 
-    def handle_comment(self, event_data: dict) -> ProcessingResult:
-        result = self.comments.handle(event_data)
+    def handle_comment(self, event_data: dict, platform: str | None = None) -> ProcessingResult:
+        source = platform or event_data.get("platform", "tiktok")
+        if source == "youtube":
+            result = self.youtube_comments.handle(event_data)
+        else:
+            result = self.tiktok_comments.handle(event_data)
         self.watchdog.heartbeat()
         self.flush()
         return result
@@ -78,3 +85,4 @@ class ControllerRuntime:
         if self.pipe is not None:
             self.pipe.send({"type": "shutdown"})
             self.pipe.close()
+
