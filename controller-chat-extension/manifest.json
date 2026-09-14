@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DeepAscension LivePad — Controller Extension",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Turns a physical gamepad into low-latency live chat controller frames for DeepAscension LivePad.",
   "permissions": ["storage", "tabs", "webNavigation", "scripting"],
   "host_permissions": [

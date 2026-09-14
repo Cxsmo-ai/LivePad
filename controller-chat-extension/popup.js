@@ -1,6 +1,7 @@
 "use strict";
 
 const DEFAULTS = { deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0 };
+const ALL_KEYS = ["deadzone", "curve", "quantizeStep", "cadenceMs", "gamepadIndex"];
 let previewArmed = false;
 const previewApi = {
   tabs: {
@@ -11,7 +12,7 @@ const previewApi = {
         ok: true, platform: "twitch", armed: previewArmed, visible: true,
         gamepad: { id: "Xbox Wireless Controller", index: 0, mapping: "standard" },
         packet: previewArmed ? "hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470" : "",
-        lastError: "", lastSentAt: 0, version: "1.1.0",
+        lastError: "", lastSentAt: 0, version: "1.1.1",
         timing: { cadenceMs: 1550, keepaliveMs: 2500, leaseMs: 3500 }
       };
     }
@@ -28,7 +29,7 @@ const extensionApi = globalThis.chrome?.storage?.sync && globalThis.chrome?.tabs
   : previewApi;
 const elements = Object.fromEntries([
   "platform", "controller", "relay", "arm", "message", "packet",
-  "deadzone", "deadzoneValue", "curve", "quantizeStep", "cadenceMs"
+  "deadzone", "deadzoneValue", "curve", "quantizeStep", "cadenceMs", "gamepadIndex"
 ].map((id) => [id, document.getElementById(id)]));
 let currentTab = null;
 let armed = false;
@@ -119,15 +120,18 @@ async function saveSettings() {
     deadzone: Number(elements.deadzone.value) / 100,
     curve: Number(elements.curve.value),
     quantizeStep: Number(elements.quantizeStep.value),
-    cadenceMs: Number(elements.cadenceMs.value)
+    cadenceMs: Number(elements.cadenceMs.value),
+    gamepadIndex: Number(elements.gamepadIndex?.value ?? -1)
   };
   elements.deadzoneValue.textContent = elements.deadzone.value;
   await extensionApi.storage.sync.set(values);
 }
 
-for (const key of ["deadzone", "curve", "quantizeStep", "cadenceMs"]) {
-  elements[key].addEventListener("input", saveSettings);
-  elements[key].addEventListener("change", saveSettings);
+for (const key of ALL_KEYS) {
+  if (elements[key]) {
+    elements[key].addEventListener("input", saveSettings);
+    elements[key].addEventListener("change", saveSettings);
+  }
 }
 
 extensionApi.storage.sync.get(DEFAULTS, (values) => {
@@ -136,6 +140,9 @@ extensionApi.storage.sync.get(DEFAULTS, (values) => {
   elements.curve.value = String(values.curve);
   elements.quantizeStep.value = String(values.quantizeStep);
   elements.cadenceMs.value = String(values.cadenceMs);
+  if (elements.gamepadIndex && values.gamepadIndex !== undefined) {
+    elements.gamepadIndex.value = String(values.gamepadIndex);
+  }
 });
 
 refresh();

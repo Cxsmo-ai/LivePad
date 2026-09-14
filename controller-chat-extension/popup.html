@@ -22,8 +22,21 @@
     <button id="arm" class="primary" type="button">ARM CONTROLLER CHAT</button>
     <p id="message" class="message">Open the stream chat, press any controller button, then arm.</p>
 
+    <div class="streamer-note">
+      <strong>Streamer Notice:</strong> This extension is for <em>viewers</em> to play via chat. If you are the streamer running LivePad on this PC, keep this extension <strong>Disarmed</strong> on your stream tab to prevent controller feedback loops.
+    </div>
+
     <section class="settings">
       <h2>Input tuning</h2>
+      <label>Gamepad device
+        <select id="gamepadIndex">
+          <option value="-1">Auto-detect</option>
+          <option value="0">Controller 1 (Index 0)</option>
+          <option value="1">Controller 2 (Index 1)</option>
+          <option value="2">Controller 3 (Index 2)</option>
+          <option value="3">Controller 4 (Index 3)</option>
+        </select>
+      </label>
       <label>Stick deadzone <output id="deadzoneValue">14</output>
         <input id="deadzone" type="range" min="5" max="30" step="1" value="14">
       </label>

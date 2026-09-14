@@ -7,7 +7,7 @@
 
   const isTop = window.top === window;
   const extensionVersion = chrome.runtime.getManifest().version;
-  const DEFAULT_SETTINGS = Object.freeze({ deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0 });
+  const DEFAULT_SETTINGS = Object.freeze({ deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0, gamepadIndex: -1 });
   let armed = false;
   let settings = { ...DEFAULT_SETTINGS };
   let engine = new HMGamepad.FrameEngine();
@@ -33,6 +33,10 @@
 
   function activeGamepad() {
     const pads = gamepads();
+    const targetIndex = Number(settings.gamepadIndex ?? -1);
+    if (targetIndex >= 0) {
+      return pads.find((item) => item.index === targetIndex) || null;
+    }
     let pad = pads.find((item) => item.index === selectedIndex);
     if (!pad) pad = pads.find((item) => !item.mapping || item.mapping === "standard") || pads[0] || null;
     if (pad) selectedIndex = pad.index;
@@ -127,7 +131,7 @@
   }
 
   async function disarm(sendNeutral = true) {
-    if (armed && sendNeutral) {
+    if (armed && sendNeutral && engine.lastSentFingerprint !== NEUTRAL_FINGERPRINT) {
       engine.neutral();
       const cadence = HMGamepad.timingFor(platformFromLocation(), settings.cadenceMs).cadenceMs;
       const sendAt = Math.max(performance.now(), engine.lastSentAt + cadence + 5);

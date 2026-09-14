@@ -17,6 +17,9 @@ button.primary:hover{background:#4F46E5}button.primary:focus-visible,select:focu
 button.primary.armed{border-color:#EF4444;background:#191B20;color:#F87171}
 .message{min-height:31px;padding:8px 2px 0;color:#A6ADB8;font-size:11px;line-height:1.35}
 .message.error{color:#F87171}
+.streamer-note{margin:12px 0 6px 0;padding:8px 12px;background:#1F2228;border:1px solid #F59E0B;border-radius:6px;color:#FBBF24;font-size:11px;line-height:1.35}
+.streamer-note strong{color:#FBBF24}
+.streamer-note em{font-style:normal;text-decoration:underline}
 .settings,.packet-panel{margin-top:14px;border-top:1px solid #2C3037;padding-top:13px}
 h2{margin-bottom:10px;color:#818CF8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 label{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:12px;margin:9px 0;color:#A6ADB8;font-size:12px}

@@ -746,7 +746,8 @@ class ChatGamepadWindow(QMainWindow):
 
         # Test Mode
         test_group = QGroupBox("Controller Test Mode")
-        test_layout = QHBoxLayout(test_group)
+        test_group_layout = QVBoxLayout(test_group)
+        test_layout = QHBoxLayout()
         self.test_input = QLineEdit()
         self.test_input.setText("w sprint ads fire right 35")
         self.test_input.setPlaceholderText("w sprint ads fire right 35")
@@ -765,6 +766,21 @@ class ChatGamepadWindow(QMainWindow):
         test_layout.addWidget(self.test_button)
         test_layout.addWidget(self.hold_button)
         test_layout.addWidget(self.joy_button)
+        test_group_layout.addLayout(test_layout)
+
+        # Loop Prevention Controls
+        loop_layout = QHBoxLayout()
+        self.ignore_own_comments_cb = QCheckBox("Ignore Streamer Comments (Loop Prevention)")
+        self.ignore_own_comments_cb.setChecked(self.config.data.get("ignore_own_comments", True))
+        self.ignore_own_comments_cb.toggled.connect(self._toggle_ignore_own_comments)
+        loop_layout.addWidget(self.ignore_own_comments_cb)
+
+        self.streamer_account_input = QLineEdit()
+        self.streamer_account_input.setPlaceholderText("Additional account to ignore (e.g. Cxsmo_AI)")
+        self.streamer_account_input.setText(self.config.data.get("streamer_ignore_account", "Cxsmo_AI"))
+        self.streamer_account_input.textChanged.connect(self._save_streamer_ignore_account)
+        loop_layout.addWidget(self.streamer_account_input)
+        test_group_layout.addLayout(loop_layout)
         root.addWidget(test_group)
 
         # Safety Controls
@@ -858,6 +874,16 @@ class ChatGamepadWindow(QMainWindow):
         self.runtime.processor.parser.allow_seconds = enabled
         mode_text = "seconds & ms" if enabled else "ms only"
         self._log(f"Duration format: {mode_text}")
+
+    def _toggle_ignore_own_comments(self, enabled: bool) -> None:
+        self.config.data["ignore_own_comments"] = enabled
+        self.config.save()
+        state_text = "enabled" if enabled else "disabled"
+        self._log(f"Loop prevention filter: {state_text}")
+
+    def _save_streamer_ignore_account(self, text: str) -> None:
+        self.config.data["streamer_ignore_account"] = text.strip()
+        self.config.save()
 
     def _apply_command_settings(self) -> None:
         updated = deepcopy(self.config.data)
@@ -1051,7 +1077,7 @@ class ChatGamepadWindow(QMainWindow):
     # --- Unified Comment Processing ---
     def _handle_comment(self, event_data: dict, platform: str | None = None) -> None:
         source = platform or event_data.get("platform", "system")
-        user = event_data.get("user", "unknown")
+        user = str(event_data.get("user", "unknown")).strip()
         message = event_data.get("comment", "")
         timestamp_str = datetime.now().strftime("%H:%M:%S")
 
@@ -1059,6 +1085,21 @@ class ChatGamepadWindow(QMainWindow):
             html = format_chat_html(timestamp_str, source, user, message, "paused — ignored")
             self.log.append(html)
             return
+
+        # Loop / Echo Prevention Filter
+        if self.ignore_own_comments_cb.isChecked():
+            ignored_names = {
+                self.tiktok_username.text().strip().lower().lstrip("@"),
+                self.youtube_target.text().strip().lower().lstrip("@"),
+                self.twitch_channel.text().strip().lower().lstrip("@"),
+                self.streamer_account_input.text().strip().lower().lstrip("@"),
+            }
+            ignored_names.discard("")
+            clean_user = user.lower().lstrip("@")
+            if clean_user in ignored_names:
+                html = format_chat_html(timestamp_str, source, user, message, "streamer self-comment — loop prevented")
+                self.log.append(html)
+                return
 
         result = self.runtime.handle_comment(event_data, platform=source)
         self._render_state(self.runtime.engine.resolve())

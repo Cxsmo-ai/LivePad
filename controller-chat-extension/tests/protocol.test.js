@@ -91,6 +91,9 @@ test("neutral state does not create initial or repeating chat spam", () => {
   engine.update(fakePad(), { deadzone: 0 });
   assert.equal(engine.packet(0, "tiktok"), null);
   assert.equal(engine.packet(10000, "tiktok"), null);
+  // Calling neutral() when already neutral must not mark engine dirty or produce duplicate packet
+  engine.neutral();
+  assert.equal(engine.packet(10050, "tiktok"), null);
 });
 
 test("custom fastest cadence stays bounded and keeps leases continuous", () => {

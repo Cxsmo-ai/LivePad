@@ -112,10 +112,11 @@
     }
 
     neutral() {
+      const wasActive = this.lastSentFingerprint !== NEUTRAL_FINGERPRINT;
       this.current = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, heldMask: 0, tapMask: 0 };
       this.previousHeldMask = 0;
       this.pendingTapMask = 0;
-      this.dirty = true;
+      this.dirty = wasActive;
     }
 
     packet(now, platform, configuredCadence) {
