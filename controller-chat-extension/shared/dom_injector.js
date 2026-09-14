@@ -48,8 +48,17 @@
       sends: ["#send-button button", "#send-button"]
     };
     if (platform === "tiktok") return {
-      inputs: ["[data-e2e='comment-input'] [contenteditable='true']", "[data-e2e='comment-input'][contenteditable='true']", "textarea[data-e2e='comment-input']"],
-      sends: ["[data-e2e='comment-post']", "[data-e2e='comment-send']"]
+      inputs: [
+        "[data-e2e='room-chat-input-field'][contenteditable]",
+        "[data-e2e='comment-input'] [contenteditable]",
+        "[data-e2e='comment-input'][contenteditable]",
+        "textarea[data-e2e='comment-input']"
+      ],
+      sends: [
+        "[data-e2e='room-chat-send-btn']",
+        "[data-e2e='comment-post']",
+        "[data-e2e='comment-send']"
+      ]
     };
     return { inputs: [], sends: [] };
   }

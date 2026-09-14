@@ -54,8 +54,30 @@ async function main() {
     assert.equal(injection.ok, true);
     assert.equal(await chat.locator("#sent").textContent(), packet);
 
+    const tiktok = await context.newPage();
+    await tiktok.route("https://www.tiktok.com/@hm-extension-test/live", async (route) => {
+      await route.fulfill({
+        contentType: "text/html",
+        body: `<!doctype html><html><body style="background:#16181D">
+          <div data-e2e="live-chat-input-container">
+            <div data-e2e="room-chat-input-field" contenteditable="plaintext-only" style="width:400px;height:50px"></div>
+            <div data-e2e="room-chat-send-btn" role="button" style="width:40px;height:30px" onclick="document.querySelector('#sent').textContent=document.querySelector('[contenteditable]').textContent">Send</div>
+          </div>
+          <output id="sent"></output>
+        </body></html>`
+      });
+    });
+    await tiktok.goto("https://www.tiktok.com/@hm-extension-test/live");
+    await tiktok.waitForTimeout(300);
+    const tiktokInjection = await popup.evaluate(async ({ packet }) => {
+      const [tab] = await chrome.tabs.query({ url: "https://www.tiktok.com/@hm-extension-test/live" });
+      return chrome.tabs.sendMessage(tab.id, { type: "HM_INJECT_PACKET", packet, platform: "tiktok" }, { frameId: 0 });
+    }, { packet });
+    assert.equal(tiktokInjection.ok, true);
+    assert.equal(await tiktok.locator("#sent").textContent(), packet);
+
     assert.deepEqual(manifestErrors, []);
-    console.log(JSON.stringify({ extensionId, screenshotPath, packetInjected: true }));
+    console.log(JSON.stringify({ extensionId, screenshotPath, twitchInjected: true, tiktokInjected: true }));
   } finally {
     await context.close();
     fs.rmSync(profilePath, { recursive: true, force: true });
