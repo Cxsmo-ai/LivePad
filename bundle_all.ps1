@@ -54,6 +54,9 @@ if (Test-Path $distDir) {
     Copy-Item -LiteralPath $distDir -Destination (Join-Path $bundleDir 'LivePad-Instant') -Recurse -Force
 }
 Copy-Item -LiteralPath (Join-Path $release 'commands_guide.html') -Destination (Join-Path $bundleDir 'commands_guide.html') -Force
+if (Test-Path (Join-Path $release 'commands_guide.md')) {
+    Copy-Item -LiteralPath (Join-Path $release 'commands_guide.md') -Destination (Join-Path $bundleDir 'commands_guide.md') -Force
+}
 Copy-Item -LiteralPath $extZip -Destination (Join-Path $bundleDir 'DeepAscension-LivePad-Extension.zip') -Force
 Copy-Item -LiteralPath $extUnpacked -Destination (Join-Path $bundleDir 'DeepAscension-LivePad-Extension-Edge') -Recurse -Force
 Copy-Item -LiteralPath (Join-Path $projectRoot 'README.md') -Destination (Join-Path $bundleDir 'README.md') -Force
