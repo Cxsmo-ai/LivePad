@@ -704,7 +704,7 @@ class ChatGamepadWindow(QMainWindow):
         twitch_input_layout = QHBoxLayout()
         twitch_input_layout.addWidget(QLabel("Channel:"))
         self.twitch_channel = QLineEdit()
-        self.twitch_channel.setPlaceholderText("FazeClanLuke")
+        self.twitch_channel.setPlaceholderText("channel_name")
         self.twitch_channel.setText(
             self.config.data.get("twitch", {}).get("channel", "")
         )

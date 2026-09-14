@@ -46,7 +46,7 @@ STREAM PLATFORMS (USE TOGETHER OR ON THEIR OWN)
 
 3. Twitch:
    - Check "[x] Enable Twitch Stream"
-   - Enter the public Twitch channel username (e.g. FazeClanLuke)
+   - Enter the public Twitch channel username (e.g. channel_name)
    - Click "Connect Twitch"
    - No Twitch password is requested or stored. The connector uses the
      current anonymous read-only Twitch IRC WebSocket path.
