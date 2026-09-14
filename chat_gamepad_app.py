@@ -50,6 +50,230 @@ from tiktok_client import TikTokLiveManager
 from twitch_client import TwitchLiveManager
 from youtube_client import YouTubeLiveManager
 
+SAENXT_DARK_STYLESHEET = """
+QMainWindow, QWidget#centralRoot {
+    background-color: #16181D;
+    color: #E8EAEE;
+}
+QScrollArea {
+    background-color: #16181D;
+    border: none;
+}
+QScrollArea > QWidget > QWidget {
+    background-color: #16181D;
+}
+QGroupBox {
+    background-color: #1F2228;
+    border: 1px solid #2C3037;
+    border-radius: 8px;
+    margin-top: 22px;
+    padding: 14px 10px 10px 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #E8EAEE;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 3px 10px;
+    left: 14px;
+    color: #818CF8;
+    background-color: #1F2228;
+    border: 1px solid #2C3037;
+    border-radius: 5px;
+}
+QLabel {
+    color: #E8EAEE;
+    font-size: 12px;
+}
+QLineEdit {
+    background-color: #14161A;
+    border: 1px solid #34383F;
+    border-radius: 5px;
+    color: #E8EAEE;
+    padding: 6px 10px;
+    selection-background-color: #6366F1;
+    selection-color: #FFFFFF;
+}
+QLineEdit:focus {
+    border: 1px solid #818CF8;
+}
+QLineEdit:disabled {
+    background-color: #191B20;
+    color: #6B7280;
+    border-color: #24272D;
+}
+QComboBox {
+    background-color: #14161A;
+    border: 1px solid #34383F;
+    border-radius: 5px;
+    color: #E8EAEE;
+    padding: 5px 10px;
+    min-height: 22px;
+}
+QComboBox:focus {
+    border: 1px solid #818CF8;
+}
+QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: top right;
+    width: 24px;
+    border-left: 1px solid #2C3037;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background-color: #191B20;
+}
+QComboBox QAbstractItemView {
+    background-color: #1F2228;
+    border: 1px solid #2C3037;
+    border-radius: 5px;
+    color: #E8EAEE;
+    selection-background-color: #6366F1;
+    selection-color: #FFFFFF;
+    padding: 4px;
+    outline: none;
+}
+QCheckBox {
+    color: #E8EAEE;
+    font-size: 12px;
+    font-weight: 500;
+    spacing: 8px;
+}
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #34383F;
+    border-radius: 4px;
+    background-color: #14161A;
+}
+QCheckBox::indicator:hover {
+    border: 1px solid #818CF8;
+}
+QCheckBox::indicator:checked {
+    background-color: #6366F1;
+    border: 1px solid #818CF8;
+}
+QPushButton {
+    background-color: #6366F1;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 5px;
+    padding: 7px 14px;
+    border: 1px solid transparent;
+}
+QPushButton:hover {
+    background-color: #4F46E5;
+}
+QPushButton:pressed {
+    background-color: #4338CA;
+}
+QPushButton:disabled {
+    background-color: #191B20;
+    color: #6B7280;
+    border: 1px solid #2C3037;
+}
+QPushButton#secondaryBtn {
+    background-color: #191B20;
+    color: #818CF8;
+    border: 1px solid #2C3037;
+}
+QPushButton#secondaryBtn:hover {
+    background-color: #24272D;
+    border-color: #34383F;
+    color: #A5B4FC;
+}
+QPushButton#secondaryBtn:pressed {
+    background-color: #14161A;
+}
+QPushButton#dangerBtn {
+    background-color: #191B20;
+    color: #F87171;
+    border: 1px solid #EF4444;
+}
+QPushButton#dangerBtn:hover {
+    background-color: #EF4444;
+    color: #FFFFFF;
+}
+QPushButton#warningBtn {
+    background-color: #191B20;
+    color: #FBBF24;
+    border: 1px solid #F59E0B;
+}
+QPushButton#warningBtn:hover {
+    background-color: #F59E0B;
+    color: #14161A;
+}
+QTextBrowser {
+    background-color: #14161A;
+    border: 1px solid #2C3037;
+    border-radius: 6px;
+    color: #E8EAEE;
+    padding: 8px;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 12px;
+}
+QTableWidget {
+    background-color: #14161A;
+    alternate-background-color: #191B20;
+    border: 1px solid #2C3037;
+    border-radius: 6px;
+    gridline-color: #24272D;
+    color: #E8EAEE;
+    font-size: 12px;
+}
+QTableWidget::item {
+    padding: 4px 8px;
+}
+QTableWidget::item:selected {
+    background-color: #6366F1;
+    color: #FFFFFF;
+}
+QHeaderView::section {
+    background-color: #1F2228;
+    color: #A6ADB8;
+    font-weight: 600;
+    border: none;
+    border-bottom: 1px solid #2C3037;
+    border-right: 1px solid #24272D;
+    padding: 6px 10px;
+}
+QScrollBar:vertical {
+    background: #16181D;
+    width: 10px;
+    margin: 0px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical {
+    background: #2C3037;
+    min-height: 24px;
+    border-radius: 5px;
+}
+QScrollBar::handle:vertical:hover {
+    background: #34383F;
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px;
+}
+QScrollBar:horizontal {
+    background: #16181D;
+    height: 10px;
+    margin: 0px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal {
+    background: #2C3037;
+    min-width: 24px;
+    border-radius: 5px;
+}
+QScrollBar::handle:horizontal:hover {
+    background: #34383F;
+}
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+    width: 0px;
+}
+"""
+
 
 _SINGLE_INSTANCE_NAME = "Local\\HIDMaestroStreamerEdition.SingleInstance"
 
@@ -274,6 +498,19 @@ class TwitchWorker(QThread):
 class ChatGamepadWindow(QMainWindow):
     emergency_stop_requested = pyqtSignal()
 
+    @staticmethod
+    def _set_status_label(label: QLabel, text: str) -> None:
+        label.setText(text)
+        lower = text.lower()
+        if ("connected" in lower and not "disconnected" in lower) or "ready" in lower or text == "Active":
+            label.setStyleSheet("color: #4ADE80; font-weight: bold;")
+        elif "connecting" in lower or "reconnecting" in lower or "paused" in lower:
+            label.setStyleSheet("color: #FBBF24; font-weight: bold;")
+        elif "disconnected" in lower or "unavailable" in lower:
+            label.setStyleSheet("color: #A6ADB8;")
+        else:
+            label.setStyleSheet("color: #E8EAEE;")
+
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         super().__init__()
         self.setWindowTitle("HID Maestro Streamer Edition")
@@ -312,21 +549,28 @@ class ChatGamepadWindow(QMainWindow):
             self.f12_shortcut.activated.connect(self._emergency_stop)
 
     def _build_ui(self) -> None:
+        self.setStyleSheet(SAENXT_DARK_STYLESHEET)
         scroll = QScrollArea(self)
         scroll.setWidgetResizable(True)
         central = QWidget()
+        central.setObjectName("centralRoot")
         root = QVBoxLayout(central)
         scroll.setWidget(central)
         self.setCentralWidget(scroll)
 
         # Status Bar / Dashboard
-        status = QGroupBox("System & Stream Status")
+        status = QGroupBox("System and Stream Status")
         status_grid = QGridLayout(status)
         self.tiktok_status = QLabel("Disconnected")
         self.youtube_status = QLabel("Disconnected")
         self.twitch_status = QLabel("Disconnected")
         self.bridge_status = QLabel("Starting")
         self.chat_plays_status = QLabel("Active")
+        self._set_status_label(self.tiktok_status, "Disconnected")
+        self._set_status_label(self.youtube_status, "Disconnected")
+        self._set_status_label(self.twitch_status, "Disconnected")
+        self._set_status_label(self.bridge_status, "Starting")
+        self._set_status_label(self.chat_plays_status, "Active")
 
         status_grid.addWidget(QLabel("<b>TikTok LIVE:</b>"), 0, 0)
         status_grid.addWidget(self.tiktok_status, 0, 1)
@@ -342,7 +586,7 @@ class ChatGamepadWindow(QMainWindow):
         root.addWidget(status)
 
         # Stream Integrations Grid
-        streams_group = QGroupBox("Live Stream Sources (TikTok, YouTube & Twitch)")
+        streams_group = QGroupBox("Live Stream Sources (TikTok, YouTube, Twitch)")
         streams_layout = QVBoxLayout(streams_group)
         cards_layout = QHBoxLayout()
 
@@ -434,6 +678,7 @@ class ChatGamepadWindow(QMainWindow):
         connect_all_btn = QPushButton("CONNECT ALL ENABLED")
         connect_all_btn.clicked.connect(self._connect_all_enabled)
         disconnect_all_btn = QPushButton("DISCONNECT ALL")
+        disconnect_all_btn.setObjectName("secondaryBtn")
         disconnect_all_btn.clicked.connect(self._disconnect_all)
         bulk_layout.addWidget(connect_all_btn)
         bulk_layout.addWidget(disconnect_all_btn)
@@ -458,9 +703,11 @@ class ChatGamepadWindow(QMainWindow):
         self.test_button = QPushButton("Apply")
         self.test_button.clicked.connect(self._apply_test_command)
         self.hold_button = QPushButton("Hold 10s")
+        self.hold_button.setObjectName("secondaryBtn")
         self.hold_button.setToolTip("Hold Button A and movement for 10 seconds to activate browsers and joy.cpl")
         self.hold_button.clicked.connect(self._apply_hold_test)
         self.joy_button = QPushButton("Open joy.cpl")
+        self.joy_button.setObjectName("secondaryBtn")
         self.joy_button.setToolTip("Open Windows Game Controllers control panel")
         self.joy_button.clicked.connect(self._open_joy_cpl)
         test_layout.addWidget(self.test_input)
@@ -472,15 +719,17 @@ class ChatGamepadWindow(QMainWindow):
         # Safety Controls
         safety_layout = QHBoxLayout()
         self.pause_button = QPushButton("PAUSE CHAT")
+        self.pause_button.setObjectName("warningBtn")
         self.pause_button.clicked.connect(self._toggle_pause)
         safety_layout.addWidget(self.pause_button)
         clear_button = QPushButton("CLEAR CONTROLLER")
+        clear_button.setObjectName("dangerBtn")
         clear_button.clicked.connect(self._clear)
         safety_layout.addWidget(clear_button)
         root.addLayout(safety_layout)
 
         # Unified Multi-Stream Chat Log
-        chat_group = QGroupBox("Unified Live Chat (TikTok, YouTube & Twitch)")
+        chat_group = QGroupBox("Unified Live Chat (TikTok, YouTube, Twitch)")
         chat_layout = QVBoxLayout(chat_group)
         self.log = QTextBrowser()
         self.log.setReadOnly(True)
@@ -493,12 +742,27 @@ class ChatGamepadWindow(QMainWindow):
         # Commands Configuration Table
         commands_group = QGroupBox("Commands — Edit Strength, Duration, or Enabled State")
         commands_layout = QVBoxLayout(commands_group)
+
+        # Seconds / Milliseconds duration toggle
+        seconds_toggle_layout = QHBoxLayout()
+        self.allow_seconds_cb = QCheckBox("Enable seconds duration (e.g. 1.2s, 0.5s) — uncheck for ms only")
+        self.allow_seconds_cb.setChecked(
+            bool(self.config.data.get("controller", {}).get("allow_seconds", True))
+        )
+        self.allow_seconds_cb.toggled.connect(self._toggle_allow_seconds)
+        seconds_toggle_layout.addWidget(self.allow_seconds_cb)
+        seconds_toggle_layout.addStretch()
+        commands_layout.addLayout(seconds_toggle_layout)
+
         self.command_table = QTableWidget()
         self.command_table.setColumnCount(5)
         self.command_table.setHorizontalHeaderLabels(
-            ["Command", "Action", "Strength %", "Duration ms", "Enabled"]
+            ["Command", "Action", "Strength (1-100)", "Duration ms", "Enabled"]
         )
+        self.command_table.verticalHeader().setVisible(False)
+        self.command_table.setMinimumHeight(280)
         self._populate_command_table()
+        self.command_table.horizontalHeader().setStretchLastSection(True)
         commands_layout.addWidget(self.command_table)
         apply_commands = QPushButton("APPLY COMMAND SETTINGS")
         apply_commands.clicked.connect(self._apply_command_settings)
@@ -526,15 +790,26 @@ class ChatGamepadWindow(QMainWindow):
             )
             self.command_table.setItem(row, 4, enabled)
         self.command_table.resizeColumnsToContents()
+        self.command_table.setColumnWidth(0, 120)
+        self.command_table.setColumnWidth(1, 160)
+        self.command_table.setColumnWidth(2, 140)
+        self.command_table.setColumnWidth(3, 120)
+        self.command_table.setColumnWidth(4, 90)
+
+    def _toggle_allow_seconds(self, enabled: bool) -> None:
+        self.config.data.setdefault("controller", {})["allow_seconds"] = enabled
+        self.config.save()
+        self.runtime.processor.parser.allow_seconds = enabled
+        mode_text = "seconds & ms" if enabled else "ms only"
+        self._log(f"Duration format: {mode_text}")
 
     def _apply_command_settings(self) -> None:
         updated = deepcopy(self.config.data)
         try:
             for row in range(self.command_table.rowCount()):
                 name = self.command_table.item(row, 0).text()
-                updated["commands"][name]["strength"] = float(
-                    self.command_table.item(row, 2).text()
-                ) / 100.0
+                strength_str = self.command_table.item(row, 2).text().strip().rstrip("%")
+                updated["commands"][name]["strength"] = float(strength_str) / 100.0
                 updated["commands"][name]["duration_ms"] = int(
                     self.command_table.item(row, 3).text()
                 )
@@ -548,7 +823,10 @@ class ChatGamepadWindow(QMainWindow):
         self.config.data = updated
         self.config.save()
         self.runtime.clear()
-        self.runtime.processor.parser = CommandParser(updated["commands"])
+        allow_seconds = bool(self.config.data.get("controller", {}).get("allow_seconds", True))
+        self.runtime.processor.parser = CommandParser(
+            updated["commands"], allow_seconds=allow_seconds
+        )
         self._log("Command settings applied; controller cleared")
 
     def _start_bridge(self, mock: bool) -> None:
@@ -556,14 +834,14 @@ class ChatGamepadWindow(QMainWindow):
             self.bridge.launch(mock=mock)
             self.runtime = ControllerRuntime(NamedPipeClient(), self.config.data)
             self.runtime.start()
-            self.bridge_status.setText("Ready (mock)" if mock else "Ready — Xbox 360")
+            self._set_status_label(self.bridge_status, "Ready (mock)" if mock else "Ready — Xbox 360")
             self._log("Bridge ready")
         except Exception as error:
             details = self.bridge.failure_details()
             self.bridge.stop()
             self.runtime = ControllerRuntime(config=self.config.data)
             self.runtime.start()
-            self.bridge_status.setText("Unavailable — local test only")
+            self._set_status_label(self.bridge_status, "Unavailable — local test only")
             self._log(f"Bridge unavailable: {error}; {details}")
 
     def _connect_all_enabled(self) -> None:
@@ -620,7 +898,7 @@ class ChatGamepadWindow(QMainWindow):
         self.tiktok_worker = None
 
     def _on_tiktok_state(self, state: str) -> None:
-        self.tiktok_status.setText(state)
+        self._set_status_label(self.tiktok_status, state)
         if state == "Connected":
             self.connected_platforms.add("tiktok")
         elif state == "Disconnected":
@@ -662,7 +940,7 @@ class ChatGamepadWindow(QMainWindow):
         self.youtube_worker = None
 
     def _on_youtube_state(self, state: str) -> None:
-        self.youtube_status.setText(state)
+        self._set_status_label(self.youtube_status, state)
         if state == "Connected":
             self.connected_platforms.add("youtube")
         elif state == "Disconnected":
@@ -708,7 +986,7 @@ class ChatGamepadWindow(QMainWindow):
         self.twitch_worker = None
 
     def _on_twitch_state(self, state: str) -> None:
-        self.twitch_status.setText(state)
+        self._set_status_label(self.twitch_status, state)
         if state == "Connected":
             self.connected_platforms.add("twitch")
         elif state == "Disconnected":
@@ -790,7 +1068,7 @@ class ChatGamepadWindow(QMainWindow):
     def _bridge_failed(self, error: Exception) -> None:
         self.runtime.pipe = None
         self.runtime.clear()
-        self.bridge_status.setText("Disconnected — local test only")
+        self._set_status_label(self.bridge_status, "Disconnected — local test only")
         self._render_state(ControllerState())
         self._log(f"Bridge disconnected: {error}")
 
@@ -808,7 +1086,7 @@ class ChatGamepadWindow(QMainWindow):
     def _set_paused(self, paused: bool) -> None:
         self.chat_paused = paused
         self.pause_button.setText("RESUME CHAT" if paused else "PAUSE CHAT")
-        self.chat_plays_status.setText("Paused" if paused else "Active")
+        self._set_status_label(self.chat_plays_status, "Paused" if paused else "Active")
         if paused:
             self._clear()
         self._log("CHAT PAUSED" if paused else "CHAT RESUMED")
@@ -838,7 +1116,7 @@ class ChatGamepadWindow(QMainWindow):
 
     def _log(self, message: str) -> None:
         timestamp_str = datetime.now().strftime("%H:%M:%S")
-        self.log.append(f'<span style="color:#718096; font-family:monospace;">[{timestamp_str}]</span> <i>{message}</i>')
+        self.log.append(f'<span style="color:#6B7280; font-family:Consolas,monospace;">[{timestamp_str}]</span> <i style="color:#A6ADB8;">{message}</i>')
 
     def closeEvent(self, event) -> None:
         if self.hotkey_listener is not None:
@@ -868,6 +1146,7 @@ class ChatGamepadWindow(QMainWindow):
         self.config.data["youtube"]["chat_type"] = self.youtube_chat_type.currentData() or "live"
         self.config.data["twitch"]["enabled"] = self.twitch_enabled_cb.isChecked()
         self.config.data["twitch"]["channel"] = self.twitch_channel.text().strip()
+        self.config.data.setdefault("controller", {})["allow_seconds"] = self.allow_seconds_cb.isChecked()
         self.config.save()
         event.accept()
 
@@ -1025,6 +1304,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     try:
         app = QApplication([sys.argv[0]])
+        app.setStyle("Fusion")
         window = ChatGamepadWindow(
             mock_bridge=args.smoke or args.mock,
             automation_mode=args.hardware_smoke,

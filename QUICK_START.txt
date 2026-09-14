@@ -91,6 +91,8 @@ COD ZOMBIES & FPS COMMAND LIST
    down             - Look down (default 40% strength, 150ms)
 
    Number Modifiers (Strength % 1-100):
+    NO '%' SYMBOL NEEDED: Just write the bare number!
+
      right 25       - Turn right gently (25% stick deflection)
      right 50       - Turn right medium (50% stick deflection)
      right 75       - Turn right fast (75% stick deflection)
@@ -99,20 +101,28 @@ COD ZOMBIES & FPS COMMAND LIST
    Duration Modifiers:
      right 50 250   - Turn right at 50% deflection for 250 ms
      left 75 400    - Turn left at 75% deflection for 400 ms
+     w 1.2s         - Move forward at default 100% speed for 1.2 seconds
+     w 500ms        - Move forward at default 100% speed for 500 ms
      x 1000         - Hold Button X for 1000 ms
 
    Per-action strength and time in one combo:
-     w 70% 900ms right 35% 250ms ads 80% 1200ms fire 100% 300ms jump 200ms
+     w 80 1.2s sprint ads fire 100 300ms right 35 250ms jump 200ms
 
-   Read each analog action as:
-     command  strength-percent  duration
+   How Combos and Omitted Strengths Work:
+     - "w 80 1.2s sprint": Moves forward at 80% for 1.2s while activating sprint (L3).
+     - "w 1.2s sprint": Moves forward at default 100% for 1.2s while activating sprint (L3).
+     - "w sprint": Moves forward at default speed for default time while activating sprint.
+     - If strength is not typed before a duration (e.g. "w 1.2s"), strength automatically
+       uses the configured default!
 
    Read each digital button action as:
      command  duration
 
-   Times may use milliseconds (250ms) or seconds (1.2s). Bare-number
-   forms such as "right 35 250" remain supported. Strength must be
-   1-100%; duration must be 25-1500ms.
+   Seconds vs. Milliseconds Toggle:
+     - Checkbox in GUI: "Enable seconds duration (e.g. 1.2s, 0.5s) — uncheck for ms only"
+     - When checked: Chat viewers can write either seconds (1.2s) or ms (250ms / 250).
+     - When unchecked: Chat only accepts milliseconds (ms), ignoring/rejecting 's' suffixes.
+     - Strength must be 1-100; duration must be 25-1500ms.
 
 4. Combat & Weapons:
    fire / shoot     - Pull Right Trigger (RT 100%)

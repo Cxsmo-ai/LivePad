@@ -100,3 +100,62 @@ def test_every_extra_xbox_control_has_a_chat_command():
         "button_dpad_right",
     ]
     assert result.invalid_tokens == ()
+
+
+def test_bare_numbers_without_percent_and_direct_duration_without_strength():
+    parser = CommandParser(allow_seconds=True)
+
+    # Strength + duration in seconds + action
+    res1 = parser.parse("w 80 1.2s sprint")
+    assert [(c.action, c.strength, c.duration_ms) for c in res1.commands] == [
+        ("move_forward", 0.8, 1200), ("button_l3", 1.0, 500)
+    ]
+    assert res1.invalid_tokens == ()
+
+    # Omitted strength with seconds duration -> default strength
+    res2 = parser.parse("w 1.2s sprint")
+    assert [(c.action, c.strength, c.duration_ms) for c in res2.commands] == [
+        ("move_forward", 1.0, 1200), ("button_l3", 1.0, 500)
+    ]
+    assert res2.invalid_tokens == ()
+
+    # Omitted strength with ms duration -> default strength
+    res3 = parser.parse("w 500ms sprint")
+    assert [(c.action, c.strength, c.duration_ms) for c in res3.commands] == [
+        ("move_forward", 1.0, 500), ("button_l3", 1.0, 500)
+    ]
+
+    # Bare number <= 100 with no % -> strength only, default duration
+    res5 = parser.parse("w 80 sprint")
+    assert [(c.action, c.strength, c.duration_ms) for c in res5.commands] == [
+        ("move_forward", 0.8, 400), ("button_l3", 1.0, 500)
+    ]
+
+    # Camera with direct duration vs strength
+    res6 = parser.parse("right 250ms")
+    assert [(c.action, c.strength, c.duration_ms) for c in res6.commands] == [
+        ("look_right", 0.4, 250)
+    ]
+
+    res7 = parser.parse("right 35")
+    assert [(c.action, c.strength, c.duration_ms) for c in res7.commands] == [
+        ("look_right", 0.35, 150)
+    ]
+
+
+def test_seconds_toggle_disables_seconds_syntax():
+    parser_ms_only = CommandParser(allow_seconds=False)
+
+    # 1.2s should be rejected when seconds toggle is disabled
+    res1 = parser_ms_only.parse("w 1.2s sprint")
+    assert [(c.action, c.strength, c.duration_ms) for c in res1.commands] == [
+        ("button_l3", 1.0, 500)
+    ]
+    assert res1.invalid_tokens == ("1.2s",)
+
+    # ms syntax still works
+    res2 = parser_ms_only.parse("w 500ms sprint")
+    assert [(c.action, c.strength, c.duration_ms) for c in res2.commands] == [
+        ("move_forward", 1.0, 500), ("button_l3", 1.0, 500)
+    ]
+    assert res2.invalid_tokens == ()

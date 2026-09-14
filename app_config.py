@@ -18,7 +18,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "tiktok": {"enabled": True, "username": "", "auto_reconnect": True},
     "youtube": {"enabled": True, "target": "", "chat_type": "live", "auto_reconnect": True},
     "twitch": {"enabled": False, "channel": "", "auto_reconnect": True},
-    "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250},
+    "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250, "allow_seconds": True},
     "crowd": {"mode": "balanced", "movement_window_ms": 60},
     "commands": deepcopy(DEFAULT_COMMANDS),
 }
@@ -122,6 +122,8 @@ class AppConfig:
             raise ValueError("controller.scheduler_hz must be between 50 and 1000")
         if controller.get("profile") != "xbox-360-wired":
             raise ValueError("only the xbox-360-wired profile is supported")
+        if "allow_seconds" in controller and not isinstance(controller["allow_seconds"], bool):
+            raise ValueError("controller.allow_seconds must be a boolean")
         commands = data.get("commands", {})
         if not isinstance(commands, dict):
             raise ValueError("commands must be an object")

@@ -28,7 +28,8 @@ class ControllerRuntime:
         parser = None
         if config is not None:
             from chat.parser import CommandParser
-            parser = CommandParser(config.get("commands"))
+            allow_seconds = bool(config.get("controller", {}).get("allow_seconds", True))
+            parser = CommandParser(config.get("commands"), allow_seconds=allow_seconds)
         self.processor = ChatCommandProcessor(self.engine, parser=parser)
         self.tiktok_comments = TikTokCommentAdapter(self.processor)
         self.youtube_comments = YouTubeCommentAdapter(self.processor)

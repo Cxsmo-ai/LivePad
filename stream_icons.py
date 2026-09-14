@@ -114,10 +114,10 @@ def make_local_icon(size: int = 32) -> QImage:
     img.fill(Qt.GlobalColor.transparent)
     painter = QPainter(img)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-    painter.setPen(Qt.PenStyle.NoPen)
-    painter.setBrush(QBrush(QColor("#4A5568")))
+    painter.setPen(QPen(QColor("#2C3037"), 1.5))
+    painter.setBrush(QBrush(QColor("#1F2228")))
     painter.drawRoundedRect(QRectF(1, 1, size - 2, size - 2), 6, 6)
-    painter.setPen(QPen(QColor("#FFFFFF"), 2.0))
+    painter.setPen(QPen(QColor("#818CF8"), 2.0))
     painter.drawText(QRectF(0, 0, size, size), Qt.AlignmentFlag.AlignCenter, "DEV")
     painter.end()
     return img
@@ -167,7 +167,7 @@ def format_chat_html(
     safe_timestamp = html.escape(str(timestamp))
     safe_user = html.escape(str(user))
     safe_message = html.escape(str(message))
-    chat_html = f'<span style="color:#718096; font-family:monospace;">[{safe_timestamp}]</span> {icon_tag} <b>{safe_user}</b>: {safe_message}'
+    chat_html = f'<span style="color:#6B7280; font-family:Consolas,monospace;">[{safe_timestamp}]</span> {icon_tag} <b style="color:#E8EAEE;">{safe_user}</b>: <span style="color:#E8EAEE;">{safe_message}</span>'
     if result_text:
-        chat_html += f' <span style="color:#A0AEC0; font-size:11px;">({html.escape(str(result_text))})</span>'
+        chat_html += f' <span style="color:#818CF8; font-size:11px;">({html.escape(str(result_text))})</span>'
     return chat_html
