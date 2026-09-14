@@ -24,7 +24,7 @@ class BridgeProcess:
                 raise FileNotFoundError(f"packaged bridge archive is missing: {archive}")
 
             local_app_data = Path(os.environ.get("LOCALAPPDATA", tempfile.gettempdir()))
-            cache_root = local_app_data / "TikForeverChatGamepad" / "bridge"
+            cache_root = local_app_data / "HIDMaestroStreamerEdition" / "bridge"
             executable = cache_root / "TikForever.HIDMaestro.exe"
             version_marker = cache_root / "bridge.version"
             archive_stat = archive.stat()

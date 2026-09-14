@@ -18,7 +18,7 @@ Write-Host "Packaging HID Maestro Streamer Edition with PyInstaller..."
 & $python -m PyInstaller --noconfirm --clean (Join-Path $projectRoot 'HIDMaestroStreamerEdition.spec')
 if ($LASTEXITCODE -ne 0) { throw 'PyInstaller packaging failed' }
 
-$packagedApp = Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\HIDMaestroStreamerEdition.exe'
+$packagedApp = Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition.exe'
 $previousQtPlatform = $env:QT_QPA_PLATFORM
 try {
     $env:QT_QPA_PLATFORM = 'offscreen'
@@ -34,21 +34,13 @@ finally {
 
 Write-Host "Packaged application smoke test passed: $packagedApp"
 
-Copy-Item (Join-Path $projectRoot 'QUICK_START.txt') (Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\QUICK_START.txt') -Force
-if (Test-Path (Join-Path $projectRoot 'chat_gamepad.json')) {
-    Copy-Item (Join-Path $projectRoot 'chat_gamepad.json') (Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\chat_gamepad.json') -Force
-}
-
 $releaseDirectory = Join-Path $projectRoot 'release'
-$releaseArchive = Join-Path $releaseDirectory 'HIDMaestroStreamerEdition-win-x64.zip'
-$releaseChecksum = "$releaseArchive.sha256"
+$releaseExe = Join-Path $releaseDirectory 'HIDMaestroStreamerEdition.exe'
+$releaseChecksum = "$releaseExe.sha256"
 New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
-if (Test-Path $releaseArchive) { Remove-Item $releaseArchive -Force }
-Compress-Archive -Path (Join-Path $projectRoot 'dist\HIDMaestroStreamerEdition\*') `
-    -DestinationPath $releaseArchive -Force
-$hash = (Get-FileHash -LiteralPath $releaseArchive -Algorithm SHA256).Hash.ToLowerInvariant()
-Set-Content -LiteralPath $releaseChecksum -Value "$hash  HIDMaestroStreamerEdition-win-x64.zip" `
+Copy-Item -LiteralPath $packagedApp -Destination $releaseExe -Force
+$hash = (Get-FileHash -LiteralPath $releaseExe -Algorithm SHA256).Hash.ToLowerInvariant()
+Set-Content -LiteralPath $releaseChecksum -Value "$hash  HIDMaestroStreamerEdition.exe" `
     -Encoding utf8NoBOM
-Write-Host "Release archive: $releaseArchive"
+Write-Host "Single-file release: $releaseExe"
 Write-Host "SHA-256: $hash"
-

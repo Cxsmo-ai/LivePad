@@ -52,3 +52,35 @@ def test_custom_command_profile_is_used():
     assert result.commands == (parser.parse("go").commands[0],)
     assert result.commands[0].strength == 0.5
     assert result.invalid_tokens == ("w",)
+
+
+def test_cod_zombies_interact_and_movement_aliases():
+    result = CommandParser().parse("interact buy revive x 1000 slide knife switch")
+    actions = [c.action for c in result.commands]
+    assert actions == [
+        "button_x", "button_x", "button_x", "button_x", "button_b", "button_r3", "button_y"
+    ]
+    assert result.commands[2].duration_ms == 1500
+    assert result.commands[3].duration_ms == 1000
+
+
+def test_each_combo_action_has_independent_strength_and_duration():
+    result = CommandParser().parse(
+        "w 70% 900ms right 35% 250ms ads 80% 1200ms fire 100% 300ms jump 200ms"
+    )
+    assert [(c.action, c.strength, c.duration_ms) for c in result.commands] == [
+        ("move_forward", 0.70, 900),
+        ("look_right", 0.35, 250),
+        ("left_trigger", 0.80, 1200),
+        ("right_trigger", 1.00, 300),
+        ("button_a", 1.00, 200),
+    ]
+    assert result.invalid_tokens == ()
+
+
+def test_seconds_duration_suffix_and_legacy_bare_numbers():
+    result = CommandParser().parse("left 25 400 interact 1.2s")
+    assert [(c.action, c.strength, c.duration_ms) for c in result.commands] == [
+        ("look_left", 0.25, 400),
+        ("button_x", 1.0, 1200),
+    ]

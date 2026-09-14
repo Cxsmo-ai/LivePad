@@ -13,7 +13,7 @@ from chat.commands import DEFAULT_COMMANDS, SUPPORTED_ACTIONS
 
 
 DEFAULT_CONFIG: dict[str, Any] = {
-    "schema_version": 1,
+    "schema_version": 2,
     "app_name": "HID Maestro Streamer Edition",
     "tiktok": {"enabled": True, "username": "", "auto_reconnect": True},
     "youtube": {"enabled": True, "target": "", "chat_type": "live", "auto_reconnect": True},
@@ -37,13 +37,18 @@ class AppConfig:
             return self.data
         try:
             loaded = json.loads(self.path.read_text(encoding="utf-8"))
+            loaded, migrated = self._migrate(loaded)
             self._validate(loaded)
             self.data = self._merge(deepcopy(DEFAULT_CONFIG), loaded)
+            if migrated:
+                self.save()
+                self.last_recovery = "Updated command modifiers to configuration version 2"
             return self.data
         except (json.JSONDecodeError, ValueError, TypeError) as primary_error:
             if self.backup_path.exists():
                 try:
                     loaded = json.loads(self.backup_path.read_text(encoding="utf-8"))
+                    loaded, _ = self._migrate(loaded)
                     self._validate(loaded)
                     self.data = self._merge(deepcopy(DEFAULT_CONFIG), loaded)
                     invalid_path = self._preserve_invalid_primary()
@@ -91,7 +96,7 @@ class AppConfig:
     def _validate(data: dict[str, Any]) -> None:
         if not isinstance(data, dict):
             raise ValueError("configuration root must be an object")
-        if data.get("schema_version") != 1:
+        if data.get("schema_version") != 2:
             raise ValueError("unsupported config schema_version")
         tiktok = data.get("tiktok", {})
         if not isinstance(tiktok, dict):
@@ -140,3 +145,16 @@ class AppConfig:
                 base[key] = value
         return base
 
+    @staticmethod
+    def _migrate(data: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+        """Upgrade v1 configs while preserving edited strengths, durations, and enabled flags."""
+        if not isinstance(data, dict) or data.get("schema_version") != 1:
+            return data, False
+        migrated = deepcopy(data)
+        migrated["schema_version"] = 2
+        commands = migrated.setdefault("commands", {})
+        for name, default in DEFAULT_COMMANDS.items():
+            command = commands.setdefault(name, deepcopy(default))
+            command["allow_strength_argument"] = default["allow_strength_argument"]
+            command["allow_duration_argument"] = default["allow_duration_argument"]
+        return migrated, True

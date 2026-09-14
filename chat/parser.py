@@ -25,6 +25,8 @@ class CommandParser:
     """Parse all recognized commands in one comment; never stop at the first match."""
 
     _number = re.compile(r"^(\d+(?:\.\d+)?)%?$")
+    _milliseconds = re.compile(r"^(\d+)ms$")
+    _seconds = re.compile(r"^(\d+(?:\.\d+)?)s$")
 
     def __init__(self, command_specs: Mapping[str, Mapping[str, Any]] | None = None):
         self.command_specs = deepcopy(dict(command_specs or DEFAULT_COMMANDS))
@@ -43,24 +45,43 @@ class CommandParser:
                 duration = int(spec.get("duration_ms", 400))
                 consumed = 0
                 reject_command = False
-                if spec.get("allow_strength_argument") and i + 1 < len(tokens):
-                    parsed = self._parse_number(tokens[i + 1])
-                    if parsed is not None:
-                        consumed = 1
-                        if not 1 <= parsed <= 100:
+
+                # Digital buttons take a duration only: "jump 250ms" or legacy "jump 250".
+                if action.startswith("button_") and spec.get("allow_duration_argument"):
+                    if i + 1 < len(tokens):
+                        parsed_dur = self._parse_duration(tokens[i + 1])
+                        if parsed_dur is not None:
+                            duration = parsed_dur
+                            consumed = 1
+                        elif self._looks_numeric(tokens[i + 1]):
                             invalid.append(tokens[i + 1])
                             reject_command = True
-                        else:
-                            strength = parsed / 100.0
-                if spec.get("allow_duration_argument") and i + 2 < len(tokens) and consumed:
-                    parsed_duration = self._parse_integer(tokens[i + 2])
-                    if parsed_duration is not None:
-                        duration = parsed_duration
-                        consumed = 2
-                    elif self._parse_number(tokens[i + 2]) is not None:
-                        invalid.append(tokens[i + 2])
-                        reject_command = True
-                        consumed = 2
+                            consumed = 1
+
+                # Analog controls take strength then duration. Unit suffixes make each
+                # modifier self-documenting: "right 35% 250ms". Bare numbers remain
+                # compatible with the original "right 35 250" syntax.
+                else:
+                    if spec.get("allow_strength_argument") and i + 1 < len(tokens):
+                        parsed = self._parse_strength(tokens[i + 1])
+                        if parsed is not None:
+                            consumed = 1
+                            strength = parsed
+                        elif self._looks_numeric(tokens[i + 1]):
+                            invalid.append(tokens[i + 1])
+                            reject_command = True
+                            consumed = 1
+
+                    if spec.get("allow_duration_argument") and i + 2 < len(tokens) and consumed:
+                        parsed_duration = self._parse_duration(tokens[i + 2])
+                        if parsed_duration is not None:
+                            duration = parsed_duration
+                            consumed = 2
+                        elif self._looks_numeric(tokens[i + 2]):
+                            invalid.append(tokens[i + 2])
+                            reject_command = True
+                            consumed = 2
+
                 if not reject_command:
                     commands.append(Command(action, self._clamp_strength(strength), duration))
                 i += consumed + 1
@@ -75,13 +96,36 @@ class CommandParser:
         match = cls._number.match(token)
         return float(match.group(1)) if match else None
 
-    @staticmethod
-    def _parse_integer(token: str) -> int | None:
-        try:
-            value = int(token)
-        except ValueError:
+    @classmethod
+    def _parse_strength(cls, token: str) -> float | None:
+        value = cls._parse_number(token)
+        if value is None or not 1 <= value <= 100:
             return None
+        return value / 100.0
+
+    @classmethod
+    def _parse_duration(cls, token: str) -> int | None:
+        milliseconds = cls._milliseconds.match(token)
+        if milliseconds:
+            value = int(milliseconds.group(1))
+        else:
+            seconds = cls._seconds.match(token)
+            if seconds:
+                value = round(float(seconds.group(1)) * 1000)
+            else:
+                try:
+                    value = int(token)
+                except ValueError:
+                    return None
         return value if 25 <= value <= 1500 else None
+
+    @classmethod
+    def _looks_numeric(cls, token: str) -> bool:
+        return bool(
+            cls._number.match(token)
+            or cls._milliseconds.match(token)
+            or cls._seconds.match(token)
+        )
 
     @staticmethod
     def _clamp_strength(value: float) -> float:
@@ -90,5 +134,4 @@ class CommandParser:
 
 def parse_commands(text: str) -> Iterable[Command]:
     """Convenience API for callers that only need the recognized commands."""
-
     return CommandParser().parse(text).commands

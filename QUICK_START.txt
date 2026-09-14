@@ -1,38 +1,41 @@
 ======================================================================
-  HID Maestro - Streamer Edition (Quick Start Guide)
+  HID Maestro - Streamer Edition (Single Standalone Executable)
 ======================================================================
 
-Control PC games (Call of Duty, Zombies, Rocket League, Elden Ring, or
-any XInput / Xbox controller game) directly from TikTok LIVE and
-YouTube LIVE chat comments, with zero latency and concurrent commands.
+Control PC games (Call of Duty: Black Ops 3 Zombies, Cold War, BO6,
+Rocket League, Elden Ring, or any XInput / Xbox controller game)
+directly from TikTok LIVE and YouTube LIVE chat comments, with zero
+latency and concurrent commands.
 
-Everything needed to run this application is 100% self-contained in
-this folder. You and your friends DO NOT need to install:
+Everything is packed into ONE SINGLE STANDALONE EXECUTABLE:
+  HIDMaestroStreamerEdition.exe
+
+NO extra folders, NO dependencies:
   - NO Python required
   - NO Node.js / npm required
-  - NO .NET 10 or .NET SDK required (self-contained bridge bundled)
+  - NO .NET required
   - NO manual HIDMaestro driver or certificate installer required
 
 ----------------------------------------------------------------------
 WHAT TO SEND TO YOUR FRIEND
 ----------------------------------------------------------------------
-Send the single zip file:
-  HIDMaestroStreamerEdition-win-x64.zip
+Just send the single executable:
+  HIDMaestroStreamerEdition.exe
 
 Tell your friend:
-1. Extract the ZIP anywhere (e.g. Desktop).
-2. Double-click "HIDMaestroStreamerEdition.exe".
-3. When Windows asks for Administrator (UAC prompt), click YES.
-   * On first launch, the app automatically deploys the self-signed
-     HIDMaestro user-mode virtual device driver into Windows.
-4. The window will open showing "Ready — Xbox 360". Done!
+1. Put "HIDMaestroStreamerEdition.exe" anywhere (e.g. Desktop).
+2. Double-click it.
+3. When Windows prompts for Administrator (UAC), click YES.
+   * On first launch on a new PC, it automatically installs the built-in
+     user-mode virtual controller driver.
+4. The window opens showing "Ready — Xbox 360". Done!
 
 ----------------------------------------------------------------------
-SUPPORTED STREAM PLATFORMS (USE TOGETHER OR ON THEIR OWN)
+STREAM PLATFORMS (USE TOGETHER OR ON THEIR OWN)
 ----------------------------------------------------------------------
 1. TikTok LIVE:
    - Check "[x] Enable TikTok Stream"
-   - Type your TikTok username (e.g. @yourname or yourname)
+   - Type your TikTok username (e.g. @yourname)
    - Click "Connect TikTok"
 
 2. YouTube LIVE (Powered by youtube-chat-next engine):
@@ -49,16 +52,27 @@ SUPPORTED STREAM PLATFORMS (USE TOGETHER OR ON THEIR OWN)
      * YouTube red badge logo for YouTube comments
 
 ----------------------------------------------------------------------
-COMMAND LIST & NUMBER MODIFIERS
+COD ZOMBIES & FPS COMMAND LIST
 ----------------------------------------------------------------------
-1. Movement (Left Stick):
+1. Interaction, Buying & Reviving (Button X):
+   interact         - Hold Button X (800ms) to open doors / buy wall weapons
+   buy              - Hold Button X (800ms) to buy Mystery Box / Perks
+   use              - Hold Button X (800ms) to use traps / assemble parts
+   revive           - Hold Button X (1500ms) to revive downed teammates
+   x                - Press Button X (300ms, or 'x 1000' to hold for 1000ms)
+   reload           - Tap Button X (120ms) to reload current weapon
+
+2. Movement (Left Analog Stick):
    w / forward      - Move forward (Left stick UP)
    s / back         - Move backward (Left stick DOWN)
    a / left_strafe  - Strafe left (Left stick LEFT)
    d / right_strafe - Strafe right (Left stick RIGHT)
-   sprint           - Sprint (Click L3 / Left Stick button)
+   sprint           - Click left stick (L3 / Sprint)
+   slide            - Slide (Hold Button B for 400ms)
+   crouch / b       - Crouch (Button B)
+   jump             - Jump / Mantle (Button A)
 
-2. Camera & Aiming (Right Stick with Analog Modifiers):
+3. Camera & Aiming (Right Stick with Analog Modifiers):
    left             - Look left (default 40% strength, 150ms)
    right            - Look right (default 40% strength, 150ms)
    up               - Look up (default 40% strength, 150ms)
@@ -69,58 +83,56 @@ COMMAND LIST & NUMBER MODIFIERS
      right 50       - Turn right medium (50% stick deflection)
      right 75       - Turn right fast (75% stick deflection)
      right 100      - Turn right maximum (100% stick deflection)
-     left 40        - Turn left at 40% strength
-     up 60          - Look up at 60% strength
-     down 30        - Look down at 30% strength
 
-   Duration Modifiers (Direction Strength% DurationMS):
-     right 50 250   - Turn right at 50% strength for 250 milliseconds
-     left 75 400    - Turn left at 75% strength for 400 milliseconds
+   Duration Modifiers:
+     right 50 250   - Turn right at 50% deflection for 250 ms
+     left 75 400    - Turn left at 75% deflection for 400 ms
+     x 1000         - Hold Button X for 1000 ms
 
-3. Combat & Actions:
-   fire / shoot     - Pull Right Trigger (RT, 100%)
-   ads / aim        - Pull Left Trigger (LT, 100%)
-   jump             - Button A (Green)
-   crouch           - Button B (Red)
-   reload           - Button X (Blue)
-   swap             - Button Y (Yellow)
-   melee            - Click R3 (Right Stick button)
+   Per-action strength and time in one combo:
+     w 70% 900ms right 35% 250ms ads 80% 1200ms fire 100% 300ms jump 200ms
+
+   Read each analog action as:
+     command  strength-percent  duration
+
+   Read each digital button action as:
+     command  duration
+
+   Times may use milliseconds (250ms) or seconds (1.2s). Bare-number
+   forms such as "right 35 250" remain supported. Strength must be
+   1-100%; duration must be 25-1500ms.
+
+4. Combat & Weapons:
+   fire / shoot     - Pull Right Trigger (RT 100%)
+   ads / aim        - Pull Left Trigger (LT 100%)
+   swap / switch / y- Switch weapon (Button Y)
+   melee / knife    - Melee strike (Right Stick Click / R3)
    tac / tactical   - Left Bumper (LB)
    nade / grenade   - Right Bumper (RB)
 
 ----------------------------------------------------------------------
-HOW TO DO COMBOS (CONCURRENT INPUT LEASES)
+COMPOUND COMBOS (CONCURRENT INPUT LEASES)
 ----------------------------------------------------------------------
-Unlike older apps that sleep between buttons and take only one command,
-HID Maestro uses concurrent input leases. Viewers can type compound
-combos in a single comment:
-
+Viewers can type multiple actions together:
   w sprint
   ads fire
   w fire
   w sprint ads fire right 35
-  jump reload swap
+  w interact
+  slide jump
 
 When a viewer types:
   w sprint ads fire right 35
 
-All 5 actions activate at the exact same instant:
-  - Left Stick: 100% Forward
-  - L3: Clicked (Sprint)
-  - Left Trigger: 100% (Aim down sights)
-  - Right Trigger: 100% (Fire weapon)
-  - Right Stick: 35% Deflection Right (Smooth turning)
+All 5 actions activate at the exact same instant!
 
 ----------------------------------------------------------------------
 SAFETY FEATURES & CONTROLS
 ----------------------------------------------------------------------
-- Emergency Kill Switch (F12): Press F12 at any time in-game or in the
-  app to instantly pause chat and neutralize all controller inputs.
+- Emergency Kill Switch (F12): Press F12 anywhere to immediately pause
+  chat and neutralize all controller inputs.
 - PAUSE CHAT: Temporarily ignores incoming stream comments.
-- CLEAR CONTROLLER: Immediately centers sticks, releases buttons and
-  triggers.
-- Hardware Watchdog: If the stream freezes or Python stops responding,
-  the C# bridge automatically resets the controller to neutral within
-  1 second.
+- CLEAR CONTROLLER: Immediately centers sticks, releases buttons/triggers.
+- Hardware Watchdog: If Python freezes, the C# bridge resets the
+  controller to neutral within 1000 ms.
 ======================================================================
-

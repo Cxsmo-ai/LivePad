@@ -51,6 +51,16 @@ from youtube_client import YouTubeLiveManager
 _SINGLE_INSTANCE_NAME = "Local\\HIDMaestroStreamerEdition.SingleInstance"
 
 
+def _config_root() -> Path:
+    """Keep the portable EXE directory clean; runtime data belongs in LocalAppData."""
+    if getattr(sys, "frozen", False):
+        local_app_data = Path(
+            os.environ.get("LOCALAPPDATA", Path(sys.executable).resolve().parent)
+        )
+        return local_app_data / "HIDMaestroStreamerEdition"
+    return Path(__file__).resolve().parent
+
+
 def _acquire_single_instance(name: str = _SINGLE_INSTANCE_NAME) -> int | None:
     """Keep one app/bridge owner per interactive Windows session."""
     if os.name != "nt":
@@ -211,8 +221,7 @@ class ChatGamepadWindow(QMainWindow):
         self.youtube_worker: YouTubeWorker | None = None
         self.chat_paused = False
         self.hotkey_listener = None
-        config_root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent
-        self.config = AppConfig(config_root / "chat_gamepad.json")
+        self.config = AppConfig(_config_root() / "chat_gamepad.json")
         self.config.load()
         self.runtime = ControllerRuntime(config=self.config.data)
         self._build_ui()
@@ -902,4 +911,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
