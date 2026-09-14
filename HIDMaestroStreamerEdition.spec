@@ -14,7 +14,9 @@ a = Analysis(
         ("profiles/cod.json", "profiles"),
         ("QUICK_START.txt", "."),
     ],
-    hiddenimports=["gamepad_tester", "stream_icons", "youtube_client", "tiktok_client"],
+    hiddenimports=[
+        "gamepad_tester", "stream_icons", "youtube_client", "tiktok_client", "twitch_client"
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

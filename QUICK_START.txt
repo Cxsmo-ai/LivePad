@@ -4,8 +4,8 @@
 
 Control PC games (Call of Duty: Black Ops 3 Zombies, Cold War, BO6,
 Rocket League, Elden Ring, or any XInput / Xbox controller game)
-directly from TikTok LIVE and YouTube LIVE chat comments, with zero
-latency and concurrent commands.
+directly from TikTok LIVE, YouTube LIVE, and Twitch chat comments with
+low-latency concurrent commands.
 
 Everything is packed into ONE SINGLE STANDALONE EXECUTABLE:
   HIDMaestroStreamerEdition.exe
@@ -44,12 +44,24 @@ STREAM PLATFORMS (USE TOGETHER OR ON THEIR OWN)
    - Select Chat View: "Live Chat (all messages)" or "Top Chat"
    - Click "Connect YouTube"
 
-3. Dual Mode (Together):
-   - Check both boxes and click "CONNECT ALL ENABLED".
-   - Comments from both platforms flow into one unified controller!
+3. Twitch:
+   - Check "[x] Enable Twitch Stream"
+   - Enter the public Twitch channel username (e.g. FazeClanLuke)
+   - Click "Connect Twitch"
+   - No Twitch password is requested or stored. The connector uses the
+     current anonymous read-only Twitch IRC WebSocket path.
+   - Normal Twitch bot-style prefixes work: "!shoot" is treated as
+     "shoot", and "!w sprint ads fire" runs the full compound command.
+   - Twitch officially guarantees IRC access only with OAuth chat:read;
+     if anonymous access changes, the app reports the rejection clearly.
+
+4. Combined Mode (Together):
+   - Check any combination and click "CONNECT ALL ENABLED".
+   - Comments from all enabled platforms flow into one unified controller!
    - Every comment in the Unified Chat displays its platform logo:
      * TikTok cyan/magenta note logo for TikTok comments
      * YouTube red badge logo for YouTube comments
+     * Twitch purple chat logo for Twitch comments
 
 ----------------------------------------------------------------------
 COD ZOMBIES & FPS COMMAND LIST

@@ -1,6 +1,6 @@
 """HID Maestro Streamer Edition.
 
-Unified TikTok LIVE and YouTube LIVE chat controls emulating an XInput Xbox 360 controller.
+Unified TikTok, YouTube, and Twitch chat controls emulating an Xbox 360 controller.
 """
 
 from __future__ import annotations
@@ -47,6 +47,7 @@ from ipc.named_pipe import NamedPipeClient
 from runtime import ControllerRuntime
 from stream_icons import format_chat_html, register_chat_icons
 from tiktok_client import TikTokLiveManager
+from twitch_client import TwitchLiveManager
 from youtube_client import YouTubeLiveManager
 
 
@@ -211,6 +212,65 @@ class YouTubeWorker(QThread):
                 asyncio.run_coroutine_threadsafe(self.manager.disconnect(), self.loop)
 
 
+class TwitchWorker(QThread):
+    comment_received = pyqtSignal(dict)
+    state_changed = pyqtSignal(str)
+    failed = pyqtSignal(str)
+
+    def __init__(self, channel: str, auto_reconnect: bool = True):
+        super().__init__()
+        self.channel = channel.strip()
+        self.auto_reconnect = auto_reconnect
+        self.stop_requested = False
+        self.manager: TwitchLiveManager | None = None
+        self.loop: asyncio.AbstractEventLoop | None = None
+        self.stop_event: asyncio.Event | None = None
+
+    def run(self) -> None:
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        try:
+            self.loop.run_until_complete(self._run())
+        finally:
+            self.loop.close()
+            self.loop = None
+
+    async def _run(self) -> None:
+        self.stop_event = asyncio.Event()
+        self.manager = TwitchLiveManager(self.channel)
+        self.manager.on_event("comment", self.comment_received.emit)
+        self.manager.on_event("connect", lambda _: self.state_changed.emit("Connected"))
+        retry_seconds = 1
+        while not self.stop_requested:
+            try:
+                self.state_changed.emit("Connecting" if retry_seconds == 1 else "Reconnecting")
+                await self.manager.connect()
+                retry_seconds = 1
+            except Exception as error:
+                if not self.stop_requested:
+                    self.failed.emit(str(error))
+            finally:
+                self.state_changed.emit("Disconnected")
+
+            if self.stop_requested or not self.auto_reconnect:
+                break
+            self.state_changed.emit(f"Retrying in {retry_seconds}s")
+            try:
+                await asyncio.wait_for(self.stop_event.wait(), timeout=retry_seconds)
+                break
+            except asyncio.TimeoutError:
+                retry_seconds = min(retry_seconds * 2, 30)
+        self.stop_event = None
+
+    def stop(self) -> None:
+        self.stop_requested = True
+        if self.loop is not None:
+            if self.stop_event is not None:
+                self.loop.call_soon_threadsafe(self.stop_event.set)
+            if self.manager is not None:
+                asyncio.run_coroutine_threadsafe(self.manager.disconnect(), self.loop)
+
+
 class ChatGamepadWindow(QMainWindow):
     emergency_stop_requested = pyqtSignal()
 
@@ -221,6 +281,8 @@ class ChatGamepadWindow(QMainWindow):
         self.bridge = BridgeProcess()
         self.tiktok_worker: TikTokWorker | None = None
         self.youtube_worker: YouTubeWorker | None = None
+        self.twitch_worker: TwitchWorker | None = None
+        self.connected_platforms: set[str] = set()
         self.chat_paused = False
         self.hotkey_listener = None
         self.config = AppConfig(_config_root() / "chat_gamepad.json")
@@ -262,6 +324,7 @@ class ChatGamepadWindow(QMainWindow):
         status_grid = QGridLayout(status)
         self.tiktok_status = QLabel("Disconnected")
         self.youtube_status = QLabel("Disconnected")
+        self.twitch_status = QLabel("Disconnected")
         self.bridge_status = QLabel("Starting")
         self.chat_plays_status = QLabel("Active")
 
@@ -269,6 +332,8 @@ class ChatGamepadWindow(QMainWindow):
         status_grid.addWidget(self.tiktok_status, 0, 1)
         status_grid.addWidget(QLabel("<b>YouTube LIVE:</b>"), 0, 2)
         status_grid.addWidget(self.youtube_status, 0, 3)
+        status_grid.addWidget(QLabel("<b>Twitch:</b>"), 0, 4)
+        status_grid.addWidget(self.twitch_status, 0, 5)
 
         status_grid.addWidget(QLabel("<b>HIDMaestro Bridge:</b>"), 1, 0)
         status_grid.addWidget(self.bridge_status, 1, 1)
@@ -277,7 +342,7 @@ class ChatGamepadWindow(QMainWindow):
         root.addWidget(status)
 
         # Stream Integrations Grid
-        streams_group = QGroupBox("Live Stream Sources (TikTok & YouTube)")
+        streams_group = QGroupBox("Live Stream Sources (TikTok, YouTube & Twitch)")
         streams_layout = QVBoxLayout(streams_group)
         cards_layout = QHBoxLayout()
 
@@ -332,6 +397,36 @@ class ChatGamepadWindow(QMainWindow):
         yt_layout.addWidget(self.youtube_connect_button)
         cards_layout.addWidget(yt_box)
 
+        # Third Column: Twitch
+        twitch_box = QGroupBox("Twitch Chat (IRC over secure WebSocket)")
+        twitch_layout = QVBoxLayout(twitch_box)
+        self.twitch_enabled_cb = QCheckBox("Enable Twitch Stream")
+        self.twitch_enabled_cb.setChecked(
+            self.config.data.get("twitch", {}).get("enabled", False)
+        )
+        twitch_layout.addWidget(self.twitch_enabled_cb)
+
+        twitch_input_layout = QHBoxLayout()
+        twitch_input_layout.addWidget(QLabel("Channel:"))
+        self.twitch_channel = QLineEdit()
+        self.twitch_channel.setPlaceholderText("FazeClanLuke")
+        self.twitch_channel.setText(
+            self.config.data.get("twitch", {}).get("channel", "")
+        )
+        twitch_input_layout.addWidget(self.twitch_channel)
+        twitch_layout.addLayout(twitch_input_layout)
+
+        twitch_note = QLabel("Public read-only chat • no password")
+        twitch_note.setToolTip(
+            "Uses Twitch's anonymous IRC reader. Twitch officially guarantees only OAuth chat:read clients."
+        )
+        twitch_layout.addWidget(twitch_note)
+
+        self.twitch_connect_button = QPushButton("Connect Twitch")
+        self.twitch_connect_button.clicked.connect(self._toggle_twitch)
+        twitch_layout.addWidget(self.twitch_connect_button)
+        cards_layout.addWidget(twitch_box)
+
         streams_layout.addLayout(cards_layout)
 
         # Bulk Actions
@@ -385,7 +480,7 @@ class ChatGamepadWindow(QMainWindow):
         root.addLayout(safety_layout)
 
         # Unified Multi-Stream Chat Log
-        chat_group = QGroupBox("Unified Live Chat (TikTok & YouTube)")
+        chat_group = QGroupBox("Unified Live Chat (TikTok, YouTube & Twitch)")
         chat_layout = QVBoxLayout(chat_group)
         self.log = QTextBrowser()
         self.log.setReadOnly(True)
@@ -476,10 +571,20 @@ class ChatGamepadWindow(QMainWindow):
             self._start_tiktok()
         if self.youtube_enabled_cb.isChecked() and (self.youtube_worker is None or not self.youtube_worker.isRunning()):
             self._start_youtube()
+        if self.twitch_enabled_cb.isChecked() and (self.twitch_worker is None or not self.twitch_worker.isRunning()):
+            self._start_twitch()
 
     def _disconnect_all(self) -> None:
         self._stop_tiktok()
         self._stop_youtube()
+        self._stop_twitch()
+        self._clear()
+
+    def _clear_if_no_other_streams(self, disconnected_platform: str) -> None:
+        self.connected_platforms.discard(disconnected_platform)
+        if not self.connected_platforms:
+            self.runtime.clear()
+            self._render_state(ControllerState())
 
     # --- TikTok Handling ---
     def _toggle_tiktok(self) -> None:
@@ -516,9 +621,10 @@ class ChatGamepadWindow(QMainWindow):
 
     def _on_tiktok_state(self, state: str) -> None:
         self.tiktok_status.setText(state)
-        if state == "Disconnected" and (self.youtube_worker is None or not self.youtube_worker.isRunning()):
-            self.runtime.clear()
-            self._render_state(ControllerState())
+        if state == "Connected":
+            self.connected_platforms.add("tiktok")
+        elif state == "Disconnected":
+            self._clear_if_no_other_streams("tiktok")
 
     # --- YouTube Handling ---
     def _toggle_youtube(self) -> None:
@@ -557,9 +663,56 @@ class ChatGamepadWindow(QMainWindow):
 
     def _on_youtube_state(self, state: str) -> None:
         self.youtube_status.setText(state)
-        if state == "Disconnected" and (self.tiktok_worker is None or not self.tiktok_worker.isRunning()):
-            self.runtime.clear()
-            self._render_state(ControllerState())
+        if state == "Connected":
+            self.connected_platforms.add("youtube")
+        elif state == "Disconnected":
+            self._clear_if_no_other_streams("youtube")
+
+    # --- Twitch Handling ---
+    def _toggle_twitch(self) -> None:
+        if self.twitch_worker is not None and self.twitch_worker.isRunning():
+            self._stop_twitch()
+        else:
+            self._start_twitch()
+
+    def _start_twitch(self) -> None:
+        channel = self.twitch_channel.text().strip()
+        if not channel:
+            self._log("Enter a Twitch channel username first")
+            return
+        self.twitch_worker = TwitchWorker(
+            channel,
+            auto_reconnect=bool(
+                self.config.data.get("twitch", {}).get("auto_reconnect", True)
+            ),
+        )
+        self.twitch_worker.comment_received.connect(
+            lambda data: self._handle_comment(data, "twitch")
+        )
+        self.twitch_worker.state_changed.connect(self._on_twitch_state)
+        self.twitch_worker.failed.connect(
+            lambda message: self._log(f"Twitch error: {message}")
+        )
+        self.twitch_worker.finished.connect(self._twitch_worker_finished)
+        self.twitch_worker.start()
+        self.twitch_connect_button.setText("Disconnect Twitch")
+
+    def _stop_twitch(self) -> None:
+        if self.twitch_worker is not None and self.twitch_worker.isRunning():
+            self.twitch_worker.stop()
+            self.twitch_connect_button.setEnabled(False)
+
+    def _twitch_worker_finished(self) -> None:
+        self.twitch_connect_button.setText("Connect Twitch")
+        self.twitch_connect_button.setEnabled(True)
+        self.twitch_worker = None
+
+    def _on_twitch_state(self, state: str) -> None:
+        self.twitch_status.setText(state)
+        if state == "Connected":
+            self.connected_platforms.add("twitch")
+        elif state == "Disconnected":
+            self._clear_if_no_other_streams("twitch")
 
     # --- Unified Comment Processing ---
     def _handle_comment(self, event_data: dict, platform: str | None = None) -> None:
@@ -697,6 +850,9 @@ class ChatGamepadWindow(QMainWindow):
         if self.youtube_worker is not None and self.youtube_worker.isRunning():
             self.youtube_worker.stop()
             self.youtube_worker.wait(2000)
+        if self.twitch_worker is not None and self.twitch_worker.isRunning():
+            self.twitch_worker.stop()
+            self.twitch_worker.wait(2000)
         try:
             self.runtime.close()
         except OSError:
@@ -704,11 +860,14 @@ class ChatGamepadWindow(QMainWindow):
         self.bridge.stop()
         self.config.data.setdefault("tiktok", {})
         self.config.data.setdefault("youtube", {})
+        self.config.data.setdefault("twitch", {})
         self.config.data["tiktok"]["enabled"] = self.tiktok_enabled_cb.isChecked()
         self.config.data["tiktok"]["username"] = self.tiktok_username.text().strip()
         self.config.data["youtube"]["enabled"] = self.youtube_enabled_cb.isChecked()
         self.config.data["youtube"]["target"] = self.youtube_target.text().strip()
         self.config.data["youtube"]["chat_type"] = self.youtube_chat_type.currentData() or "live"
+        self.config.data["twitch"]["enabled"] = self.twitch_enabled_cb.isChecked()
+        self.config.data["twitch"]["channel"] = self.twitch_channel.text().strip()
         self.config.save()
         event.accept()
 
@@ -888,13 +1047,31 @@ def main(argv: list[str] | None = None) -> int:
             window._handle_comment({"user": "YTGamer", "user_id": "202", "comment": "melee swap"}, "youtube")
             yt_state = window.runtime.engine.resolve()
             yt_success = "r3" in yt_state.buttons and "y" in yt_state.buttons
+            # Test Twitch comment through the same unified handler
+            window._handle_comment(
+                {"user": "TWGamer", "user_id": "303", "comment": "crouch dpadup"},
+                "twitch",
+            )
+            twitch_state = window.runtime.engine.resolve()
+            twitch_success = (
+                "b" in twitch_state.buttons
+                and "dpad_up" in twitch_state.buttons
+                and window.twitch_status.text() == "Disconnected"
+            )
 
             window._emergency_stop()
             safety_success = window.chat_paused and window.runtime.engine.resolve() == ControllerState()
             window._toggle_pause()
             window._apply_test_command()
             resumed_success = window.runtime.engine.resolve().ly == 1.0
-            success = compound_success and tt_success and yt_success and safety_success and resumed_success
+            success = (
+                compound_success
+                and tt_success
+                and yt_success
+                and twitch_success
+                and safety_success
+                and resumed_success
+            )
             QTimer.singleShot(75, window.close)
             QTimer.singleShot(100, app.quit)
             app.exec()

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import html
+
 from PyQt6.QtCore import QPointF, QRectF, Qt, QUrl
 from PyQt6.QtGui import (
     QBrush,
@@ -77,6 +79,36 @@ def make_tiktok_icon(size: int = 32) -> QImage:
     return img
 
 
+def make_twitch_icon(size: int = 32) -> QImage:
+    img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
+    img.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(img)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(Qt.PenStyle.NoPen)
+    painter.setBrush(QBrush(QColor("#9146FF")))
+    painter.drawRoundedRect(QRectF(1, 1, size - 2, size - 2), 6, 6)
+
+    scale = size / 32.0
+    bubble = QPainterPath()
+    bubble.moveTo(6 * scale, 5 * scale)
+    bubble.lineTo(27 * scale, 5 * scale)
+    bubble.lineTo(27 * scale, 21 * scale)
+    bubble.lineTo(21 * scale, 27 * scale)
+    bubble.lineTo(15 * scale, 27 * scale)
+    bubble.lineTo(15 * scale, 23 * scale)
+    bubble.lineTo(6 * scale, 23 * scale)
+    bubble.closeSubpath()
+    painter.setBrush(QBrush(QColor("#FFFFFF")))
+    painter.drawPath(bubble)
+    painter.setBrush(QBrush(QColor("#5C16C5")))
+    painter.drawRect(QRectF(10 * scale, 9 * scale, 13 * scale, 10 * scale))
+    painter.setPen(QPen(QColor("#FFFFFF"), max(1.5, 2.2 * scale)))
+    painter.drawLine(QPointF(14 * scale, 11 * scale), QPointF(14 * scale, 17 * scale))
+    painter.drawLine(QPointF(19 * scale, 11 * scale), QPointF(19 * scale, 17 * scale))
+    painter.end()
+    return img
+
+
 def make_local_icon(size: int = 32) -> QImage:
     img = QImage(size, size, QImage.Format.Format_ARGB32_Premultiplied)
     img.fill(Qt.GlobalColor.transparent)
@@ -105,6 +137,11 @@ def register_chat_icons(document: QTextDocument) -> None:
     )
     document.addResource(
         QTextDocument.ResourceType.ImageResource,
+        QUrl("icon://twitch"),
+        make_twitch_icon(32),
+    )
+    document.addResource(
+        QTextDocument.ResourceType.ImageResource,
         QUrl("icon://local"),
         make_local_icon(32),
     )
@@ -122,11 +159,15 @@ def format_chat_html(
         icon_tag = '<img src="icon://youtube" width="16" height="16" style="vertical-align:middle; margin-right:4px;">'
     elif plat in ("tiktok", "tt"):
         icon_tag = '<img src="icon://tiktok" width="16" height="16" style="vertical-align:middle; margin-right:4px;">'
+    elif plat in ("twitch", "tw"):
+        icon_tag = '<img src="icon://twitch" width="16" height="16" style="vertical-align:middle; margin-right:4px;">'
     else:
         icon_tag = '<img src="icon://local" width="16" height="16" style="vertical-align:middle; margin-right:4px;">'
 
-    html = f'<span style="color:#718096; font-family:monospace;">[{timestamp}]</span> {icon_tag} <b>{user}</b>: {message}'
+    safe_timestamp = html.escape(str(timestamp))
+    safe_user = html.escape(str(user))
+    safe_message = html.escape(str(message))
+    chat_html = f'<span style="color:#718096; font-family:monospace;">[{safe_timestamp}]</span> {icon_tag} <b>{safe_user}</b>: {safe_message}'
     if result_text:
-        html += f' <span style="color:#A0AEC0; font-size:11px;">({result_text})</span>'
-    return html
-
+        chat_html += f' <span style="color:#A0AEC0; font-size:11px;">({html.escape(str(result_text))})</span>'
+    return chat_html

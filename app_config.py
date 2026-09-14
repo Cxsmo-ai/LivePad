@@ -17,6 +17,7 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "app_name": "HID Maestro Streamer Edition",
     "tiktok": {"enabled": True, "username": "", "auto_reconnect": True},
     "youtube": {"enabled": True, "target": "", "chat_type": "live", "auto_reconnect": True},
+    "twitch": {"enabled": False, "channel": "", "auto_reconnect": True},
     "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250},
     "crowd": {"mode": "balanced", "movement_window_ms": 60},
     "commands": deepcopy(DEFAULT_COMMANDS),
@@ -110,6 +111,11 @@ class AppConfig:
             raise ValueError("youtube.enabled must be a boolean")
         if "chat_type" in youtube and youtube["chat_type"] not in ("live", "top"):
             raise ValueError("youtube.chat_type must be 'live' or 'top'")
+        twitch = data.get("twitch", {})
+        if not isinstance(twitch, dict):
+            raise ValueError("twitch must be an object")
+        if "enabled" in twitch and not isinstance(twitch["enabled"], bool):
+            raise ValueError("twitch.enabled must be a boolean")
         controller = data.get("controller", {})
         hz = controller.get("scheduler_hz", 0)
         if not isinstance(hz, int) or not 50 <= hz <= 1000:

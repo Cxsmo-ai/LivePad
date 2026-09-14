@@ -18,6 +18,19 @@ def test_config_saves_atomically_and_retains_backup(tmp_path):
     assert not path.with_suffix(".json.tmp").exists()
 
 
+def test_existing_config_gains_safe_twitch_defaults(tmp_path):
+    path = tmp_path / "chat_gamepad.json"
+    path.write_text(json.dumps({
+        "schema_version": 2,
+        "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250},
+        "commands": {},
+    }), encoding="utf-8")
+    data = AppConfig(path).load()
+    assert data["twitch"] == {
+        "enabled": False, "channel": "", "auto_reconnect": True
+    }
+
+
 def test_config_rejects_unsafe_duration(tmp_path):
     config = AppConfig(tmp_path / "chat_gamepad.json")
     config.data["commands"]["w"]["duration_ms"] = 99999

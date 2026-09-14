@@ -8,6 +8,7 @@ from typing import Any, Mapping
 from chat.normalized_event import ChatEvent
 from chat.processor import ChatCommandProcessor, ProcessingResult
 from chat.tiktok_adapter import TikTokCommentAdapter
+from chat.twitch_adapter import TwitchCommentAdapter
 from chat.youtube_adapter import YouTubeCommentAdapter
 from controller.safety import SafetyWatchdog
 from controller.state_engine import StateEngine, Submission
@@ -31,6 +32,7 @@ class ControllerRuntime:
         self.processor = ChatCommandProcessor(self.engine, parser=parser)
         self.tiktok_comments = TikTokCommentAdapter(self.processor)
         self.youtube_comments = YouTubeCommentAdapter(self.processor)
+        self.twitch_comments = TwitchCommentAdapter(self.processor)
         self.comments = self.tiktok_comments
         self.watchdog = SafetyWatchdog()
         self.pipe = pipe
@@ -48,6 +50,8 @@ class ControllerRuntime:
         source = platform or event_data.get("platform", "tiktok")
         if source == "youtube":
             result = self.youtube_comments.handle(event_data)
+        elif source == "twitch":
+            result = self.twitch_comments.handle(event_data)
         else:
             result = self.tiktok_comments.handle(event_data)
         self.watchdog.heartbeat()
@@ -85,4 +89,3 @@ class ControllerRuntime:
         if self.pipe is not None:
             self.pipe.send({"type": "shutdown"})
             self.pipe.close()
-

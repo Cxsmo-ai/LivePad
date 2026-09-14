@@ -1,16 +1,19 @@
-# TikTok Chat Gamepad
+# HID Maestro Streamer Edition
 
 ## Ready-to-run build
 
-Extract `release/TikForeverChatGamepad-win-x64.zip`, then run
-`TikForeverChatGamepad.exe`. The package includes the self-contained C# bridge and the official
+Run `release/HIDMaestroStreamerEdition.exe`. The single file includes the self-contained C# bridge and the official
 HIDMaestro v1.7.3 SDK assembly; Python, Visual Studio, and a separate .NET installation are not
 needed to run it.
 
 Windows asks for administrator approval because HIDMaestro's controller shared memory requires
 elevation on this machine. The app does not install or modify drivers automatically.
 
-Enter the TikTok creator username and select **Connect**. Comments such as
+Enable TikTok, YouTube, Twitch, or any combination. Enter each public channel and select its
+Connect button or **Connect All Enabled**. Twitch needs only the public channel username and
+uses anonymous read-only IRC over `wss://irc-ws.chat.twitch.tv:443`; no password is stored.
+Twitch officially guarantees IRC only with OAuth `chat:read`, so the app reports a clear error
+if Twitch stops accepting anonymous readers. Comments such as
 `w sprint ads fire right 35` are applied concurrently. **Pause Chat** and global **F12** both
 clear the controller immediately. The command table edits strength, duration, and enabled state
 without restarting.
@@ -49,7 +52,7 @@ required five-part compound command, verifies it through XInput, verifies CLEAR 
 watchdog, writes a JSON report, and exits:
 
 ```powershell
-.\TikForeverChatGamepad.exe --hardware-smoke --hardware-report hardware-smoke-report.json
+.\HIDMaestroStreamerEdition.exe --hardware-smoke --hardware-report hardware-smoke-report.json
 ```
 
 ```powershell
@@ -57,4 +60,4 @@ watchdog, writes a JSON report, and exits:
 ```
 
 This publishes the self-contained bridge, builds the windowed application, runs the packaged
-smoke test, and produces the release ZIP plus its SHA-256 checksum.
+smoke test, and produces the single release EXE plus its SHA-256 checksum.

@@ -6,7 +6,13 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
 
 ## Completed
 
-- TikTok LIVE comments are normalized and parsed as concurrent compound commands.
+- TikTok LIVE, YouTube LIVE, and Twitch comments are normalized and parsed as concurrent compound commands.
+- Twitch uses secure IRC-over-WebSocket with anonymous read-only login, IRCv3 tag parsing,
+  PING/PONG, bounded deduplication, and automatic exponential-backoff reconnect.
+- Twitch identity includes user ID, login/display name, badges, moderator, subscriber, VIP,
+  first-message, channel, message ID, and server timestamp metadata.
+- The unified chat renders a distinct vector logo for every platform and HTML-escapes all
+  externally supplied names, messages, timestamps, and result text.
 - Movement, camera, triggers, and buttons use monotonic timed leases with no sleeps or global cooldown.
 - Repeated commands refresh one viewer's lease instead of multiplying that viewer's crowd weight.
 - Left-stick crowd vectors are radially normalized; camera intent sums and clamps.
@@ -26,7 +32,7 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
 
 ## Automated verification
 
-- 24 Python tests pass.
+- 51 Python tests pass.
 - C# bridge builds with zero warnings and zero errors.
 - Required `w sprint ads fire right 35` state passes concurrently.
 - 1,000-frame real named-pipe test passes at roughly 29,000 frames/second on this machine.

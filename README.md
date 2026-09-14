@@ -1,13 +1,15 @@
-# TikForever-HIDMaestro
+# HID Maestro Streamer Edition
 
-TikTok LIVE comments drive one low-latency virtual Xbox 360 controller through HIDMaestro.
+TikTok LIVE, YouTube LIVE, and Twitch comments drive one low-latency virtual Xbox 360
+controller through HIDMaestro, independently or together in one unified chat.
 The game receives ordinary XInput and requires no game-specific code, hooks, mods, or injection.
 
 ## Run the finished Windows build
 
-Extract `release/TikForeverChatGamepad-win-x64.zip` and open
-`TikForeverChatGamepad.exe`. Approve the Windows administrator prompt, enter the TikTok creator
-username, and select **Connect**.
+Open `release/HIDMaestroStreamerEdition.exe`. Approve the Windows administrator prompt, enable
+the desired stream sources, enter their public channel names/URLs, and connect them individually
+or select **Connect All Enabled**. Twitch uses anonymous read-only IRC over secure WebSockets;
+no Twitch password is requested or stored.
 
 Compound comments execute together:
 
