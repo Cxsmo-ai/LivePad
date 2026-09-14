@@ -39,6 +39,7 @@ else
         lock (submissionLock)
             SubmitNeutral(controller, profile);
     };
+    submitNeutral();
     Console.WriteLine($"Loaded {loadedProfiles} profiles; serving {profileId}");
     Console.WriteLine("Driver installation is intentionally not automatic.");
 }
@@ -159,7 +160,14 @@ static void SubmitNeutral(HMController controller, HMProfile profile)
 {
     var state = new HMGamepadState
     {
-        Axes = HMGamepadStateHelpers.StandardAxes(profile),
+        Axes = HMGamepadStateHelpers.StandardAxes(
+            profile,
+            leftStickX: 0.5f,
+            leftStickY: 0.5f,
+            rightStickX: 0.5f,
+            rightStickY: 0.5f,
+            leftTrigger: 0f,
+            rightTrigger: 0f),
         Buttons = HMButton.None,
     };
     controller.SubmitState(in state);

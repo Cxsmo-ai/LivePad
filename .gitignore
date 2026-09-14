@@ -44,6 +44,7 @@ Thumbs.db
 config.json
 chat_gamepad.json
 chat_gamepad.backup.json
+hardware-smoke-report.json
 *.log
 
 # Large downloaded release archive; the extracted official SDK DLL is kept.

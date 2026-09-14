@@ -27,6 +27,20 @@ throughput and latency.
 
 `xinput_probe.py` is a read-only diagnostic that lists connected XInput controller state.
 
+To sample a public LIVE without posting or sending controller output:
+
+```powershell
+.\.venv\Scripts\python.exe .\live_stream_smoke_test.py CREATOR_USERNAME --duration 30
+```
+
+The packaged executable also has an unattended real-hardware mode. It requests UAC, applies the
+required five-part compound command, verifies it through XInput, verifies CLEAR and the bridge
+watchdog, writes a JSON report, and exits:
+
+```powershell
+.\TikForeverChatGamepad.exe --hardware-smoke --hardware-report hardware-smoke-report.json
+```
+
 ```powershell
 .\package.ps1
 ```

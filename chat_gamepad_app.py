@@ -6,9 +6,11 @@ import argparse
 import asyncio
 import ctypes
 from copy import deepcopy
+import json
 import os
 import subprocess
 import sys
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -101,7 +103,7 @@ class TikTokWorker(QThread):
 class ChatGamepadWindow(QMainWindow):
     emergency_stop_requested = pyqtSignal()
 
-    def __init__(self, mock_bridge: bool = False):
+    def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         super().__init__()
         self.setWindowTitle("TikTok Chat Gamepad")
         self.resize(860, 780)
@@ -132,7 +134,7 @@ class ChatGamepadWindow(QMainWindow):
 
         self.emergency_stop_requested.connect(self._emergency_stop)
         self.f12_shortcut = None
-        if mock_bridge or not self._start_global_hotkey():
+        if mock_bridge or automation_mode or not self._start_global_hotkey():
             self.f12_shortcut = QShortcut(QKeySequence("F12"), self)
             self.f12_shortcut.activated.connect(self._emergency_stop)
 
@@ -412,17 +414,153 @@ class ChatGamepadWindow(QMainWindow):
         event.accept()
 
 
+def _write_hardware_report(path: Path, report: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    os.replace(temporary, path)
+
+
+def _run_hardware_smoke(app: QApplication, window: ChatGamepadWindow, report_path: Path) -> None:
+    """Exercise the real bridge, CLEAR, watchdog, and XInput unattended."""
+    from xinput_probe import connected_states
+
+    report: dict = {
+        "test": "real-hidmaestro-xinput",
+        "command": "w sprint ads fire right 35",
+        "passed": False,
+    }
+
+    def finish() -> None:
+        _write_hardware_report(report_path, report)
+        window.close()
+        app.exit(0 if report["passed"] else 1)
+
+    def is_neutral(state: dict | None) -> bool:
+        return state is not None and (
+            state["buttons"] == 0
+            and state["left_trigger"] == 0
+            and state["right_trigger"] == 0
+            and abs(state["left_x"]) <= 1024
+            and abs(state["left_y"]) <= 1024
+            and abs(state["right_x"]) <= 1024
+            and abs(state["right_y"]) <= 1024
+        )
+
+    def matching_compound(states: list[dict]) -> list[dict]:
+        return [
+            state for state in states
+            if state["left_trigger"] >= 200
+            and state["right_trigger"] >= 200
+            and state["buttons"] & 0x0040
+            and abs(state["left_y"]) >= 20_000
+            and abs(state["right_x"]) >= 5_000
+        ]
+
+    if not window.bridge_status.text().startswith("Ready —"):
+        report["error"] = window.bridge_status.text()
+        QTimer.singleShot(0, finish)
+        return
+
+    try:
+        report["initial"] = connected_states()
+        started_ns = time.monotonic_ns()
+        window.test_input.setText(report["command"])
+        window._apply_test_command()
+    except Exception as error:
+        report["error"] = f"setup failed: {error}"
+        QTimer.singleShot(0, finish)
+        return
+
+    def observe_active() -> None:
+        try:
+            active_states = connected_states()
+            report["active"] = active_states
+            report["active_observation_ms"] = round(
+                (time.monotonic_ns() - started_ns) / 1_000_000, 3
+            )
+            matching = matching_compound(active_states)
+            if not matching:
+                report["error"] = "compound controller state was not visible through XInput"
+                window._clear()
+                QTimer.singleShot(100, finish)
+                return
+            report["controller_index"] = matching[0]["index"]
+            window._clear()
+            QTimer.singleShot(100, observe_neutral)
+        except Exception as error:
+            report["error"] = f"active-state observation failed: {error}"
+            window._clear()
+            QTimer.singleShot(100, finish)
+
+    def observe_neutral() -> None:
+        try:
+            neutral_states = connected_states()
+            report["clear_neutral"] = neutral_states
+            index = report["controller_index"]
+            neutral = next((state for state in neutral_states if state["index"] == index), None)
+            if not is_neutral(neutral):
+                report["error"] = "controller did not return to neutral after CLEAR"
+                finish()
+                return
+
+            # Reassert the compound state, then stop both Python timers. The C#
+            # bridge must independently neutralize it after its heartbeat timeout.
+            window.test_input.setText(report["command"])
+            window._apply_test_command()
+            window.state_timer.stop()
+            window.heartbeat_timer.stop()
+            QTimer.singleShot(75, observe_watchdog_active)
+        except Exception as error:
+            report["error"] = f"neutral-state observation failed: {error}"
+            finish()
+
+    def observe_watchdog_active() -> None:
+        try:
+            states = connected_states()
+            report["watchdog_active"] = states
+            if not matching_compound(states):
+                report["error"] = "watchdog test state was not active before the timeout"
+                finish()
+                return
+            QTimer.singleShot(1200, observe_watchdog_neutral)
+        except Exception as error:
+            report["error"] = f"watchdog active-state observation failed: {error}"
+            finish()
+
+    def observe_watchdog_neutral() -> None:
+        try:
+            states = connected_states()
+            report["watchdog_neutral"] = states
+            index = report["controller_index"]
+            neutral = next((state for state in states if state["index"] == index), None)
+            report["passed"] = is_neutral(neutral)
+            if not report["passed"]:
+                report["error"] = "bridge watchdog did not neutralize the controller"
+        except Exception as error:
+            report["error"] = f"watchdog neutral-state observation failed: {error}"
+        finish()
+
+    QTimer.singleShot(75, observe_active)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--smoke", action="store_true", help="run the GUI with a mock bridge and exit")
+    parser.add_argument(
+        "--hardware-smoke",
+        action="store_true",
+        help="exercise the real HIDMaestro controller through XInput and exit",
+    )
+    parser.add_argument("--hardware-report", type=Path, help="hardware smoke-test JSON output path")
     args = parser.parse_args(argv)
     if getattr(sys, "frozen", False) and os.name == "nt" and not args.smoke:
         if not ctypes.windll.shell32.IsUserAnAdmin():
             parameters = subprocess.list2cmdline(sys.argv[1:])
             result = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, parameters, None, 1)
             return 0 if result > 32 else 1
-    app = QApplication([sys.argv[0], *(argv or sys.argv[1:])])
-    window = ChatGamepadWindow(mock_bridge=args.smoke)
+    app = QApplication([sys.argv[0]])
+    window = ChatGamepadWindow(mock_bridge=args.smoke, automation_mode=args.hardware_smoke)
     if args.smoke:
         window.test_input.setText("w sprint ads fire right 35")
         window._apply_test_command()
@@ -442,6 +580,12 @@ def main(argv: list[str] | None = None) -> int:
         QTimer.singleShot(100, app.quit)
         app.exec()
         return 0 if success else 1
+    if args.hardware_smoke:
+        report_path = args.hardware_report or (
+            Path(sys.executable).resolve().parent / "hardware-smoke-report.json"
+        )
+        _run_hardware_smoke(app, window, report_path)
+        return app.exec()
     window.show()
     return app.exec()
 
