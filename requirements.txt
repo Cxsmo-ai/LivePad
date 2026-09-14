@@ -1,6 +1,1 @@
-TikTokLive>=5.0.0
-PyQt6>=6.6.0
-pynput>=1.7.6
-vgamepad>=0.1.0
-obs-websocket-py>=1.0
-Flask>=2.3.0
+-r requirements-core.txt

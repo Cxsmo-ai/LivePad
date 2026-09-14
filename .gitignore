@@ -5,8 +5,11 @@ __pycache__/
 *.so
 .Python
 build/
+bin/
+obj/
 develop-eggs/
 dist/
+release/
 downloads/
 eggs/
 .eggs/
@@ -22,6 +25,7 @@ wheels/
 
 # Virtual Environment
 venv/
+.venv/
 env/
 ENV/
 
@@ -38,4 +42,11 @@ Thumbs.db
 
 # Application specific
 config.json
+chat_gamepad.json
+chat_gamepad.backup.json
 *.log
+
+# Large downloaded release archive; the extracted official SDK DLL is kept.
+bridge/vendor/HIDMaestro-v*.zip
+.dotnet/
+tools/dotnet-install.ps1

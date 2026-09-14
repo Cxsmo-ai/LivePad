@@ -1,0 +1,127 @@
+"""Validated, atomic configuration for the chat-gamepad application."""
+
+from __future__ import annotations
+
+from copy import deepcopy
+import json
+import os
+from pathlib import Path
+import shutil
+from typing import Any
+
+from chat.commands import DEFAULT_COMMANDS, SUPPORTED_ACTIONS
+
+
+DEFAULT_CONFIG: dict[str, Any] = {
+    "schema_version": 1,
+    "tiktok": {"username": "", "auto_reconnect": True},
+    "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250},
+    "crowd": {"mode": "balanced", "movement_window_ms": 60},
+    "commands": deepcopy(DEFAULT_COMMANDS),
+}
+
+
+class AppConfig:
+    def __init__(self, path: str | Path = "chat_gamepad.json"):
+        self.path = Path(path)
+        self.backup_path = self.path.with_name(f"{self.path.stem}.backup{self.path.suffix}")
+        self.data = deepcopy(DEFAULT_CONFIG)
+        self.last_recovery: str | None = None
+
+    def load(self) -> dict[str, Any]:
+        self.last_recovery = None
+        if not self.path.exists():
+            self.save()
+            return self.data
+        try:
+            loaded = json.loads(self.path.read_text(encoding="utf-8"))
+            self._validate(loaded)
+            self.data = self._merge(deepcopy(DEFAULT_CONFIG), loaded)
+            return self.data
+        except (json.JSONDecodeError, ValueError, TypeError) as primary_error:
+            if self.backup_path.exists():
+                try:
+                    loaded = json.loads(self.backup_path.read_text(encoding="utf-8"))
+                    self._validate(loaded)
+                    self.data = self._merge(deepcopy(DEFAULT_CONFIG), loaded)
+                    invalid_path = self._preserve_invalid_primary()
+                    self.save()
+                    self.last_recovery = f"Recovered configuration from backup; invalid file kept at {invalid_path.name}"
+                    return self.data
+                except (json.JSONDecodeError, ValueError, TypeError):
+                    pass
+            invalid_path = self._preserve_invalid_primary()
+            self.data = deepcopy(DEFAULT_CONFIG)
+            self.save()
+            self.last_recovery = (
+                f"Reset invalid configuration ({primary_error}); old file kept at {invalid_path.name}"
+            )
+            return self.data
+
+    def _preserve_invalid_primary(self) -> Path:
+        candidate = self.path.with_name(f"{self.path.stem}.invalid{self.path.suffix}")
+        counter = 1
+        while candidate.exists():
+            candidate = self.path.with_name(
+                f"{self.path.stem}.invalid-{counter}{self.path.suffix}"
+            )
+            counter += 1
+        os.replace(self.path, candidate)
+        return candidate
+
+    def save(self) -> None:
+        self.validate()
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        temporary = self.path.with_suffix(f"{self.path.suffix}.tmp")
+        with temporary.open("w", encoding="utf-8", newline="\n") as stream:
+            json.dump(self.data, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        if self.path.exists():
+            shutil.copy2(self.path, self.backup_path)
+        os.replace(temporary, self.path)
+
+    def validate(self, data: dict[str, Any] | None = None) -> None:
+        self._validate(self.data if data is None else data)
+
+    @staticmethod
+    def _validate(data: dict[str, Any]) -> None:
+        if not isinstance(data, dict):
+            raise ValueError("configuration root must be an object")
+        if data.get("schema_version") != 1:
+            raise ValueError("unsupported config schema_version")
+        controller = data.get("controller", {})
+        hz = controller.get("scheduler_hz", 0)
+        if not isinstance(hz, int) or not 50 <= hz <= 1000:
+            raise ValueError("controller.scheduler_hz must be between 50 and 1000")
+        if controller.get("profile") != "xbox-360-wired":
+            raise ValueError("only the xbox-360-wired profile is supported")
+        commands = data.get("commands", {})
+        if not isinstance(commands, dict):
+            raise ValueError("commands must be an object")
+        for name, command in commands.items():
+            if not isinstance(command, dict):
+                raise ValueError(f"commands.{name} must be an object")
+            if not isinstance(name, str) or not name.strip() or any(character.isspace() for character in name):
+                raise ValueError("command names must be non-empty single tokens")
+            if command.get("action") not in SUPPORTED_ACTIONS:
+                raise ValueError(f"commands.{name}.action is unsupported")
+            strength = command.get("strength", 0)
+            duration = command.get("duration_ms", 0)
+            if not isinstance(strength, (int, float)) or not 0 <= strength <= 1:
+                raise ValueError(f"commands.{name}.strength must be in [0, 1]")
+            if not isinstance(duration, int) or not 25 <= duration <= 1500:
+                raise ValueError(f"commands.{name}.duration_ms must be between 25 and 1500")
+            for flag in ("enabled", "allow_strength_argument", "allow_duration_argument"):
+                if flag in command and not isinstance(command[flag], bool):
+                    raise ValueError(f"commands.{name}.{flag} must be true or false")
+
+    @classmethod
+    def _merge(cls, base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+        for key, value in override.items():
+            if isinstance(value, dict) and isinstance(base.get(key), dict):
+                base[key] = cls._merge(base[key], value)
+            else:
+                base[key] = value
+        return base

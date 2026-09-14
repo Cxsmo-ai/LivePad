@@ -1,0 +1,23 @@
+{
+  "profile": "xbox-360-wired",
+  "commands": {
+    "w": "left_stick_forward",
+    "s": "left_stick_backward",
+    "a": "left_stick_left",
+    "d": "left_stick_right",
+    "left": "right_stick_left",
+    "right": "right_stick_right",
+    "up": "right_stick_up",
+    "down": "right_stick_down",
+    "fire": "right_trigger",
+    "ads": "left_trigger",
+    "jump": "a",
+    "crouch": "b",
+    "reload": "x",
+    "swap": "y",
+    "sprint": "left_stick_click",
+    "melee": "right_stick_click",
+    "tac": "left_bumper",
+    "nade": "right_bumper"
+  }
+}

@@ -1,0 +1,54 @@
+from chat.parser import CommandParser
+
+
+def test_compound_command_is_parsed_concurrently():
+    result = CommandParser().parse("w sprint ads fire right 35")
+    assert [command.action for command in result.commands] == [
+        "move_forward", "button_l3", "left_trigger", "right_trigger", "look_right"
+    ]
+    assert result.commands[-1].strength == 0.35
+    assert result.invalid_tokens == ()
+
+
+def test_duration_and_invalid_tokens_are_bounded():
+    result = CommandParser().parse("right 100 1500 banana left 999")
+    assert result.commands[0].duration_ms == 1500
+    assert len(result.commands) == 1
+    assert result.invalid_tokens == ("banana", "999")
+
+
+def test_single_buttons_have_short_default_lease():
+    result = CommandParser().parse("jump reload")
+    assert [(c.action, c.duration_ms) for c in result.commands] == [
+        ("button_a", 120), ("button_x", 120)
+    ]
+
+
+def test_default_strengths_and_durations_match_cod_profile():
+    commands = CommandParser().parse("right fire ads sprint").commands
+    assert [(command.strength, command.duration_ms) for command in commands] == [
+        (0.4, 150), (1.0, 180), (1.0, 600), (1.0, 500)
+    ]
+
+
+def test_chat_analog_arguments_are_percentages_including_one_percent():
+    commands = CommandParser().parse("right 1 25 fire 50 180").commands
+    assert commands[0].strength == 0.01
+    assert commands[0].duration_ms == 25
+    assert commands[1].strength == 0.5
+    assert commands[1].duration_ms == 180
+
+
+def test_custom_command_profile_is_used():
+    parser = CommandParser({
+        "go": {
+            "action": "move_forward",
+            "strength": 0.5,
+            "duration_ms": 250,
+            "enabled": True,
+        }
+    })
+    result = parser.parse("go w")
+    assert result.commands == (parser.parse("go").commands[0],)
+    assert result.commands[0].strength == 0.5
+    assert result.invalid_tokens == ("w",)
