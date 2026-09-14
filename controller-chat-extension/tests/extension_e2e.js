@@ -29,6 +29,7 @@ async function main() {
     popup.on("console", (message) => { if (message.type() === "error") manifestErrors.push(message.text()); });
     await popup.setViewportSize({ width: 370, height: 650 });
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
+    assert.equal(await popup.evaluate(() => chrome.runtime.getManifest().version), "1.0.2");
     await popup.getByRole("heading", { name: "Controller Chat" }).waitFor();
     await popup.screenshot({ path: screenshotPath });
     assert.equal(await popup.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor), "rgb(22, 24, 29)");

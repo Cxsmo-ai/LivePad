@@ -2,6 +2,7 @@
   "use strict";
 
   const isTop = window.top === window;
+  const extensionVersion = chrome.runtime.getManifest().version;
   const DEFAULT_SETTINGS = Object.freeze({ deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0 });
   let armed = false;
   let settings = { ...DEFAULT_SETTINGS };
@@ -84,10 +85,10 @@
       lastPacket = packet;
       lastSentAt = Date.now();
       lastError = "";
-      updateHud(`ARMED · ${platformFromLocation().toUpperCase()} · sent ${packet}`);
+      updateHud(`ARMED · ${platformFromLocation().toUpperCase()} v${extensionVersion} · sent ${packet}`);
     } catch (error) {
       lastError = String(error?.message || error);
-      updateHud(`ARMED · ${lastError}`, true);
+      updateHud(`ARMED · ${platformFromLocation().toUpperCase()} v${extensionVersion} · ${lastError}`, true);
     } finally {
       sendPending = false;
     }
@@ -105,15 +106,15 @@
       if (pad) {
         try {
           engine.update(pad, settings);
-          if (armed) updateHud(`ARMED · ${platformFromLocation().toUpperCase()} · controller connected`);
+          if (armed) updateHud(`ARMED · ${platformFromLocation().toUpperCase()} v${extensionVersion} · controller connected`);
           maybeSend(now);
         } catch (error) {
           lastError = String(error?.message || error);
-          if (armed) updateHud(`ARMED · ${lastError}`, true);
+          if (armed) updateHud(`ARMED · ${platformFromLocation().toUpperCase()} v${extensionVersion} · ${lastError}`, true);
         }
       } else if (armed) {
         lastError = "Press any controller button while this tab is visible";
-        updateHud(`ARMED · ${lastError}`, true);
+        updateHud(`ARMED · ${platformFromLocation().toUpperCase()} v${extensionVersion} · ${lastError}`, true);
       }
     }
     requestAnimationFrame(poll);
@@ -161,7 +162,7 @@
           engine = new HMGamepad.FrameEngine();
           armed = true;
           lastError = "";
-          updateHud(`ARMED · ${platform.toUpperCase()} · move the controller`);
+          updateHud(`ARMED · ${platform.toUpperCase()} v${extensionVersion} · move the controller`);
           sendResponse({ ok: true, ...status() });
         }
       } else {

@@ -15,6 +15,17 @@
     return null;
   }
 
+  function firstAvailable(selectors) {
+    let fallback = null;
+    for (const selector of selectors) {
+      for (const element of document.querySelectorAll(selector)) {
+        fallback ||= element;
+        if (visible(element)) return element;
+      }
+    }
+    return fallback;
+  }
+
   function composerValue(element) {
     if ("value" in element) return String(element.value || "").trim();
     return String(element.textContent || "").trim();
@@ -106,7 +117,10 @@
 
     const send = await waitFor(() => {
       if (!input.isConnected || composerValue(input) !== packet) return null;
-      return firstVisible(set.sends);
+      // TikTok can briefly report zero-size/disabled styling while React promotes
+      // this already-mounted control to its active state. Composer-clear
+      // confirmation below is the authoritative readiness check.
+      return firstAvailable(set.sends);
     }, platform === "tiktok" ? 1500 : 750);
 
     if (!send) {
