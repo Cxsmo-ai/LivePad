@@ -513,6 +513,7 @@ class ChatGamepadWindow(QMainWindow):
             label.setStyleSheet("color: #E8EAEE;")
 
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
+        t0 = time.perf_counter()
         super().__init__()
         self.setWindowTitle("LivePad • DeepAscension by Cxsmo_AI")
         self.resize(920, 840)
@@ -535,11 +536,16 @@ class ChatGamepadWindow(QMainWindow):
         self.config = AppConfig(_config_root() / "chat_gamepad.json")
         self.config.load()
         self.runtime = ControllerRuntime(config=self.config.data)
+        t_before_ui = time.perf_counter()
         self._build_ui()
+        t_after_ui = time.perf_counter()
         if self.config.last_recovery:
             self._log(self.config.last_recovery)
 
+        t_before_bridge = time.perf_counter()
         self._start_bridge(mock_bridge)
+        t_after_bridge = time.perf_counter()
+        print(f"[PERF] UI build: {round((t_after_ui - t_before_ui)*1000)}ms | Bridge: {round((t_after_bridge - t_before_bridge)*1000)}ms | Total init: {round((t_after_bridge - t0)*1000)}ms")
 
         self.state_timer = QTimer(self)
         scheduler_hz = self.config.data["controller"]["scheduler_hz"]

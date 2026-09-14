@@ -36,12 +36,23 @@ if (Test-Path $distExe) {
     Set-Content -LiteralPath "$releaseExe.sha256" -Value "$exeHash  LivePad.exe" -Encoding UTF8
 }
 
+# Instant Launcher Folder (No decompression delay)
+$distDir = Join-Path $projectRoot 'dist\LivePad'
+$releaseInstant = Join-Path $release 'LivePad-Instant'
+if (Test-Path $distDir) {
+    if (Test-Path $releaseInstant) { Remove-Item -LiteralPath $releaseInstant -Recurse -Force }
+    Copy-Item -LiteralPath $distDir -Destination $releaseInstant -Recurse -Force
+}
+
 # 3. Master all-in-one Complete zip
 $bundleDir = Join-Path $projectRoot 'build\LivePadPackage'
 if (Test-Path $bundleDir) { Remove-Item -LiteralPath $bundleDir -Recurse -Force }
 New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
 
 Copy-Item -LiteralPath $releaseExe -Destination (Join-Path $bundleDir 'LivePad.exe') -Force
+if (Test-Path $distDir) {
+    Copy-Item -LiteralPath $distDir -Destination (Join-Path $bundleDir 'LivePad-Instant') -Recurse -Force
+}
 Copy-Item -LiteralPath (Join-Path $release 'commands_guide.html') -Destination (Join-Path $bundleDir 'commands_guide.html') -Force
 Copy-Item -LiteralPath $extZip -Destination (Join-Path $bundleDir 'DeepAscension-LivePad-Extension.zip') -Force
 Copy-Item -LiteralPath $extUnpacked -Destination (Join-Path $bundleDir 'DeepAscension-LivePad-Extension-Edge') -Recurse -Force
