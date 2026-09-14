@@ -32,6 +32,8 @@ finally {
 
 Write-Host "Packaged application smoke test passed: $packagedApp"
 
+Copy-Item (Join-Path $projectRoot 'QUICK_START.txt') (Join-Path $projectRoot 'dist\TikForeverChatGamepad\QUICK_START.txt') -Force
+
 $releaseDirectory = Join-Path $projectRoot 'release'
 $releaseArchive = Join-Path $releaseDirectory 'TikForeverChatGamepad-win-x64.zip'
 $releaseChecksum = "$releaseArchive.sha256"

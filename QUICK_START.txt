@@ -1,0 +1,96 @@
+======================================================================
+  TikTok Chat Gamepad (TikForever-HIDMaestro) - Quick Start Guide
+======================================================================
+
+Everything needed to run this application is already bundled inside this
+folder. You DO NOT need to install Python, .NET, Visual Studio, or any
+manual driver packages.
+
+----------------------------------------------------------------------
+SYSTEM REQUIREMENTS
+----------------------------------------------------------------------
+- Windows 10 or Windows 11 (64-bit)
+- An active internet connection for TikTok LIVE chat
+
+----------------------------------------------------------------------
+HOW TO RUN (FIRST TIME SETUP)
+----------------------------------------------------------------------
+1. Extract this entire ZIP archive to a folder (e.g., on your Desktop).
+
+2. Double-click "TikForeverChatGamepad.exe".
+
+3. When Windows prompts for Administrator permission (User Account Control),
+   click "YES".
+   * Note: Windows requires elevation to create the virtual Xbox controller.
+   * On the very first launch on a new PC, the app will automatically install
+     the built-in virtual controller driver in about two seconds.
+
+4. Once the window opens, you will see:
+   - Status: HIDMaestro bridge: Ready - Xbox 360
+
+5. Type your TikTok username (with or without the @) into the "TikTok LIVE"
+   box and click "Connect".
+
+6. Launch your game (Call of Duty: Black Ops 3, or any PC game with controller
+   support) and make sure your in-game input device is set to Gamepad/Controller.
+
+7. That's it! Your TikTok LIVE chat can now control the game using normal
+   chat commands.
+
+----------------------------------------------------------------------
+POPULAR CHAT COMMANDS
+----------------------------------------------------------------------
+Movement:
+  w / forward      - Move forward (Left stick UP)
+  s / back         - Move backward (Left stick DOWN)
+  a                - Strafe left
+  d                - Strafe right
+  sprint           - Click left stick (L3 / sprint)
+
+Camera (Aiming):
+  left             - Look left
+  right            - Look right
+  up               - Look up
+  down             - Look down
+  right 35         - Smooth analog look (turn right at 35% strength)
+  left 50          - Smooth analog look (turn left at 50% strength)
+
+Combat & Actions:
+  fire / shoot     - Pull right trigger (RT)
+  ads / aim        - Pull left trigger (LT)
+  jump             - Button A
+  crouch           - Button B
+  reload           - Button X
+  swap             - Button Y
+  melee            - Click right stick (R3)
+  tac / tactical   - Left bumper (LB)
+  nade / grenade   - Right bumper (RB)
+
+Compound Commands:
+  Viewers can type multiple actions in one comment, such as:
+  "w sprint ads fire right 35"
+  All five actions happen simultaneously without queue lag!
+
+----------------------------------------------------------------------
+SAFETY FEATURES & SHORTCUTS
+----------------------------------------------------------------------
+- Emergency Stop (F12): Press F12 anytime to immediately pause chat and
+  release all controller inputs.
+- Pause Chat: Click the "PAUSE CHAT" button to temporarily stop taking
+  chat inputs.
+- Clear Controller: Click "CLEAR CONTROLLER" to instantly center all
+  sticks and release all buttons and triggers.
+- Test Mode: In the app, click "Hold 10s" to hold forward, aim, fire,
+  and Button A for 10 seconds to test inside your game or control panel.
+
+----------------------------------------------------------------------
+TROUBLESHOOTING
+----------------------------------------------------------------------
+Q: The game doesn't recognize the controller.
+A: Ensure no other physical USB gamepads are plugged in that might take
+   the Player 1 slot. Restart the game with the app running.
+
+Q: Windows asked for administrator permissions when opening.
+A: This is normal and required so Windows allows the app to expose a
+   virtual Xbox 360 controller device through XInput.
+======================================================================

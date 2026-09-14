@@ -12,6 +12,7 @@ a = Analysis(
         ("bridge/vendor/LICENSE", "licenses/HIDMaestro"),
         ("bridge/vendor/THIRD-PARTY-NOTICES.txt", "licenses/HIDMaestro"),
         ("profiles/cod.json", "profiles"),
+        ("QUICK_START.txt", "."),
     ],
     hiddenimports=[],
     hookspath=[],
