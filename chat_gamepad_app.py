@@ -34,7 +34,7 @@ from PyQt6.QtWidgets import (
 
 from bridge_process import BridgeProcess
 from app_config import AppConfig
-from chat.parser import CommandParser
+from chat.parser import Command, CommandParser
 from controller.state import ControllerState
 from ipc.named_pipe import NamedPipeClient
 from runtime import ControllerRuntime
@@ -44,7 +44,7 @@ from tiktok_client import TikTokLiveManager
 _SINGLE_INSTANCE_NAME = "Local\\TikForeverChatGamepad.SingleInstance"
 
 
-def _acquire_single_instance() -> int | None:
+def _acquire_single_instance(name: str = _SINGLE_INSTANCE_NAME) -> int | None:
     """Keep one app/bridge owner per interactive Windows session."""
     if os.name != "nt":
         return 1
@@ -53,7 +53,7 @@ def _acquire_single_instance() -> int | None:
     kernel32.CreateMutexW.restype = ctypes.c_void_p
     kernel32.CloseHandle.argtypes = (ctypes.c_void_p,)
     kernel32.CloseHandle.restype = ctypes.c_bool
-    handle = kernel32.CreateMutexW(None, False, _SINGLE_INSTANCE_NAME)
+    handle = kernel32.CreateMutexW(None, False, name)
     if not handle:
         raise ctypes.WinError()
     if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
@@ -203,12 +203,21 @@ class ChatGamepadWindow(QMainWindow):
         test_group = QGroupBox("Controller test mode")
         test_layout = QHBoxLayout(test_group)
         self.test_input = QLineEdit()
+        self.test_input.setText("w sprint ads fire right 35")
         self.test_input.setPlaceholderText("w sprint ads fire right 35")
         self.test_input.returnPressed.connect(self._apply_test_command)
         self.test_button = QPushButton("Apply")
         self.test_button.clicked.connect(self._apply_test_command)
+        self.hold_button = QPushButton("Hold 3s")
+        self.hold_button.setToolTip("Hold compound command for 3 seconds so you can easily observe it in joy.cpl")
+        self.hold_button.clicked.connect(self._apply_hold_test)
+        self.joy_button = QPushButton("Open joy.cpl")
+        self.joy_button.setToolTip("Open Windows Game Controllers control panel")
+        self.joy_button.clicked.connect(self._open_joy_cpl)
         test_layout.addWidget(self.test_input)
         test_layout.addWidget(self.test_button)
+        test_layout.addWidget(self.hold_button)
+        test_layout.addWidget(self.joy_button)
         root.addWidget(test_group)
 
         safety_layout = QHBoxLayout()
@@ -347,9 +356,34 @@ class ChatGamepadWindow(QMainWindow):
         self._log(f"{user}: {message} — {result_text}")
 
     def _apply_test_command(self) -> None:
-        message = self.test_input.text().strip()
-        if message:
-            self._handle_comment({"user": "local-test", "user_id": "local-test", "comment": message})
+        message = (
+            self.test_input.text().strip()
+            or self.test_input.placeholderText().strip()
+            or "w sprint ads fire right 35"
+        )
+        self._handle_comment({"user": "local-test", "user_id": "local-test", "comment": message})
+
+    def _apply_hold_test(self) -> None:
+        commands = [
+            Command("move_forward", 1.0, 3000),
+            Command("button_l3", 1.0, 3000),
+            Command("left_trigger", 1.0, 3000),
+            Command("right_trigger", 1.0, 3000),
+            Command("look_right", 0.35, 3000),
+        ]
+        now_ns = time.monotonic_ns()
+        for cmd in commands:
+            self.runtime.engine.schedule(cmd, "local-hold", now_ns)
+        self.runtime.flush(now_ns)
+        self._render_state(self.runtime.engine.resolve(now_ns))
+        self._log("HOLD TEST (3s) active: LY+1.0, RX+0.35, LT 100%, RT 100%, L3 — check joy.cpl")
+
+    def _open_joy_cpl(self) -> None:
+        try:
+            subprocess.Popen(["joy.cpl"], shell=True)
+            self._log("Opened joy.cpl — select Xbox 360 controller -> Properties")
+        except Exception as error:
+            self._log(f"Failed to open joy.cpl: {error}")
 
     def _tick(self) -> None:
         try:
