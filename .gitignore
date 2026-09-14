@@ -46,6 +46,9 @@ chat_gamepad.json
 chat_gamepad.backup.json
 hardware-smoke-report.json
 live-hardware-report.json
+dinput_probe.py
+monitor_winmm.py
+read_joy.py
 *.log
 
 # Large downloaded release archive; the extracted official SDK DLL is kept.
