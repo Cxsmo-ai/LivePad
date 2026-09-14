@@ -584,7 +584,7 @@ def main(argv: list[str] | None = None) -> int:
         if not ctypes.windll.shell32.IsUserAnAdmin():
             parameters = subprocess.list2cmdline(sys.argv[1:])
             result = ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, parameters, None, 1)
-            return 0 if result > 32 else 1
+            os._exit(0 if result > 32 else 1)
     instance_handle = _acquire_single_instance()
     if instance_handle is None:
         return 0
