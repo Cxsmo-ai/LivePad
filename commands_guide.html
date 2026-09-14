@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Plays COD Zombies — Streamer & Viewer Guide</title>
+  <style>
+    :root {
+      --bg: #16181D;
+      --card: #1F2228;
+      --card-alt: #191B20;
+      --nav: #1A1C22;
+      --border: #2C3037;
+      --border-subtle: #24272D;
+      --text-primary: #E8EAEE;
+      --text-secondary: #A6ADB8;
+      --text-muted: #6B7280;
+      --accent: #6366F1;
+      --accent-hover: #4F46E5;
+      --accent-light: #818CF8;
+      --accent-bright: #A5B4FC;
+      --input-bg: #14161A;
+      --input-border: #34383F;
+      --green: #4ADE80;
+      --yellow: #FBBF24;
+      --red: #F87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    header {
+      background: var(--nav);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .badge {
+      display: inline-block;
+      align-self: flex-start;
+      background: rgba(99, 102, 241, 0.18);
+      border: 1px solid var(--accent);
+      color: var(--accent-bright);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #FFFFFF;
+      letter-spacing: -0.02em;
+    }
+    p.lead {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent-light);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #FFFFFF;
+      margin: 16px 0 8px 0;
+    }
+    .kid-box {
+      background: var(--card-alt);
+      border-left: 4px solid var(--accent);
+      padding: 16px 20px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 20px;
+    }
+    .kid-box p {
+      font-size: 14px;
+      color: var(--text-primary);
+    }
+    .kid-box strong {
+      color: var(--green);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--nav);
+      color: var(--text-secondary);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    code {
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--accent-bright);
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 13px;
+    }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .tag-move { background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .tag-aim { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tag-combat { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .tag-action { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid rgba(74, 222, 128, 0.3); }
+    .combo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 14px;
+      margin-top: 12px;
+    }
+    .combo-card {
+      background: var(--card-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .combo-card code {
+      font-size: 14px;
+      color: var(--green);
+    }
+    .combo-card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+    ul {
+      margin-left: 20px;
+      margin-top: 8px;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .tip {
+      color: var(--accent-light);
+      font-weight: 600;
+    }
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">HID Maestro Streamer Edition</div>
+      <h1>TikTok & YouTube & Twitch Chat Plays Guide</h1>
+      <p class="lead">How anyone in live chat can control Call of Duty Zombies, Black Ops, or any Xbox controller game in real time.</p>
+    </header>
+
+    <div class="card">
+      <h2>1. The Caveman Rule (How It Works)</h2>
+      <div class="kid-box">
+        <p><strong>Just type what you want the character to do in chat!</strong><br>
+        You can type one word, or put a bunch of words together in ONE message to do crazy combos. No direct connection or passwords needed.</p>
+      </div>
+      <div class="combo-grid">
+        <div class="combo-card">
+          <code>w</code>
+          <p>Walk forward</p>
+        </div>
+        <div class="combo-card">
+          <code>w sprint</code>
+          <p>Sprint forward fast!</p>
+        </div>
+        <div class="combo-card">
+          <code>ads fire</code>
+          <p>Aim down sights and shoot weapon</p>
+        </div>
+        <div class="combo-card">
+          <code>w sprint ads fire right 40</code>
+          <p>Run, aim, blast zombies, and turn right all at once!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2. Complete Chat Commands List</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Type in Chat</th>
+            <th>Action</th>
+            <th>Xbox Button</th>
+            <th>Type</th>
+            <th>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>w</code> / <code>forward</code></td>
+            <td>Walk Forward</td>
+            <td>Left Stick Up</td>
+            <td><span class="tag tag-move">Move</span></td>
+            <td>Moves character forward</td>
+          </tr>
+          <tr>
+            <td><code>s</code> / <code>back</code></td>
+            <td>Walk Backward</td>
+            <td>Left Stick Down</td>
+            <td><span class="tag tag-move">Move</span></td>
+            <td>Backs away from zombies</td>
+          </tr>
+          <tr>
+            <td><code>a</code></td>
+            <td>Strafe Left</td>
+            <td>Left Stick Left</td>
+            <td><span class="tag tag-move">Move</span></td>
+            <td>Dodge or sidestep left</td>
+          </tr>
+          <tr>
+            <td><code>d</code></td>
+            <td>Strafe Right</td>
+            <td>Left Stick Right</td>
+            <td><span class="tag tag-move">Move</span></td>
+            <td>Dodge or sidestep right</td>
+          </tr>
+          <tr>
+            <td><code>left</code></td>
+            <td>Look Left</td>
+            <td>Right Stick Left</td>
+            <td><span class="tag tag-aim">Aim</span></td>
+            <td>Turns camera left (default 40% speed)</td>
+          </tr>
+          <tr>
+            <td><code>right</code></td>
+            <td>Look Right</td>
+            <td>Right Stick Right</td>
+            <td><span class="tag tag-aim">Aim</span></td>
+            <td>Turns camera right (default 40% speed)</td>
+          </tr>
+          <tr>
+            <td><code>up</code></td>
+            <td>Look Up</td>
+            <td>Right Stick Up</td>
+            <td><span class="tag tag-aim">Aim</span></td>
+            <td>Aims camera up toward heads</td>
+          </tr>
+          <tr>
+            <td><code>down</code></td>
+            <td>Look Down</td>
+            <td>Right Stick Down</td>
+            <td><span class="tag tag-aim">Aim</span></td>
+            <td>Aims camera down toward ground</td>
+          </tr>
+          <tr>
+            <td><code>fire</code> / <code>shoot</code></td>
+            <td>Shoot Weapon</td>
+            <td>Right Trigger (RT)</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Fires current gun</td>
+          </tr>
+          <tr>
+            <td><code>ads</code> / <code>aim</code></td>
+            <td>Aim Down Sights</td>
+            <td>Left Trigger (LT)</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Aims weapon precision sight</td>
+          </tr>
+          <tr>
+            <td><code>reload</code></td>
+            <td>Reload Weapon</td>
+            <td>X Button</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Quick reload tap (120ms)</td>
+          </tr>
+          <tr>
+            <td><code>swap</code> / <code>switch</code></td>
+            <td>Swap Weapon</td>
+            <td>Y Button</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Swaps to secondary gun or Wonder Weapon</td>
+          </tr>
+          <tr>
+            <td><code>sprint</code></td>
+            <td>Sprint</td>
+            <td>L3 (Click Left Stick)</td>
+            <td><span class="tag tag-move">Move</span></td>
+            <td>Starts sprinting (500ms lease)</td>
+          </tr>
+          <tr>
+            <td><code>jump</code></td>
+            <td>Jump</td>
+            <td>A Button</td>
+            <td><span class="tag tag-action">Action</span></td>
+            <td>Jumps over obstacles or zombies</td>
+          </tr>
+          <tr>
+            <td><code>crouch</code></td>
+            <td>Crouch</td>
+            <td>B Button</td>
+            <td><span class="tag tag-action">Action</span></td>
+            <td>Ducks under hazards or drops prone</td>
+          </tr>
+          <tr>
+            <td><code>slide</code></td>
+            <td>Slide</td>
+            <td>Hold B (400ms)</td>
+            <td><span class="tag tag-move">Move</span></td>
+            <td>Slides forward while sprinting</td>
+          </tr>
+          <tr>
+            <td><code>melee</code> / <code>knife</code></td>
+            <td>Knife Attack</td>
+            <td>R3 (Click Right Stick)</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Knifes zombie in front of you</td>
+          </tr>
+          <tr>
+            <td><code>buy</code> / <code>interact</code> / <code>use</code></td>
+            <td>Buy / Open / Box</td>
+            <td>Hold X (800ms)</td>
+            <td><span class="tag tag-action">Action</span></td>
+            <td>Opens doors, buys wall weapons & mystery box</td>
+          </tr>
+          <tr>
+            <td><code>revive</code></td>
+            <td>Revive Teammate</td>
+            <td>Hold X (1500ms)</td>
+            <td><span class="tag tag-action">Action</span></td>
+            <td>Holds interact long enough to revive</td>
+          </tr>
+          <tr>
+            <td><code>nade</code> / <code>grenade</code></td>
+            <td>Throw Frag</td>
+            <td>Right Bumper (RB)</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Throws lethal grenade</td>
+          </tr>
+          <tr>
+            <td><code>tac</code> / <code>tactical</code></td>
+            <td>Throw Tactical</td>
+            <td>Left Bumper (LB)</td>
+            <td><span class="tag tag-combat">Combat</span></td>
+            <td>Throws Monkey Bomb / Flashbang</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>3. Numbers & Modifiers (Speed & Time)</h2>
+      <div class="kid-box">
+        <p>You do <strong>not</strong> need any percent symbol (%)! Just write the number.<br>
+        You can also add seconds like <code>1.2s</code> or milliseconds like <code>500ms</code>.</p>
+      </div>
+      <ul>
+        <li><code>right 50</code> &rarr; Turns right at <strong>50%</strong> speed.</li>
+        <li><code>w 80</code> &rarr; Walks forward at <strong>80%</strong> stick tilt.</li>
+        <li><code>w 1.5s</code> &rarr; Walks forward for <strong>1.5 seconds</strong>.</li>
+        <li><code>w 80 1.2s</code> &rarr; Walks forward at <strong>80%</strong> strength for <strong>1.2 seconds</strong>!</li>
+        <li><code>fire 500ms</code> &rarr; Holds the shoot button down for half a second.</li>
+        <li><code>buy 2s</code> &rarr; Holds interact button for 2 seconds (good for stubborn doors or Pack-a-Punch).</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>4. Crazy Combos (Type Multiple in One Line)</h2>
+      <p style="color: var(--text-secondary); margin-bottom: 12px;">The engine executes all actions in your message <strong>simultaneously</strong>! You don''t have to wait between commands.</p>
+      <div class="combo-grid">
+        <div class="combo-card">
+          <code>w sprint</code>
+          <p>Run forward full speed</p>
+        </div>
+        <div class="combo-card">
+          <code>w sprint slide</code>
+          <p>Slide cancel / sliding sprint forward</p>
+        </div>
+        <div class="combo-card">
+          <code>ads fire</code>
+          <p>Aim down sight and blast</p>
+        </div>
+        <div class="combo-card">
+          <code>w ads fire</code>
+          <p>Walk forward while aiming and shooting</p>
+        </div>
+        <div class="combo-card">
+          <code>w jump reload</code>
+          <p>Jump forward and reload at the same time</p>
+        </div>
+        <div class="combo-card">
+          <code>w sprint ads fire right 40</code>
+          <p>The ultimate COD combo: sprint, aim, fire, and turn camera right</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>5. Optional: Play with Real Gamepad (Browser Extension)</h2>
+      <div class="kid-box">
+        <p>If you don''t want to type and have an Xbox or PlayStation controller plugged into your computer:</p>
+      </div>
+      <ul>
+        <li>Load the <code>HIDMaestroControllerChat</code> extension in your browser (Edge or Chrome).</li>
+        <li>Open the TikTok, YouTube, or Twitch live stream.</li>
+        <li>Click <strong>ARM CONTROLLER CHAT</strong>.</li>
+        <li>Now whenever you touch your real controller, your inputs are automatically turned into chat messages and posted instantly!</li>
+      </ul>
+    </div>
+
+    <footer>
+      HID Maestro Streamer Edition &bull; Pure Virtual Controller Engine &bull; Zero Game Injection
+    </footer>
+  </div>
+</body>
+</html>
+
