@@ -14,6 +14,20 @@ $bridgeExe = Join-Path $projectRoot 'build\bridge\TikForever.HIDMaestro.exe'
 $bridgeZip = Join-Path $projectRoot 'build\bridge\TikForever.HIDMaestro.zip'
 Compress-Archive -LiteralPath $bridgeExe -DestinationPath $bridgeZip -Force
 
+Write-Host "Packaging viewer controller-to-chat extension..."
+$extensionRoot = Join-Path $projectRoot 'controller-chat-extension'
+$extensionZip = Join-Path $projectRoot 'build\HIDMaestroControllerChat.zip'
+Push-Location $extensionRoot
+try {
+    Compress-Archive -Path @(
+        'manifest.json', 'service_worker.js', 'content.js',
+        'popup.html', 'popup.css', 'popup.js', 'shared', 'README.md'
+    ) -DestinationPath $extensionZip -Force
+}
+finally {
+    Pop-Location
+}
+
 Write-Host "Packaging HID Maestro Streamer Edition with PyInstaller..."
 & $python -m PyInstaller --noconfirm --clean (Join-Path $projectRoot 'HIDMaestroStreamerEdition.spec')
 if ($LASTEXITCODE -ne 0) { throw 'PyInstaller packaging failed' }
@@ -37,10 +51,18 @@ Write-Host "Packaged application smoke test passed: $packagedApp"
 $releaseDirectory = Join-Path $projectRoot 'release'
 $releaseExe = Join-Path $releaseDirectory 'HIDMaestroStreamerEdition.exe'
 $releaseChecksum = "$releaseExe.sha256"
+$releaseExtension = Join-Path $releaseDirectory 'HIDMaestroControllerChat.zip'
+$releaseExtensionChecksum = "$releaseExtension.sha256"
 New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
 Copy-Item -LiteralPath $packagedApp -Destination $releaseExe -Force
+Copy-Item -LiteralPath $extensionZip -Destination $releaseExtension -Force
 $hash = (Get-FileHash -LiteralPath $releaseExe -Algorithm SHA256).Hash.ToLowerInvariant()
 Set-Content -LiteralPath $releaseChecksum -Value "$hash  HIDMaestroStreamerEdition.exe" `
     -Encoding utf8NoBOM
+$extensionHash = (Get-FileHash -LiteralPath $releaseExtension -Algorithm SHA256).Hash.ToLowerInvariant()
+Set-Content -LiteralPath $releaseExtensionChecksum -Value "$extensionHash  HIDMaestroControllerChat.zip" `
+    -Encoding utf8NoBOM
 Write-Host "Single-file release: $releaseExe"
 Write-Host "SHA-256: $hash"
+Write-Host "Separate viewer extension: $releaseExtension"
+Write-Host "Extension SHA-256: $extensionHash"

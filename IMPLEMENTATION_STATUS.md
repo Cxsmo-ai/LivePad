@@ -29,10 +29,17 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
 - A read-only live-stream harness validates real TikTok comment ingestion without posting or interacting with viewers.
 - An elevated unattended hardware harness verifies compound input, CLEAR, and watchdog neutralization through XInput.
 - A self-contained Windows x64 release carries its own .NET runtime and the official HIDMaestro SDK.
+- A Chrome Manifest V3 viewer extension converts standard physical gamepads into compact, full-state
+  `hm1` frames sent only through Twitch, YouTube, or TikTok chat.
+- Controller frames include both held state and queued tap edges, monotonic sessions/sequences,
+  replay rejection, bounded leases, explicit neutral frames, and corrected positive-forward Y.
+- The desktop app remains one EXE, while viewers receive a separate load-unpacked Chrome extension ZIP.
 
 ## Automated verification
 
-- 51 Python tests pass.
+- 67 Python tests and 7 JavaScript controller-protocol tests pass.
+- Deterministic DOM fixtures pass for all three platforms; a real Manifest V3 Chromium run loads
+  the service worker and injects a frame through the actual content script.
 - C# bridge builds with zero warnings and zero errors.
 - Required `w sprint ads fire right 35` state passes concurrently.
 - 1,000-frame real named-pipe test passes at roughly 29,000 frames/second on this machine.

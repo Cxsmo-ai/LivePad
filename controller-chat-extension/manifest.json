@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "HID Maestro Controller Chat",
+  "version": "1.0.0",
+  "description": "Turns a physical gamepad into compact HID Maestro controller frames sent through live chat.",
+  "permissions": ["storage", "tabs", "webNavigation"],
+  "host_permissions": [
+    "https://www.twitch.tv/*",
+    "https://www.youtube.com/*",
+    "https://www.tiktok.com/*"
+  ],
+  "background": {
+    "service_worker": "service_worker.js"
+  },
+  "action": {
+    "default_title": "HID Maestro Controller Chat",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.twitch.tv/*",
+        "https://www.youtube.com/*",
+        "https://www.tiktok.com/*"
+      ],
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true,
+      "run_at": "document_idle",
+      "js": ["shared/protocol.js", "shared/gamepad_engine.js", "shared/dom_injector.js", "content.js"]
+    }
+  ]
+}

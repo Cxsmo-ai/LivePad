@@ -61,3 +61,20 @@ watchdog, writes a JSON report, and exits:
 
 This publishes the self-contained bridge, builds the windowed application, runs the packaged
 smoke test, and produces the single release EXE plus its SHA-256 checksum.
+
+## Viewer physical-controller extension
+
+Send the separate `release/HIDMaestroControllerChat.zip` file to the viewer. The viewer unzips it,
+opens `chrome://extensions`, enables Developer mode, chooses **Load unpacked**, and selects the
+unzipped folder. They then open the supported live chat, press any gamepad button once while the
+page is visible, open the extension, and select **Arm Controller Chat**.
+
+The viewer needs only Chrome and a browser-supported controller. They do not install HIDMaestro,
+.NET, Python, or this desktop app. Every generated frame is posted through normal public chat;
+there is no direct connection to the streamer PC. See
+[CONTROLLER_CHAT_ARCHITECTURE.md](CONTROLLER_CHAT_ARCHITECTURE.md) for the protocol, measured
+constraints, safety behavior, and platform-policy caveats.
+
+Installing the extension is optional. Viewers without it can keep typing all existing single,
+compound, strength, and duration commands. Typed commands and extension controller frames are
+resolved together, so both viewer styles can participate in the same stream.

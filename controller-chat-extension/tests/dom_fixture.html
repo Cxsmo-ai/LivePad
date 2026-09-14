@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Controller Chat DOM Adapter Fixture</title>
+  <style>
+    body{background:#16181D;color:#E8EAEE;font:14px Segoe UI,sans-serif;padding:24px}
+    button,[contenteditable]{border:1px solid #34383F;border-radius:5px;background:#1F2228;color:#E8EAEE;padding:9px;margin:5px}
+    .fixture{display:none}.controls{display:flex;gap:8px;margin-bottom:18px}#result{color:#4ADE80;font-family:Consolas,monospace}
+  </style>
+</head>
+<body>
+  <h1>DOM Adapter Fixture</h1>
+  <div class="controls">
+    <button id="test-twitch">Test Twitch</button>
+    <button id="test-youtube">Test YouTube</button>
+    <button id="test-tiktok">Test TikTok</button>
+  </div>
+  <section id="twitch" class="fixture"><div data-a-target="chat-input" contenteditable="true"></div><button data-a-target="chat-send-button">Send</button></section>
+  <section id="youtube" class="fixture"><yt-live-chat-text-input-field-renderer><div id="input" contenteditable="true"></div></yt-live-chat-text-input-field-renderer><div id="send-button"><button>Send</button></div></section>
+  <section id="tiktok" class="fixture"><div data-e2e="comment-input"><div contenteditable="true"></div></div><button data-e2e="comment-post">Send</button></section>
+  <p id="result">Not run</p>
+  <script src="../shared/dom_injector.js"></script>
+  <script>
+    const packet="hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470";
+    async function run(platform){
+      document.querySelectorAll(".fixture").forEach(x=>x.style.display="none");
+      const section=document.getElementById(platform);section.style.display="block";
+      const composer=section.querySelector("[contenteditable],textarea");composer.textContent="";
+      section.querySelector("button").onclick=()=>{document.getElementById("result").textContent=`PASS ${platform}: ${composer.textContent || composer.value}`;};
+      const result=await HMInjector.injectPacket(packet,platform);
+      if(!result.ok)document.getElementById("result").textContent=`FAIL ${platform}: ${result.error}`;
+    }
+    for(const platform of ["twitch","youtube","tiktok"]){document.getElementById(`test-${platform}`).onclick=()=>run(platform);}
+  </script>
+</body>
+</html>

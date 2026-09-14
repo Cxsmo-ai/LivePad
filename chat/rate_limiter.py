@@ -32,6 +32,7 @@ class PerUserRateLimiter:
         "camera": RateLimit(10, 5),
         "button": RateLimit(6, 3),
         "trigger": RateLimit(8, 4),
+        "frame": RateLimit(3, 2),
     }
 
     def __init__(self, limits: dict[str, RateLimit] | None = None):

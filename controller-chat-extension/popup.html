@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HID Maestro Controller Chat</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header>
+      <div class="mark" aria-hidden="true">HM</div>
+      <div><h1>Controller Chat</h1><p>HID Maestro Streamer Edition</p></div>
+    </header>
+
+    <section class="status-panel" aria-live="polite">
+      <div><span>Platform</span><strong id="platform">Open a live chat</strong></div>
+      <div><span>Controller</span><strong id="controller">Press any button</strong></div>
+      <div><span>Relay</span><strong id="relay">Disarmed</strong></div>
+    </section>
+
+    <button id="arm" class="primary" type="button">ARM CONTROLLER CHAT</button>
+    <p id="message" class="message">Open the stream chat, press any controller button, then arm.</p>
+
+    <section class="settings">
+      <h2>Input tuning</h2>
+      <label>Stick deadzone <output id="deadzoneValue">14</output>
+        <input id="deadzone" type="range" min="5" max="30" step="1" value="14">
+      </label>
+      <label>Response curve
+        <select id="curve">
+          <option value="0.75">Fast</option>
+          <option value="1" selected>Linear</option>
+          <option value="1.5">Precise</option>
+          <option value="2">Fine aim</option>
+        </select>
+      </label>
+      <label>Axis step
+        <select id="quantizeStep">
+          <option value="1">1 — exact</option>
+          <option value="2">2</option>
+          <option value="5" selected>5 — stable</option>
+          <option value="10">10 — compact</option>
+        </select>
+      </label>
+      <label>Chat cadence
+        <select id="cadenceMs">
+          <option value="0" selected>Automatic for platform</option>
+          <option value="1050">1.05 seconds</option>
+          <option value="1200">1.2 seconds</option>
+          <option value="2800">2.8 seconds</option>
+          <option value="5000">5 seconds</option>
+        </select>
+      </label>
+    </section>
+
+    <section class="packet-panel">
+      <h2>Last chat frame</h2>
+      <code id="packet">No frame sent yet</code>
+    </section>
+    <p class="foot">Every input travels through the platform chat. No direct connection to the streamer PC.</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

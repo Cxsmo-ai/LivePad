@@ -6,6 +6,7 @@ import re
 from typing import Any, Iterable, Mapping
 
 from .commands import DEFAULT_COMMANDS
+from .pad_protocol import PadFrame, parse_pad_frame
 
 
 @dataclass(frozen=True, slots=True)
@@ -19,6 +20,7 @@ class Command:
 class ParseResult:
     commands: tuple[Command, ...]
     invalid_tokens: tuple[str, ...]
+    pad_frame: PadFrame | None = None
 
 
 class CommandParser:
@@ -38,6 +40,13 @@ class CommandParser:
         self.allow_seconds = allow_seconds
 
     def parse(self, text: str) -> ParseResult:
+        try:
+            pad_frame = parse_pad_frame(text)
+        except ValueError:
+            return ParseResult((), ("invalid-controller-frame",))
+        if pad_frame is not None:
+            return ParseResult((), (), pad_frame)
+
         tokens = re.findall(r"[^\s,;]+", text.casefold())
         commands: list[Command] = []
         invalid: list[str] = []

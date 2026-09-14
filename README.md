@@ -22,6 +22,24 @@ the same time. Global **F12** pauses chat and immediately neutralizes the contro
 
 See [APP_USAGE.md](APP_USAGE.md), [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md), and
 [SAFETY.md](SAFETY.md) for operation, verification results, and the strict non-cheat boundary.
+The viewer-controller protocol, real latency limits, browser design, and source-backed platform
+constraints are documented in [CONTROLLER_CHAT_ARCHITECTURE.md](CONTROLLER_CHAT_ARCHITECTURE.md).
+
+## Physical controller through chat
+
+Send `release/HIDMaestroControllerChat.zip` to a viewer separately from the streamer EXE. They
+unzip it and load that folder from `chrome://extensions` using Developer mode. Their physical
+controller is sampled in the browser and encoded into compact `hm1` full-state frames that still
+travel only through Twitch, YouTube, or TikTok chat.
+
+The extension is separate browser code and Chrome does not permit an ordinary portable EXE to
+silently install it. The desktop application remains one EXE and the viewer extension remains one
+separate ZIP; viewers do not need HIDMaestro,
+.NET, Python, or the desktop app.
+
+The extension is completely optional. Ordinary typed commands such as `w sprint ads fire right 35`
+continue to work exactly as before, and typed-command viewers can play at the same time as viewers
+using physical controllers through the extension.
 
 ## Build and verify from source
 

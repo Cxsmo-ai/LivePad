@@ -5,6 +5,7 @@ import math
 import time
 
 from chat.parser import Command
+from chat.pad_protocol import PadFrame
 from .state import ControllerState
 
 
@@ -67,6 +68,46 @@ class StateEngine:
         self._leases[(owner, command.action)] = _Lease(
             control, value, now_ns + command.duration_ms * 1_000_000, owner, self._sequence
         )
+        return self._sequence
+
+    def replace_owner_frame(
+        self, frame: PadFrame, owner: str, now_ns: int | None = None
+    ) -> int:
+        """Atomically replace one viewer's full-state frame leases.
+
+        Held controls use the frame lease. Rising-edge taps are separate short leases so
+        a quick press and release between two platform-limited chat sends is not lost.
+        """
+
+        now_ns = time.monotonic_ns() if now_ns is None else now_ns
+        frame_prefix = "@frame:"
+        self._leases = {
+            key: lease for key, lease in self._leases.items()
+            if not (key[0] == owner and key[1].startswith(frame_prefix))
+        }
+        self._sequence += 1
+        expires_ns = now_ns + frame.lease_ms * 1_000_000
+
+        values = {
+            "lx": frame.lx, "ly": frame.ly, "rx": frame.rx, "ry": frame.ry,
+            "lt": frame.lt, "rt": frame.rt,
+        }
+        for control, value in values.items():
+            if value:
+                self._leases[(owner, f"{frame_prefix}{control}")] = _Lease(
+                    control, value, expires_ns, owner, self._sequence
+                )
+        for button in frame.held_buttons:
+            self._leases[(owner, f"{frame_prefix}button:{button}")] = _Lease(
+                "buttons", button, expires_ns, owner, self._sequence
+            )
+
+        tap_expires_ns = now_ns + 120 * 1_000_000
+        for button in frame.tap_buttons - frame.held_buttons:
+            tap_key = f"@tap:{frame.session:x}:{frame.sequence:x}:{button}"
+            self._leases[(owner, tap_key)] = _Lease(
+                "buttons", button, tap_expires_ns, owner, self._sequence
+            )
         return self._sequence
 
     def resolve(self, now_ns: int | None = None) -> ControllerState:

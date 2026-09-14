@@ -9,6 +9,9 @@ if ($LASTEXITCODE -ne 0) { throw 'Bridge build failed' }
 & $python -m pytest -q
 if ($LASTEXITCODE -ne 0) { throw 'Python tests failed' }
 
+node --test (Join-Path $projectRoot 'controller-chat-extension\tests\protocol.test.js')
+if ($LASTEXITCODE -ne 0) { throw 'Controller extension tests failed' }
+
 & $python (Join-Path $projectRoot 'controller_test.py') w sprint ads fire right 35
 if ($LASTEXITCODE -ne 0) { throw 'Controller compound-command test failed' }
 
