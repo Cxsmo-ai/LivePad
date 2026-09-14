@@ -112,21 +112,24 @@
     }
 
     neutral() {
-      const wasActive = this.lastSentFingerprint !== NEUTRAL_FINGERPRINT;
       this.current = { lx: 0, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, heldMask: 0, tapMask: 0 };
       this.previousHeldMask = 0;
       this.pendingTapMask = 0;
-      this.dirty = wasActive;
+      this.dirty = false;
     }
 
     packet(now, platform, configuredCadence) {
       const timing = timingFor(platform, configuredCadence);
       const elapsed = now - this.lastSentAt;
       const active = fingerprint(this.current) !== NEUTRAL_FINGERPRINT;
+      // When controller is at neutral (centered sticks, released buttons),
+      // send no commands. Streamer engine automatically expires leases to neutral.
+      if (!active) return null;
+
       if (this.dirty) {
         if (elapsed < timing.cadenceMs) return null;
       } else {
-        if (!active || elapsed < timing.keepaliveMs) return null;
+        if (elapsed < timing.keepaliveMs) return null;
       }
       const frame = {
         session: this.session,
