@@ -7,7 +7,10 @@
 
   const isTop = window.top === window;
   const extensionVersion = chrome.runtime.getManifest().version;
-  const DEFAULT_SETTINGS = Object.freeze({ deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0, gamepadIndex: -1 });
+  const DEFAULT_SETTINGS = Object.freeze({
+    deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0, gamepadIndex: -1,
+    armedPlatforms: Object.freeze({ tiktok: false, youtube: false, twitch: false })
+  });
   let armed = false;
   let settings = { ...DEFAULT_SETTINGS };
   let engine = new HMGamepad.FrameEngine();
@@ -45,17 +48,20 @@
 
   function status() {
     const pad = activeGamepad();
+    const platform = platformFromLocation();
+    const isPlatformArmed = Boolean(settings.armedPlatforms?.[platform]);
     return {
       ok: true,
-      platform: platformFromLocation(),
-      armed,
+      platform,
+      armed: isPlatformArmed,
+      armedPlatforms: settings.armedPlatforms || { tiktok: false, youtube: false, twitch: false },
       visible: document.visibilityState === "visible",
       gamepad: pad ? { id: pad.id, index: pad.index, mapping: pad.mapping || "unmapped" } : null,
       packet: lastPacket,
       lastError,
       lastSentAt,
       version: extensionVersion,
-      timing: HMGamepad.timingFor(platformFromLocation(), settings.cadenceMs),
+      timing: HMGamepad.timingFor(platform, settings.cadenceMs),
       state: engine.current
     };
   }
@@ -105,8 +111,10 @@
   }
 
   function maybeSend(now) {
-    if (!armed || sendPending || document.visibilityState !== "visible") return;
-    const packet = engine.packet(now, platformFromLocation(), settings.cadenceMs);
+    const platform = platformFromLocation();
+    const isPlatformArmed = Boolean(settings.armedPlatforms?.[platform]);
+    if (!isPlatformArmed || sendPending || document.visibilityState !== "visible") return;
+    const packet = engine.packet(now, platform, settings.cadenceMs);
     if (packet) route(packet, now);
   }
 
@@ -130,30 +138,33 @@
     requestAnimationFrame(poll);
   }
 
-  async function disarm(sendNeutral = true) {
-    if (armed && sendNeutral && engine.lastSentFingerprint !== NEUTRAL_FINGERPRINT) {
-      engine.neutral();
-      const cadence = HMGamepad.timingFor(platformFromLocation(), settings.cadenceMs).cadenceMs;
-      const sendAt = Math.max(performance.now(), engine.lastSentAt + cadence + 5);
-      const delay = Math.max(0, sendAt - performance.now());
-      setTimeout(() => {
-        const now = performance.now();
-        const packet = engine.packet(now, platformFromLocation(), settings.cadenceMs);
-        if (packet) route(packet, now);
-      }, delay);
-    }
+  function disarm() {
+    engine.neutral();
     armed = false;
     updateHud("");
   }
 
   document.addEventListener("visibilitychange", () => {
-    if (isTop && armed && document.visibilityState !== "visible") disarm(true);
+    if (isTop && armed && document.visibilityState !== "visible") disarm();
   });
 
   chrome.storage.sync.get(DEFAULT_SETTINGS, (stored) => { settings = { ...DEFAULT_SETTINGS, ...stored }; });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== "sync") return;
     for (const key of Object.keys(DEFAULT_SETTINGS)) if (changes[key]) settings[key] = changes[key].newValue;
+    if (changes.armedPlatforms) {
+      const platform = platformFromLocation();
+      const isPlatformArmed = Boolean(settings.armedPlatforms?.[platform]);
+      if (isPlatformArmed) {
+        const pad = activeGamepad();
+        if (pad) {
+          armed = true;
+          updateHud(`ARMED · ${platform.toUpperCase()} v${extensionVersion} · controller connected`);
+        }
+      } else {
+        disarm();
+      }
+    }
   });
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
@@ -162,8 +173,8 @@
       return false;
     }
     if (message?.type === "HM_SET_ARMED" && isTop) {
+      const platform = platformFromLocation();
       if (message.armed) {
-        const platform = platformFromLocation();
         const pad = activeGamepad();
         if (platform === "unsupported") sendResponse({ ok: false, error: "Open Twitch, YouTube, or TikTok first" });
         else if (!pad) sendResponse({ ok: false, error: "Press a controller button while this page is visible, then try again" });
@@ -172,12 +183,19 @@
           engine = new HMGamepad.FrameEngine();
           armed = true;
           lastError = "";
+          const updated = { ...(settings.armedPlatforms || {}), [platform]: true };
+          settings.armedPlatforms = updated;
+          chrome.storage.sync.set({ armedPlatforms: updated });
           updateHud(`ARMED · ${platform.toUpperCase()} v${extensionVersion} · move the controller`);
           sendResponse({ ok: true, ...status() });
         }
       } else {
-        disarm(true).then(() => sendResponse({ ok: true, ...status() }));
-        return true;
+        disarm();
+        const updated = { ...(settings.armedPlatforms || {}), [platform]: false };
+        settings.armedPlatforms = updated;
+        chrome.storage.sync.set({ armedPlatforms: updated });
+        sendResponse({ ok: true, ...status() });
+        return false;
       }
       return false;
     }

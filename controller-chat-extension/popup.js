@@ -1,6 +1,9 @@
 "use strict";
 
-const DEFAULTS = { deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0 };
+const DEFAULTS = {
+  deadzone: 0.14, triggerDeadzone: 0.05, curve: 1, quantizeStep: 5, cadenceMs: 0, gamepadIndex: -1,
+  armedPlatforms: { tiktok: false, youtube: false, twitch: false }
+};
 const ALL_KEYS = ["deadzone", "curve", "quantizeStep", "cadenceMs", "gamepadIndex"];
 let previewArmed = false;
 const previewApi = {
@@ -12,7 +15,7 @@ const previewApi = {
         ok: true, platform: "twitch", armed: previewArmed, visible: true,
         gamepad: { id: "Xbox Wireless Controller", index: 0, mapping: "standard" },
         packet: previewArmed ? "hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470" : "",
-        lastError: "", lastSentAt: 0, version: "1.1.1",
+        lastError: "", lastSentAt: 0, version: "1.2.0",
         timing: { cadenceMs: 1550, keepaliveMs: 2500, leaseMs: 3500 }
       };
     }
@@ -29,10 +32,31 @@ const extensionApi = globalThis.chrome?.storage?.sync && globalThis.chrome?.tabs
   : previewApi;
 const elements = Object.fromEntries([
   "platform", "controller", "relay", "arm", "message", "packet",
-  "deadzone", "deadzoneValue", "curve", "quantizeStep", "cadenceMs", "gamepadIndex"
+  "deadzone", "deadzoneValue", "curve", "quantizeStep", "cadenceMs", "gamepadIndex",
+  "stateTiktok", "btnTiktok", "stateYoutube", "btnYoutube", "stateTwitch", "btnTwitch"
 ].map((id) => [id, document.getElementById(id)]));
 let currentTab = null;
 let armed = false;
+let armedPlatforms = { tiktok: false, youtube: false, twitch: false };
+
+function updatePlatformUI() {
+  const map = [
+    ["tiktok", elements.stateTiktok, elements.btnTiktok],
+    ["youtube", elements.stateYoutube, elements.btnYoutube],
+    ["twitch", elements.stateTwitch, elements.btnTwitch]
+  ];
+  for (const [platform, stateEl, btnEl] of map) {
+    const isArmed = Boolean(armedPlatforms[platform]);
+    if (stateEl) {
+      stateEl.textContent = isArmed ? "Armed" : "Disarmed";
+      stateEl.className = isArmed ? "platform-state armed" : "platform-state";
+    }
+    if (btnEl) {
+      btnEl.textContent = isArmed ? `DISARM ${platform.toUpperCase()}` : `ARM ${platform.toUpperCase()}`;
+      btnEl.classList.toggle("armed", isArmed);
+    }
+  }
+}
 
 function setMessage(text, error = false) {
   elements.message.textContent = text;
@@ -63,6 +87,10 @@ function render(status) {
   elements.packet.textContent = status.packet || "No frame sent yet";
   if (status.lastError) setMessage(status.lastError, true);
   else if (armed) setMessage(`Changed inputs send within ${status.timing?.cadenceMs || "the selected cadence"} ms; steady holds refresh separately.`);
+  if (status.armedPlatforms) {
+    armedPlatforms = { ...armedPlatforms, ...status.armedPlatforms };
+  }
+  updatePlatformUI();
 }
 
 function supportsCurrentTab() {
@@ -109,10 +137,27 @@ async function refresh() {
   render(await sendToTop({ type: "HM_GET_STATUS" }));
 }
 
+async function togglePlatform(platform) {
+  armedPlatforms[platform] = !armedPlatforms[platform];
+  await extensionApi.storage.sync.set({ armedPlatforms });
+  updatePlatformUI();
+  const activePlatform = (elements.platform.textContent || "").toLowerCase();
+  if (activePlatform.includes(platform)) {
+    const result = await sendToTop({ type: "HM_SET_ARMED", armed: armedPlatforms[platform] });
+    render(result);
+  }
+}
+
+elements.btnTiktok?.addEventListener("click", () => togglePlatform("tiktok"));
+elements.btnYoutube?.addEventListener("click", () => togglePlatform("youtube"));
+elements.btnTwitch?.addEventListener("click", () => togglePlatform("twitch"));
+
 elements.arm.addEventListener("click", async () => {
-  const result = await sendToTop({ type: "HM_SET_ARMED", armed: !armed });
-  if (!result?.ok) setMessage(result?.error || "Could not change relay state", true);
-  render(result);
+  const activePlatform = (elements.platform.textContent || "").toLowerCase();
+  let target = "tiktok";
+  if (activePlatform.includes("youtube")) target = "youtube";
+  else if (activePlatform.includes("twitch")) target = "twitch";
+  await togglePlatform(target);
 });
 
 async function saveSettings() {
@@ -143,6 +188,10 @@ extensionApi.storage.sync.get(DEFAULTS, (values) => {
   if (elements.gamepadIndex && values.gamepadIndex !== undefined) {
     elements.gamepadIndex.value = String(values.gamepadIndex);
   }
+  if (values.armedPlatforms) {
+    armedPlatforms = { ...armedPlatforms, ...values.armedPlatforms };
+  }
+  updatePlatformUI();
 });
 
 refresh();

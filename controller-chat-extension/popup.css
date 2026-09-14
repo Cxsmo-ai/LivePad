@@ -15,6 +15,16 @@ header p{margin-top:2px;color:#A6ADB8;font-size:11px}
 button.primary{width:100%;margin-top:14px;padding:11px 14px;border:1px solid #818CF8;border-radius:6px;background:#6366F1;color:#FFFFFF;font:700 12px "Segoe UI",sans-serif;letter-spacing:.025em;cursor:pointer}
 button.primary:hover{background:#4F46E5}button.primary:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #A5B4FC;outline-offset:2px}
 button.primary.armed{border-color:#EF4444;background:#191B20;color:#F87171}
+.platforms-panel{margin-top:14px}
+.platform-card{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1F2228;border:1px solid #2C3037;border-radius:8px;padding:10px 14px;margin-bottom:8px}
+.platform-info{display:flex;flex-direction:column;gap:2px}
+.platform-name{font-size:12px;font-weight:700;color:#E8EAEE}
+.platform-state{font-size:11px;color:#A6ADB8}
+.platform-state.armed{color:#4ADE80;font-weight:600}
+.platform-btn{padding:7px 14px;border-radius:5px;font:700 11px "Segoe UI",sans-serif;letter-spacing:.03em;cursor:pointer;border:1px solid #818CF8;background:#6366F1;color:#FFFFFF;min-width:110px}
+.platform-btn:hover{background:#4F46E5}
+.platform-btn.armed{border-color:#EF4444;background:#191B20;color:#F87171}
+.platform-btn.armed:hover{background:#EF4444;color:#FFFFFF}
 .message{min-height:31px;padding:8px 2px 0;color:#A6ADB8;font-size:11px;line-height:1.35}
 .message.error{color:#F87171}
 .streamer-note{margin:12px 0 6px 0;padding:8px 12px;background:#1F2228;border:1px solid #F59E0B;border-radius:6px;color:#FBBF24;font-size:11px;line-height:1.35}

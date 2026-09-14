@@ -13,7 +13,8 @@ TikTok. It never connects directly to the streamer computer.
 5. Press any controller button while the page is visible.
 6. Open the extension and select **Arm Controller Chat**.
 
-The extension disarms when the tab becomes hidden and attempts to send a neutral snapshot.
+The extension disarms when the tab becomes hidden. When neutral, no chat commands are sent;
+the streamer engine automatically returns controls to center when leases expire.
 It never reads or stores site passwords, cookies, or chat history. It will not overwrite text
 already present in the composer.
 

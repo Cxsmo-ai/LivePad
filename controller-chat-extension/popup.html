@@ -14,13 +14,42 @@
     </header>
 
     <section class="status-panel" aria-live="polite">
-      <div><span>Platform</span><strong id="platform">Open a live chat</strong></div>
+      <div><span>Current Tab</span><strong id="platform">Open a live chat</strong></div>
       <div><span>Controller</span><strong id="controller">Press any button</strong></div>
-      <div><span>Relay</span><strong id="relay">Disarmed</strong></div>
+      <div><span>Tab Relay</span><strong id="relay">Disarmed</strong></div>
     </section>
 
-    <button id="arm" class="primary" type="button">ARM CONTROLLER CHAT</button>
-    <p id="message" class="message">Open the stream chat, press any controller button, then arm.</p>
+    <button id="arm" class="primary" type="button">ARM CURRENT TAB</button>
+
+    <section class="platforms-panel">
+      <h2>Arm Platforms Separately</h2>
+      
+      <div class="platform-card">
+        <div class="platform-info">
+          <span class="platform-name">TikTok LIVE</span>
+          <span class="platform-state" id="stateTiktok">Disarmed</span>
+        </div>
+        <button type="button" class="platform-btn" id="btnTiktok">ARM TIKTOK</button>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <span class="platform-name">YouTube LIVE</span>
+          <span class="platform-state" id="stateYoutube">Disarmed</span>
+        </div>
+        <button type="button" class="platform-btn" id="btnYoutube">ARM YOUTUBE</button>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-info">
+          <span class="platform-name">Twitch Chat</span>
+          <span class="platform-state" id="stateTwitch">Disarmed</span>
+        </div>
+        <button type="button" class="platform-btn" id="btnTwitch">ARM TWITCH</button>
+      </div>
+    </section>
+
+    <p id="message" class="message">Arm each platform independently or use the current tab button above.</p>
 
     <div class="streamer-note">
       <strong>Streamer Notice:</strong> This extension is for <em>viewers</em> to play via chat. If you are the streamer running LivePad on this PC, keep this extension <strong>Disarmed</strong> on your stream tab to prevent controller feedback loops.
