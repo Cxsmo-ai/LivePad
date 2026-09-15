@@ -1,7 +1,15 @@
+import os
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 from PyQt6.QtCore import QPointF, QRectF, Qt
-from PyQt6.QtGui import QColor, QFont, QGuiApplication, QImage, QLinearGradient, QPainter, QPainterPath, QPen
+from PyQt6.QtGui import QColor, QFont, QImage, QLinearGradient, QPainter, QPainterPath, QPen
+from PyQt6.QtWidgets import QApplication
+
+from controller.state import ControllerState
+from gamepad_tester import GamepadTesterWidget
 
 
 PAGE = QColor("#16181D")
@@ -82,8 +90,31 @@ def draw_controller(painter: QPainter, x: float, y: float, scale: float) -> None
         painter.drawText(QRectF(x + (cx - 12) * scale, y + (cy - 9) * scale, 24 * scale, 18 * scale), Qt.AlignmentFlag.AlignCenter, label)
 
 
+def render_tester() -> QImage:
+    """Render the real in-app tester so this artwork cannot drift from it."""
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    app = QApplication.instance() or QApplication([])
+    tester = GamepadTesterWidget()
+    tester.resize(900, 330)
+    tester.set_state(
+        ControllerState(
+            ly=1.0,
+            rx=0.35,
+            lt=1.0,
+            rt=1.0,
+            buttons=frozenset({"l3"}),
+        )
+    )
+    image = QImage(900, 330, QImage.Format.Format_RGB32)
+    image.fill(PAGE)
+    painter = QPainter(image)
+    tester.render(painter)
+    painter.end()
+    return image
+
+
 def draw_preview() -> None:
-    app = QGuiApplication.instance() or QGuiApplication([])
+    app = QApplication.instance() or QApplication([])
     width, height = 1280, 640
     image = QImage(width, height, QImage.Format.Format_RGB32)
     image.fill(PAGE)
@@ -122,7 +153,11 @@ def draw_preview() -> None:
     painter.setFont(QFont("Segoe UI", 16))
     painter.drawText(QRectF(234, 378, 560, 30), Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, "Created by Cxsmo_AI")
 
-    draw_controller(painter, 770, 153, 1.35)
+    # Reuse the actual Qt tester render. This keeps the social preview's
+    # controller geometry, labels, state readout, and palette 1:1 with the
+    # controller shown in the desktop application.
+    tester_image = render_tester().copy(50, 0, 800, 330)
+    painter.drawImage(QRectF(735, 272, 480, 198), tester_image)
     painter.setPen(QPen(INDIGO, 2))
     painter.drawLine(82, 526, 1198, 526)
     painter.setPen(MUTED)
