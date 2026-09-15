@@ -15,7 +15,7 @@ const previewApi = {
         ok: true, platform: "twitch", armed: previewArmed, visible: true,
         gamepad: { id: "Xbox Wireless Controller", index: 0, mapping: "standard" },
         packet: previewArmed ? "hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470" : "",
-        lastError: "", lastSentAt: 0, version: "1.3.2",
+        lastError: "", lastSentAt: 0, version: "1.3.3",
         timing: { cadenceMs: 1550, keepaliveMs: 2500, leaseMs: 3500 }
       };
     }

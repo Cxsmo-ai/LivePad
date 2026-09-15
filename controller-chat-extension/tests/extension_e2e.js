@@ -29,7 +29,7 @@ async function main() {
     popup.on("console", (message) => { if (message.type() === "error") manifestErrors.push(message.text()); });
     await popup.setViewportSize({ width: 370, height: 650 });
     await popup.goto(`chrome-extension://${extensionId}/popup.html`);
-    assert.equal(await popup.evaluate(() => chrome.runtime.getManifest().version), "1.3.2");
+    assert.equal(await popup.evaluate(() => chrome.runtime.getManifest().version), "1.3.3");
     await popup.getByRole("heading", { name: "LivePad" }).waitFor();
     await popup.screenshot({ path: screenshotPath });
     assert.equal(await popup.locator("body").evaluate((body) => getComputedStyle(body).backgroundColor), "rgb(22, 24, 29)");
@@ -96,7 +96,7 @@ async function main() {
     });
     assert.equal(attachmentStatus.attached, true);
     assert.equal(attachmentStatus.status.ok, true);
-    assert.equal(attachmentStatus.status.version, "1.3.2");
+    assert.equal(attachmentStatus.status.version, "1.3.3");
     const friendlyPacket = "pad mfr5z7k0 q1 e14u w80 lr35 lt100 rt100 h40 t1";
     const tiktokInjection = await popup.evaluate(async ({ packet }) => {
       const [tab] = await chrome.tabs.query({ url: "https://www.tiktok.com/@hm-extension-test/live" });

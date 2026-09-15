@@ -85,6 +85,13 @@ foreach ($staleExtension in @(
 if (Test-Path $releaseInstant) { Remove-Item -LiteralPath $releaseInstant -Recurse -Force }
 Copy-Item -LiteralPath (Split-Path -Parent $packagedApp) -Destination $releaseInstant -Recurse -Force
 Copy-Item -LiteralPath $extensionZip -Destination $releaseExtension -Force
+$guideSource = Join-Path $projectRoot 'commands_guide.html'
+$guideDestination = Join-Path $releaseDirectory 'commands_guide.html'
+Copy-Item -LiteralPath $guideSource -Destination $guideDestination -Force
+$markdownGuideSource = Join-Path $projectRoot 'commands_guide.md'
+if (Test-Path -LiteralPath $markdownGuideSource) {
+    Copy-Item -LiteralPath $markdownGuideSource -Destination (Join-Path $releaseDirectory 'commands_guide.md') -Force
+}
 $hash = (Get-FileHash -LiteralPath $releaseExe -Algorithm SHA256).Hash.ToLowerInvariant()
 Set-Content -LiteralPath $releaseChecksum -Value "$hash  LivePad.exe" -Encoding UTF8
 $extensionHash = (Get-FileHash -LiteralPath $releaseExtension -Algorithm SHA256).Hash.ToLowerInvariant()
