@@ -32,7 +32,7 @@ class BridgeProcess:
             # bridges can have the same byte length. Include the packaged
             # archive timestamp and bump the bridge cache schema so an older
             # extracted bridge cannot survive a production rebuild.
-            archive_signature = f"{archive_stat.st_size}:{archive_stat.st_mtime_ns}:v1.3.0"
+            archive_signature = f"{archive_stat.st_size}:{archive_stat.st_mtime_ns}:v1.3.2"
             cached_signature = (
                 version_marker.read_text(encoding="utf-8").strip()
                 if version_marker.exists()
@@ -57,7 +57,13 @@ class BridgeProcess:
             if not assembly.exists():
                 raise FileNotFoundError(f"bridge build is missing: {assembly}")
             if not dotnet.exists():
-                raise FileNotFoundError(f"project-local .NET 10 host is missing: {dotnet}")
+                system_dotnet = shutil.which("dotnet")
+                if system_dotnet:
+                    dotnet = Path(system_dotnet)
+                else:
+                    raise FileNotFoundError(
+                        f".NET 10 host is missing: {dotnet} (and dotnet is not on PATH)"
+                    )
             command = [str(dotnet), str(assembly)]
             working_directory = assembly.parent
         flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
