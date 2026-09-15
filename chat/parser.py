@@ -5,7 +5,7 @@ from copy import deepcopy
 import re
 from typing import Any, Iterable, Mapping
 
-from .commands import DEFAULT_COMMANDS
+from .commands import COMBO_ALIASES, DEFAULT_COMMANDS
 from .pad_protocol import PadFrame, parse_pad_frame
 
 
@@ -26,7 +26,7 @@ class ParseResult:
 class CommandParser:
     """Parse all recognized commands in one comment; never stop at the first match."""
 
-    _tokenize = re.compile(r"[^\s,;]+")
+    _tokenize = re.compile(r"[^\s,;+]+")
     _number = re.compile(r"^(\d+(?:\.\d+)?)%?$")
     _milliseconds = re.compile(r"^(\d+)ms$")
     _seconds = re.compile(r"^(\d+(?:\.\d+)?)s$")
@@ -50,93 +50,115 @@ class CommandParser:
         if pad_frame is not None:
             return ParseResult((), (), pad_frame)
 
-        tokens = self._tokenize.findall(text.casefold())
+        tokens = [
+            token[1:] if token.startswith("!") and len(token) > 1 else token
+            for token in self._tokenize.findall(text.casefold())
+        ]
         commands: list[Command] = []
         invalid: list[str] = []
         i = 0
         while i < len(tokens):
             token = tokens[i]
-            spec = self.command_specs.get(token)
-            if spec is not None and spec.get("enabled", True):
-                action = str(spec["action"])
-                strength = float(spec.get("strength", 1.0))
-                duration = int(spec.get("duration_ms", 400))
-                consumed = 0
-                reject_command = False
-
-                # Digital buttons normally take a duration; they also accept
-                # an optional ignored strength for uniform mixed combos.
-                if action.startswith("button_") and spec.get("allow_duration_argument"):
-                    arg1 = tokens[i + 1] if i + 1 < len(tokens) else None
-                    arg2 = tokens[i + 2] if i + 2 < len(tokens) else None
-                    # Accept the same readable strength+duration shape as
-                    # analog commands. Digital controls ignore strength, but
-                    # accepting it keeps mixed combos uniform, e.g.
-                    # "w 75 900ms sprint 100 500ms".
-                    if (
-                        arg1 is not None
-                        and arg2 is not None
-                        and self._parse_strength(arg1) is not None
-                    ):
-                        parsed_dur = self._parse_duration(arg2)
-                        if parsed_dur is not None:
-                            duration = parsed_dur
-                            consumed = 2
-                        else:
-                            invalid.append(arg2)
-                            reject_command = True
-                            consumed = 2
-                    elif arg1 is not None:
-                        parsed_dur = self._parse_duration(arg1)
-                        if parsed_dur is not None:
-                            duration = parsed_dur
-                            consumed = 1
-                        elif self._looks_numeric(arg1):
-                            invalid.append(arg1)
-                            reject_command = True
-                            consumed = 1
-
-                # Analog controls take strength then duration, or direct duration if strength is omitted.
-                else:
-                    arg1 = tokens[i + 1] if i + 1 < len(tokens) else None
-                    if arg1 is not None:
-                        if self._is_explicit_duration(arg1) and spec.get("allow_duration_argument"):
-                            parsed_dur = self._parse_duration(arg1)
-                            if parsed_dur is not None:
-                                duration = parsed_dur
-                                consumed = 1
-                            elif self._looks_numeric(arg1):
-                                invalid.append(arg1)
-                                reject_command = True
-                                consumed = 1
-                        elif spec.get("allow_strength_argument"):
-                            parsed = self._parse_strength(arg1)
-                            if parsed is not None:
-                                consumed = 1
-                                strength = parsed
-                                if spec.get("allow_duration_argument") and i + 2 < len(tokens):
-                                    arg2 = tokens[i + 2]
-                                    parsed_duration = self._parse_duration(arg2)
-                                    if parsed_duration is not None:
-                                        duration = parsed_duration
-                                        consumed = 2
-                                    elif self._looks_numeric(arg2):
-                                        invalid.append(arg2)
-                                        reject_command = True
-                                        consumed = 2
-                            elif self._looks_numeric(arg1):
-                                invalid.append(arg1)
-                                reject_command = True
-                                consumed = 1
-
-                if not reject_command:
-                    commands.append(Command(action, self._clamp_strength(strength), duration))
+            combo = COMBO_ALIASES.get(token)
+            if combo:
+                first, consumed, first_invalid = self._parse_one(tokens, i, combo[0])
+                invalid.extend(first_invalid)
+                if first is not None:
+                    commands.append(first)
+                    for target in combo[1:]:
+                        follow_up, _, follow_up_invalid = self._parse_one(
+                            (target,), 0, target, parse_modifiers=False
+                        )
+                        invalid.extend(follow_up_invalid)
+                        if follow_up is not None:
+                            commands.append(follow_up)
                 i += consumed + 1
                 continue
 
-            invalid.append(token)
-            i += 1
+            command, consumed, command_invalid = self._parse_one(tokens, i, token)
+            invalid.extend(command_invalid)
+            if command is not None:
+                commands.append(command)
+            i += consumed + 1
         return ParseResult(tuple(commands), tuple(invalid))
+
+    def _parse_one(
+        self,
+        tokens: tuple[str, ...] | list[str],
+        index: int,
+        token: str,
+        *,
+        parse_modifiers: bool = True,
+    ) -> tuple[Command | None, int, tuple[str, ...]]:
+        """Parse one command and return (command, consumed-after-token, invalid)."""
+        spec = self.command_specs.get(token)
+        if spec is None or not spec.get("enabled", True):
+            return None, 0, (token,)
+
+        action = str(spec["action"])
+        strength = float(spec.get("strength", 1.0))
+        duration = int(spec.get("duration_ms", 400))
+        consumed = 0
+        invalid: list[str] = []
+        reject_command = False
+        if not parse_modifiers:
+            return Command(action, self._clamp_strength(strength), duration), 0, ()
+
+        arg1 = tokens[index + 1] if index + 1 < len(tokens) else None
+        arg2 = tokens[index + 2] if index + 2 < len(tokens) else None
+
+        # Digital buttons accept an optional duration.  A strength before the
+        # duration is accepted and ignored so mixed macros remain predictable.
+        if action.startswith("button_") and spec.get("allow_duration_argument"):
+            if arg1 is not None and arg2 is not None and self._parse_strength(arg1) is not None:
+                parsed_duration = self._parse_duration(arg2)
+                if parsed_duration is not None:
+                    duration, consumed = parsed_duration, 2
+                else:
+                    invalid.append(arg2)
+                    consumed = 2
+                    reject_command = True
+            elif arg1 is not None:
+                parsed_duration = self._parse_duration(arg1)
+                if parsed_duration is not None:
+                    duration, consumed = parsed_duration, 1
+                elif self._looks_numeric(arg1):
+                    invalid.append(arg1)
+                    consumed = 1
+                    reject_command = True
+        # Analog controls and triggers accept strength then duration, or a
+        # direct explicit duration. Bare numbers remain strengths so a typo
+        # cannot silently turn into a long hold; use 500ms/1.2s for time.
+        elif spec.get("allow_strength_argument"):
+            if arg1 is not None:
+                if self._is_explicit_duration(arg1):
+                    parsed_duration = self._parse_duration(arg1)
+                    if parsed_duration is not None:
+                        duration, consumed = parsed_duration, 1
+                    elif self._looks_numeric(arg1):
+                        invalid.append(arg1)
+                        consumed = 1
+                        reject_command = True
+                else:
+                    parsed_strength = self._parse_strength(arg1)
+                    if parsed_strength is not None:
+                        strength, consumed = parsed_strength, 1
+                        if arg2 is not None and spec.get("allow_duration_argument"):
+                            parsed_duration = self._parse_duration(arg2)
+                            if parsed_duration is not None:
+                                duration, consumed = parsed_duration, 2
+                            elif self._looks_numeric(arg2):
+                                invalid.append(arg2)
+                                consumed = 2
+                                reject_command = True
+                    elif self._looks_numeric(arg1):
+                        invalid.append(arg1)
+                        consumed = 1
+                        reject_command = True
+
+        if reject_command:
+            return None, consumed, tuple(invalid)
+        return Command(action, self._clamp_strength(strength), duration), consumed, tuple(invalid)
 
     @classmethod
     def _parse_number(cls, token: str) -> float | None:

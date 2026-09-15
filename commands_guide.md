@@ -66,6 +66,29 @@ LivePad executes all actions in your message **simultaneously**!
 - `w jump reload` — Jump forward and reload at the same time
 - `w sprint ads fire right 40` — Sprint, aim, fire, and turn camera right
 
+### One-word quick macros
+
+These are shortcuts for common combinations. They create the same independent
+leases as writing the words separately:
+
+- `run` / `dash` / `rush` — `w sprint`
+- `runfire` / `runshoot` / `panic` — `w sprint fire`
+- `runaim` — `w sprint ads`
+- `runaimfire` — `w sprint ads fire`
+- `combat` / `fight` — `ads fire`
+- `dodgeleft` / `dodgeright` — strafe plus sprint
+- `slideleft` / `slideright` — strafe, sprint, and slide
+
+Modifiers after a macro apply to its first action, so `run 80 1.2s` means
+`w 80 1.2s sprint`. Use `+` instead of spaces if that is easier to type:
+`w+sprint+ads+fire`.
+
+Short aliases include `fwd`, `bk`, `fw`, `bw`, `j`, `cr`, `rl`, `sw`, `sp`,
+`m`, `g`, `t`, `i`, `rev`, `lt`, `rt`, `lb`, `rb`, `l3`, `r3`, `du`, `dd`,
+`dl`, and `dr`. A leading `!` is optional, so `!runfire` also works.
+
+`a` remains strafe-left. Use `jump`, `facea`, or `btn_a` for the Xbox A button.
+
 ---
 
 ## 5. Playing with a Real Controller (LivePad Extension)

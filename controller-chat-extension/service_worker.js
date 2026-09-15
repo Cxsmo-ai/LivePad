@@ -35,7 +35,22 @@ chrome.tabs.onRemoved?.addListener((tabId) => {
 });
 
 function triggerTikTokSend() {
-  const send = document.querySelector("[data-e2e='room-chat-send-btn']");
+  const selectors = [
+    "[data-e2e='room-chat-send-btn']",
+    "[data-e2e='comment-post']",
+    "[data-e2e='comment-send']"
+  ];
+  const send = selectors
+    .flatMap((selector) => Array.from(document.querySelectorAll(selector)))
+    .find((candidate) => {
+      if (!candidate || candidate.disabled || candidate.getAttribute("aria-disabled") === "true") {
+        return false;
+      }
+      const style = window.getComputedStyle(candidate);
+      const rect = candidate.getBoundingClientRect();
+      return style.display !== "none" && style.visibility !== "hidden" &&
+        rect.width > 0 && rect.height > 0;
+    });
   if (!send) return { ok: false, error: "TikTok send control disappeared" };
 
   // TikTok currently ignores an isolated-world element.click(). Calling the page's

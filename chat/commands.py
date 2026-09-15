@@ -79,3 +79,80 @@ DEFAULT_COMMANDS = {
     "dpadleft": _command("button_dpad_left", 1.0, 120, allow_duration=True),
     "dpadright": _command("button_dpad_right", 1.0, 120, allow_duration=True),
 }
+
+
+# Friendly one-token aliases for high-volume chat.  These intentionally keep
+# the keyboard-like movement meanings of w/a/s/d and provide explicit names
+# for face buttons so that "a" remains strafe-left rather than becoming
+# ambiguous with the Xbox A button.
+DEFAULT_COMMANDS.update({
+    "fwd": DEFAULT_COMMANDS["forward"],
+    "fw": DEFAULT_COMMANDS["forward"],
+    "bk": DEFAULT_COMMANDS["back"],
+    "bw": DEFAULT_COMMANDS["back"],
+    "sl": DEFAULT_COMMANDS["slide"],
+    "cr": DEFAULT_COMMANDS["crouch"],
+    "j": DEFAULT_COMMANDS["jump"],
+    "rl": DEFAULT_COMMANDS["reload"],
+    "sw": DEFAULT_COMMANDS["swap"],
+    "sp": DEFAULT_COMMANDS["sprint"],
+    "m": DEFAULT_COMMANDS["melee"],
+    "g": DEFAULT_COMMANDS["nade"],
+    "gren": DEFAULT_COMMANDS["nade"],
+    "t": DEFAULT_COMMANDS["tac"],
+    "i": DEFAULT_COMMANDS["interact"],
+    "usex": DEFAULT_COMMANDS["interact"],
+    "box": DEFAULT_COMMANDS["interact"],
+    "door": DEFAULT_COMMANDS["interact"],
+    "open": DEFAULT_COMMANDS["interact"],
+    "rev": DEFAULT_COMMANDS["revive"],
+    "turnleft": DEFAULT_COMMANDS["left"],
+    "turnright": DEFAULT_COMMANDS["right"],
+    "rsleft": DEFAULT_COMMANDS["left"],
+    "rsright": DEFAULT_COMMANDS["right"],
+    "rsup": DEFAULT_COMMANDS["up"],
+    "rsdown": DEFAULT_COMMANDS["down"],
+    "lsup": DEFAULT_COMMANDS["w"],
+    "lsdown": DEFAULT_COMMANDS["s"],
+    "lsleft": DEFAULT_COMMANDS["a"],
+    "lsright": DEFAULT_COMMANDS["d"],
+    "lt": DEFAULT_COMMANDS["ads"],
+    "rt": DEFAULT_COMMANDS["fire"],
+    "lb": DEFAULT_COMMANDS["tac"],
+    "rb": DEFAULT_COMMANDS["nade"],
+    "l3": DEFAULT_COMMANDS["sprint"],
+    "r3": DEFAULT_COMMANDS["melee"],
+    "facea": DEFAULT_COMMANDS["jump"],
+    "faceb": DEFAULT_COMMANDS["crouch"],
+    "facex": DEFAULT_COMMANDS["x"],
+    "facey": DEFAULT_COMMANDS["y"],
+    "btn_a": DEFAULT_COMMANDS["jump"],
+    "btn_b": DEFAULT_COMMANDS["crouch"],
+    "btn_x": DEFAULT_COMMANDS["x"],
+    "btn_y": DEFAULT_COMMANDS["y"],
+    "du": DEFAULT_COMMANDS["dpadup"],
+    "dd": DEFAULT_COMMANDS["dpaddown"],
+    "dl": DEFAULT_COMMANDS["dpadleft"],
+    "dr": DEFAULT_COMMANDS["dpadright"],
+})
+
+
+# A macro expands to independent leases, so every component is active at the
+# same instant.  Modifiers following a macro apply to its first component;
+# e.g. "run 80 1.2s" means "w 80 1.2s sprint".
+COMBO_ALIASES: dict[str, tuple[str, ...]] = {
+    "run": ("w", "sprint"),
+    "dash": ("w", "sprint"),
+    "rush": ("w", "sprint"),
+    "runfire": ("w", "sprint", "fire"),
+    "runshoot": ("w", "sprint", "fire"),
+    "runaim": ("w", "sprint", "ads"),
+    "runaimfire": ("w", "sprint", "ads", "fire"),
+    "combat": ("ads", "fire"),
+    "fight": ("ads", "fire"),
+    "panic": ("w", "sprint", "fire"),
+    "dodgeleft": ("a", "sprint"),
+    "dodgeright": ("d", "sprint"),
+    "slideleft": ("a", "sprint", "slide"),
+    "slideright": ("d", "sprint", "slide"),
+}

@@ -77,7 +77,7 @@
     return new Promise((resolve) => setTimeout(resolve, milliseconds));
   }
 
-  async function waitFor(check, timeoutMs, intervalMs = 25) {
+  async function waitFor(check, timeoutMs, intervalMs = 8) {
     const deadline = performance.now() + timeoutMs;
     while (performance.now() < deadline) {
       const result = check();

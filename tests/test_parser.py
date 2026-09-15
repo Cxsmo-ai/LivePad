@@ -47,6 +47,12 @@ def test_short_command_duration_floor_is_ten_milliseconds():
     assert rejected.invalid_tokens == ("9ms",)
 
 
+def test_invalid_direct_analog_duration_is_reported_without_scheduling_command():
+    result = CommandParser().parse("right 9ms")
+    assert result.commands == ()
+    assert result.invalid_tokens == ("9ms",)
+
+
 def test_long_compound_commands_have_no_queue_delay():
     result = CommandParser().parse("w 80 10s sprint")
     assert [(command.action, command.strength, command.duration_ms) for command in result.commands] == [
@@ -167,6 +173,29 @@ def test_bare_numbers_without_percent_and_direct_duration_without_strength():
     assert [(c.action, c.strength, c.duration_ms) for c in res7.commands] == [
         ("look_right", 0.35, 150)
     ]
+
+
+def test_one_word_macros_expand_to_concurrent_commands_and_accept_modifiers():
+    result = CommandParser().parse("run 80 1.2s")
+    assert [(command.action, command.strength, command.duration_ms) for command in result.commands] == [
+        ("move_forward", 0.8, 1200),
+        ("button_l3", 1.0, 500),
+    ]
+    assert result.invalid_tokens == ()
+
+    result = CommandParser().parse("runaimfire")
+    assert [command.action for command in result.commands] == [
+        "move_forward", "button_l3", "left_trigger", "right_trigger"
+    ]
+
+
+def test_chat_friendly_short_forms_prefixes_and_plus_separators():
+    result = CommandParser().parse("!fwd+sp+lt+rt+facea+du")
+    assert [command.action for command in result.commands] == [
+        "move_forward", "button_l3", "left_trigger", "right_trigger",
+        "button_a", "button_dpad_up",
+    ]
+    assert result.invalid_tokens == ()
 
 
 def test_seconds_toggle_disables_seconds_syntax():
