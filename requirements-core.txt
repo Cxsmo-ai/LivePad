@@ -1,5 +1,5 @@
 TikTokLive==7.0.1
-websockets==13.1
+websockets==17.1
 PyQt6==6.11.0
 pynput==1.8.2
 tzdata==2026.4
