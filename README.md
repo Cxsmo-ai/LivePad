@@ -56,7 +56,7 @@ The extension is intentionally separate from the streamer executable. Viewers
 can load `LivePad-Extension.zip` in Edge or Chrome using Developer mode, choose
 their physical controller, open a supported live chat, and arm that platform.
 Every input is encoded into chat messages; there is no direct viewer-to-PC
-connection.
+connection. See the [easy unpacked-extension install guide](docs/EXTENSION_INSTALL.md).
 
 ## Commands
 

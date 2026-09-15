@@ -1,4 +1,4 @@
-# HID Maestro Controller Chat
+# LivePad Controller Chat
 
 This Manifest V3 Chrome extension turns one viewer's physical gamepad into compact `hm1`
 controller snapshots and sends them through the live-chat composer on Twitch, YouTube, or
@@ -6,12 +6,15 @@ TikTok. It never connects directly to the streamer computer.
 
 ## Install for development
 
-1. Open `chrome://extensions`.
+1. Open `chrome://extensions` (or `edge://extensions` in Microsoft Edge).
 2. Enable **Developer mode**.
 3. Choose **Load unpacked** and select this folder.
 4. Open a supported live-chat page and sign in normally.
 5. Press any controller button while the page is visible.
 6. Open the extension and select **Arm Controller Chat**.
+
+For a click-by-click Edge and Chrome walkthrough, see
+[`docs/EXTENSION_INSTALL.md`](../docs/EXTENSION_INSTALL.md) in the repository.
 
 The extension disarms when the tab becomes hidden. When neutral, no chat commands are sent;
 the streamer engine automatically returns controls to center when leases expire.
