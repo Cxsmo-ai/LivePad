@@ -5,7 +5,7 @@ $distDir = Join-Path (Join-Path $projectRoot 'dist') 'LivePad'
 
 foreach ($staleExtensionPath in @(
     (Join-Path $release 'HIDMaestroControllerChat-Edge'),
-    (Join-Path $release 'DeepAscension-LivePad-Extension-Edge')
+    (Join-Path $release 'LivePad-Extension-Edge')
 )) {
     if (Test-Path -LiteralPath $staleExtensionPath) {
         Remove-Item -LiteralPath $staleExtensionPath -Recurse -Force

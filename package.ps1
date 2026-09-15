@@ -1,6 +1,13 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $python)) {
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCommand) { $python = $pythonCommand.Source }
+}
+if (-not (Test-Path -LiteralPath $python) -and -not (Get-Command python -ErrorAction SilentlyContinue)) {
+    throw 'python was not found. Install Python 3.10+ or create the project .venv.'
+}
 $dotnet = Join-Path $projectRoot '.dotnet\dotnet.exe'
 if (-not (Test-Path -LiteralPath $dotnet)) {
     $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
@@ -11,14 +18,14 @@ if (-not (Test-Path -LiteralPath $dotnet) -and -not (Get-Command dotnet -ErrorAc
 }
 
 Write-Host "Publishing self-contained HIDMaestro C# bridge..."
-& $dotnet publish (Join-Path $projectRoot 'bridge\TikForever.HIDMaestro.csproj') `
+& $dotnet publish (Join-Path $projectRoot 'bridge\LivePad.HIDMaestro.csproj') `
     --configuration Release --runtime win-x64 --self-contained true `
     --output (Join-Path $projectRoot 'build\bridge') --nologo `
     -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
 if ($LASTEXITCODE -ne 0) { throw 'Self-contained bridge publish failed' }
 
-$bridgeExe = Join-Path $projectRoot 'build\bridge\TikForever.HIDMaestro.exe'
-$bridgeZip = Join-Path $projectRoot 'build\bridge\TikForever.HIDMaestro.zip'
+$bridgeExe = Join-Path $projectRoot 'build\bridge\LivePad.HIDMaestro.exe'
+$bridgeZip = Join-Path $projectRoot 'build\bridge\LivePad.HIDMaestro.zip'
 Compress-Archive -LiteralPath $bridgeExe -DestinationPath $bridgeZip -Force
 
 Write-Host "Packaging viewer controller-to-chat extension..."
@@ -68,8 +75,8 @@ New-Item -ItemType Directory -Path $releaseDirectory -Force | Out-Null
 foreach ($staleExtension in @(
     (Join-Path $releaseDirectory 'HIDMaestroControllerChat.zip'),
     (Join-Path $releaseDirectory 'HIDMaestroControllerChat.zip.sha256'),
-    (Join-Path $releaseDirectory 'DeepAscension-LivePad-Extension.zip'),
-    (Join-Path $releaseDirectory 'DeepAscension-LivePad-Extension.zip.sha256')
+    (Join-Path $releaseDirectory 'LivePad-Extension.zip'),
+    (Join-Path $releaseDirectory 'LivePad-Extension.zip.sha256')
 )) {
     if (Test-Path -LiteralPath $staleExtension) {
         Remove-Item -LiteralPath $staleExtension -Force

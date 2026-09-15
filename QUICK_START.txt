@@ -8,7 +8,7 @@ directly from TikTok LIVE, YouTube LIVE, and Twitch chat comments with
 low-latency concurrent commands.
 
 Everything is packed into ONE SINGLE STANDALONE EXECUTABLE:
-  HIDMaestroStreamerEdition.exe
+  LivePad.exe
 
 NO extra folders, NO dependencies:
   - NO Python required
@@ -20,10 +20,10 @@ NO extra folders, NO dependencies:
 WHAT TO SEND TO YOUR FRIEND
 ----------------------------------------------------------------------
 Just send the single executable:
-  HIDMaestroStreamerEdition.exe
+  LivePad.exe
 
 Tell your friend:
-1. Put "HIDMaestroStreamerEdition.exe" anywhere (e.g. Desktop).
+1. Put "LivePad.exe" anywhere (e.g. Desktop).
 2. Double-click it.
 3. When Windows prompts for Administrator (UAC), click YES.
    * On first launch on a new PC, it automatically installs the built-in

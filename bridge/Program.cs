@@ -3,7 +3,7 @@ using System.IO.Pipes;
 using System.Text.Json;
 using HIDMaestro;
 
-const string pipeName = "TikForeverGamepad";
+const string pipeName = "LivePadGamepad";
 const string profileId = "xbox-360-wired";
 var mockMode = args.Contains("--mock", StringComparer.OrdinalIgnoreCase);
 

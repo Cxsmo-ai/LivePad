@@ -10,7 +10,7 @@ from .protocol import decode_message, encode_message
 
 
 class NamedPipeClient:
-    def __init__(self, pipe_name: str = r"\\.\pipe\TikForeverGamepad"):
+    def __init__(self, pipe_name: str = r"\\.\pipe\LivePadGamepad"):
         self.pipe_name = pipe_name
         self._stream = None
 

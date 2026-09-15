@@ -273,7 +273,7 @@ QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
 """
 
 
-_SINGLE_INSTANCE_NAME = "Local\\DeepAscensionLivePad.SingleInstance"
+_SINGLE_INSTANCE_NAME = "Local\\LivePad.SingleInstance"
 
 
 def _config_root() -> Path:
@@ -282,7 +282,7 @@ def _config_root() -> Path:
         local_app_data = Path(
             os.environ.get("LOCALAPPDATA", Path(sys.executable).resolve().parent)
         )
-        return local_app_data / "HIDMaestroStreamerEdition"
+        return local_app_data / "LivePad"
     return Path(__file__).resolve().parent
 
 

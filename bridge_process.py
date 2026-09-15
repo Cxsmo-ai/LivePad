@@ -19,13 +19,13 @@ class BridgeProcess:
     def launch(self, mock: bool = False) -> None:
         if getattr(sys, "frozen", False):
             resource_root = Path(getattr(sys, "_MEIPASS", Path(sys.executable).parent))
-            archive = resource_root / "bridge" / "TikForever.HIDMaestro.zip"
+            archive = resource_root / "bridge" / "LivePad.HIDMaestro.zip"
             if not archive.exists():
                 raise FileNotFoundError(f"packaged bridge archive is missing: {archive}")
 
             local_app_data = Path(os.environ.get("LOCALAPPDATA", tempfile.gettempdir()))
-            cache_root = local_app_data / "DeepAscensionLivePad" / "bridge"
-            executable = cache_root / "TikForever.HIDMaestro.exe"
+            cache_root = local_app_data / "LivePad" / "bridge"
+            executable = cache_root / "LivePad.HIDMaestro.exe"
             version_marker = cache_root / "bridge.version"
             archive_stat = archive.stat()
             # Size alone is not a safe cache key: two rebuilt self-contained
@@ -43,7 +43,7 @@ class BridgeProcess:
                 cache_root.mkdir(parents=True, exist_ok=True)
                 temporary_executable = executable.with_suffix(".exe.tmp")
                 with zipfile.ZipFile(archive) as package:
-                    with package.open("TikForever.HIDMaestro.exe") as source:
+                    with package.open("LivePad.HIDMaestro.exe") as source:
                         with temporary_executable.open("wb") as destination:
                             shutil.copyfileobj(source, destination)
                 os.replace(temporary_executable, executable)
@@ -52,7 +52,7 @@ class BridgeProcess:
             command = [str(executable)]
             working_directory = executable.parent
         else:
-            assembly = self.root / "bridge" / "bin" / "Release" / "net10.0-windows" / "TikForever.HIDMaestro.dll"
+            assembly = self.root / "bridge" / "bin" / "Release" / "net10.0-windows" / "LivePad.HIDMaestro.dll"
             dotnet = self.root / ".dotnet" / "dotnet.exe"
             if not assembly.exists():
                 raise FileNotFoundError(f"bridge build is missing: {assembly}")

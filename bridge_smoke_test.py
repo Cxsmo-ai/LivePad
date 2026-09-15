@@ -15,8 +15,8 @@ from ipc.named_pipe import NamedPipeClient
 
 def main() -> int:
     root = Path(__file__).resolve().parent
-    published = root / "build" / "bridge" / "TikForever.HIDMaestro.exe"
-    assembly = root / "bridge" / "bin" / "Release" / "net10.0-windows" / "TikForever.HIDMaestro.dll"
+    published = root / "build" / "bridge" / "LivePad.HIDMaestro.exe"
+    assembly = root / "bridge" / "bin" / "Release" / "net10.0-windows" / "LivePad.HIDMaestro.dll"
     dotnet = root / ".dotnet" / "dotnet.exe"
     dotnet_command = str(dotnet) if dotnet.exists() else shutil.which("dotnet")
     # Source verification must exercise the assembly just produced by

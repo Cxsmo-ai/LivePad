@@ -8,7 +8,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[
-        ("build/bridge/TikForever.HIDMaestro.zip", "bridge"),
+        ("build/bridge/LivePad.HIDMaestro.zip", "bridge"),
         ("bridge/vendor/LICENSE", "licenses/HIDMaestro"),
         ("bridge/vendor/THIRD-PARTY-NOTICES.txt", "licenses/HIDMaestro"),
         ("profiles/cod.json", "profiles"),

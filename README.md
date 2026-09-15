@@ -12,6 +12,18 @@ modify, inject into, or bypass the game.
 
 ![LivePad command guide](docs/images/commands_guide_16x9.png)
 
+## The LivePad workspace
+
+The desktop app keeps stream connections, the unified chat, controller state,
+and the test console in one dark, high-contrast workspace. The screenshot is a
+mock-bridge capture from the same UI used by the packaged build; it does not
+contain real viewer data or credentials.
+
+![LivePad desktop application](docs/images/livepad-desktop-preview.png)
+
+[Open the full-size desktop screenshot](docs/images/livepad-desktop-full.png) ·
+[Browse all visual assets](docs/SCREENSHOTS.md)
+
 ## Highlights
 
 - TikTok, YouTube, and Twitch connectors with separate arm/disconnect controls.

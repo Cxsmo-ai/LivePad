@@ -1,6 +1,13 @@
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
+if (-not (Test-Path -LiteralPath $python)) {
+    $pythonCommand = Get-Command python -ErrorAction SilentlyContinue
+    if ($pythonCommand) { $python = $pythonCommand.Source }
+}
+if (-not (Test-Path -LiteralPath $python) -and -not (Get-Command python -ErrorAction SilentlyContinue)) {
+    throw 'python was not found. Install Python 3.10+ or create the project .venv.'
+}
 $dotnet = Join-Path $projectRoot '.dotnet\dotnet.exe'
 if (-not (Test-Path -LiteralPath $dotnet)) {
     $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
@@ -10,7 +17,7 @@ if (-not (Test-Path -LiteralPath $dotnet) -and -not (Get-Command dotnet -ErrorAc
     throw 'dotnet was not found. Install .NET 10 SDK or run the workflow setup step.'
 }
 
-& $dotnet build (Join-Path $projectRoot 'bridge\TikForever.HIDMaestro.csproj') --configuration Release --nologo
+& $dotnet build (Join-Path $projectRoot 'bridge\LivePad.HIDMaestro.csproj') --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Bridge build failed' }
 
 & $python -m pytest -q

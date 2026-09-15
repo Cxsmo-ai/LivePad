@@ -52,7 +52,7 @@ required five-part compound command, verifies it through XInput, verifies CLEAR 
 watchdog, writes a JSON report, and exits:
 
 ```powershell
-.\HIDMaestroStreamerEdition.exe --hardware-smoke --hardware-report hardware-smoke-report.json
+.\LivePad.exe --hardware-smoke --hardware-report hardware-smoke-report.json
 ```
 
 ```powershell

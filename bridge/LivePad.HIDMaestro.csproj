@@ -4,7 +4,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>TikForever.HIDMaestro</RootNamespace>
+    <RootNamespace>LivePad.HIDMaestro</RootNamespace>
     <HidMaestroCoreDll Condition="'$(HidMaestroCoreDll)' == '' and '$(HIDMAESTRO_CORE_DLL)' == ''">$(MSBuildThisFileDirectory)vendor\HIDMaestro.Core.dll</HidMaestroCoreDll>
     <HidMaestroCoreDll Condition="'$(HidMaestroCoreDll)' == ''">$(HIDMAESTRO_CORE_DLL)</HidMaestroCoreDll>
   </PropertyGroup>
