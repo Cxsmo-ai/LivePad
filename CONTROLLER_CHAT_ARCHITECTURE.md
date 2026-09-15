@@ -76,7 +76,7 @@ hm1 mfr5z7k0 2f -20,80,35,-10,75,100 41 5 1470
 | `LT,RT` | Trigger percentages | 0 through 100 |
 | `HELD_HEX` | Current digital-button bitmask | 15 supported Xbox controls |
 | `TAP_HEX` | Rising edges since last successful send | Same mask |
-| `LEASE_MS` | Maximum lifetime of held snapshot | 250 through 5000 ms |
+| `LEASE_MS` | Maximum lifetime of held snapshot | 50 through 5000 ms |
 
 The normal browser gamepad convention reports stick-up as negative. The extension inverts both Y
 axes before encoding, so positive `LY` always means forward and positive `RY` means camera up.
@@ -123,16 +123,17 @@ Automatic starting cadences are:
 
 | Platform | Extension cadence | Frame lease | Basis |
 |---|---:|---:|---|
-| Twitch | 1050 ms | 1470 ms | Official one-message-per-second channel limit |
-| YouTube | 2800 ms | 3920 ms | Official 11 messages per 30 seconds limit |
-| TikTok | 1200 ms | 1680 ms | Conservative configurable starting point; no stable official web-chat send API |
+| Twitch | 1550 ms | 3500 ms | Conservative anonymous-read cadence; Twitch server policy remains authoritative |
+| YouTube | 2000 ms | 3500 ms | Conservative visible-composer cadence; InnerTube continuation timeout remains authoritative |
+| TikTok | 350 ms | 1600 ms | Conservative compatibility cadence; no stable official web-chat send API |
 
 Sampling latency is normally one display frame, but cadence wait dominates. A controller change
-arriving at a random point in a Twitch interval waits about 525 ms on average and up to roughly
-1050 ms before the extension can attempt the next message. YouTube's corresponding cadence wait
-is about 1400 ms average and 2800 ms worst case. Chat ingestion adds platform-dependent network,
-moderation, and delivery delay after that. The desktop parser, resolver, named pipe, and XInput
-submission remain sub-frame local work, but they cannot remove upstream chat delay.
+arriving at a random point in a Twitch interval waits about 775 ms on average and up to roughly
+1550 ms before the extension can attempt the next message. YouTube's corresponding application
+cadence wait is about 1000 ms average and 2000 ms worst case, subject to the continuation timeout
+returned by the service. Chat ingestion adds platform-dependent network, moderation, and delivery
+delay after that. The desktop parser, resolver, named pipe, and XInput submission remain sub-frame
+local work, but they cannot remove upstream chat delay.
 
 For one viewer, movement is therefore stepped rather than native 60 Hz. For a crowd, messages from
 different viewer accounts can arrive throughout each second, providing much denser aggregate
@@ -159,7 +160,10 @@ condition instead.
 Chrome Manifest V3 content scripts run in isolated worlds and require declared host match patterns.
 YouTube chat commonly lives in a child frame, so the extension declares `all_frames` and routes a
 packet through the service worker to the frame containing the active composer.^4 The controller
-poller runs only in the top frame, preventing duplicate gamepad sampling.
+poller runs only in the top frame, preventing duplicate gamepad sampling. High-rate frame routing
+uses one reusable Chrome `Port`; the service worker remembers the last successful chat frame, and
+the injector caches the live composer/send controls with safe connectivity checks. Frame discovery
+and selector scans are only repeated after a site navigation or DOM replacement.
 
 The package requests only storage, tab routing, web-navigation frame discovery, and the three
 supported site origins. It does not collect credentials, cookies, browsing history, chat history,
@@ -196,14 +200,26 @@ not guaranteed public APIs.
   extension content script into an intercepted Twitch page.
 - The existing desktop suite continues to cover compound text commands, crowd resolution, IPC,
   watchdog neutralization, the PyQt GUI, and real XInput hardware smoke testing.
+- The runtime keeps bounded p50/p95 measurements for `chat_to_bridge_write` and
+  `runtime_processing`; these measure local stages only and never claim to measure platform
+  server or moderation delay.
+
+These sources support individual engineering choices; they do not certify end-to-end latency or
+remove platform limits. Chrome documents reusable Ports for repeated extension communication,
+YouTube documents server-controlled polling and `streamList`, Twitch documents IRC capabilities and
+keepalive/rate-limit behavior, and latency research supports measuring interaction stages instead
+of treating the whole path as one opaque number.
 
 ## Sources
 
 1. Twitch Developers. [Chat & Chatbots — Rate Limits](https://dev.twitch.tv/docs/chat/).
-2. YouTube Help. [Learn about live streams](https://support.google.com/youtube/answer/15270973).
-3. W3C. [Gamepad](https://www.w3.org/TR/gamepad/), Working Draft.
-4. Chrome for Developers. [Content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts).
-5. Chrome for Developers. [Stay secure](https://developer.chrome.com/docs/extensions/develop/security-privacy/stay-secure).
-6. Google for Developers. [LiveChatMessages: insert](https://developers.google.com/youtube/v3/live/docs/liveChatMessages/insert).
-7. YouTube. [Terms of Service](https://www.youtube.com/static?template=terms).
-8. TikTok. [Terms of Service](https://www.tiktok.com/legal/page/us/terms-of-service/en).
+2. Google for Developers. [LiveChatMessages: list](https://developers.google.com/youtube/v3/live/docs/liveChatMessages/list).
+3. Google for Developers. [LiveChatMessages](https://developers.google.com/youtube/v3/live/docs/liveChatMessages).
+4. W3C. [Gamepad](https://www.w3.org/TR/gamepad/), Working Draft.
+5. Chrome for Developers. [Message passing](https://developer.chrome.com/docs/extensions/develop/concepts/messaging).
+6. Chrome for Developers. [Content scripts](https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts).
+7. Chrome for Developers. [Stay secure](https://developer.chrome.com/docs/extensions/develop/security-privacy/stay-secure).
+8. Google for Developers. [LiveChatMessages: insert](https://developers.google.com/youtube/v3/live/docs/liveChatMessages/insert).
+9. [Measuring and simulating latency in interactive remote rendering systems](https://arxiv.org/abs/1905.05411).
+10. YouTube. [Terms of Service](https://www.youtube.com/static?template=terms).
+11. TikTok. [Terms of Service](https://www.tiktok.com/legal/page/us/terms-of-service/en).

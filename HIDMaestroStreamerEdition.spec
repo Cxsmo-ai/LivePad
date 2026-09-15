@@ -17,7 +17,7 @@ a = Analysis(
         ("assets/app_icon.ico", "assets"),
     ],
     hiddenimports=[
-        "gamepad_tester", "stream_icons", "youtube_client", "tiktok_client", "twitch_client"
+        "gamepad_tester", "stream_icons", "youtube_client", "tiktok_client", "twitch_client",
     ],
     hookspath=[],
     hooksconfig={},
@@ -50,7 +50,9 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    # Keep Qt runtime DLLs uncompressed; UPX-compressed Qt DLLs can terminate
+    # before Python starts.
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,

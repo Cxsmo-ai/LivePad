@@ -32,7 +32,7 @@
     ].join(",");
     const held = (clampInteger(frame.heldMask, 0, VALID_MASK) & VALID_MASK).toString(16);
     const taps = (clampInteger(frame.tapMask, 0, VALID_MASK) & VALID_MASK).toString(16);
-    const lease = clampInteger(frame.leaseMs, 250, 5000);
+    const lease = clampInteger(frame.leaseMs, 50, 5000);
     const packet = `hm1 ${session} ${sequence} ${analog} ${held} ${taps} ${lease}`;
     if (packet.length > 160) throw new Error("controller frame exceeded protocol limit");
     return packet;
@@ -43,7 +43,7 @@
       "pad",
       Math.max(0, Math.floor(frame.session)).toString(36),
       `q${Math.max(0, Math.floor(frame.sequence)).toString(36)}`,
-      `e${clampInteger(frame.leaseMs, 250, 5000).toString(36)}`
+      `e${clampInteger(frame.leaseMs, 50, 5000).toString(36)}`
     ];
     const directional = [
       [frame.ly, "w", "s"], [frame.lx, "d", "a"],

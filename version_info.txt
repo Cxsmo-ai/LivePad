@@ -1,8 +1,8 @@
 # UTF-8
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(1, 2, 0, 0),
-    prodvers=(1, 2, 0, 0),
+    filevers=(1, 3, 0, 0),
+    prodvers=(1, 3, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -17,13 +17,13 @@ VSVersionInfo(
         '040904b0',
         [
           StringStruct('CompanyName', 'Cxsmo_AI'),
-          StringStruct('FileDescription', 'DeepAscension LivePad'),
-          StringStruct('FileVersion', '1.2.0.0'),
+          StringStruct('FileDescription', 'LivePad'),
+          StringStruct('FileVersion', '1.3.0.0'),
           StringStruct('InternalName', 'LivePad'),
           StringStruct('LegalCopyright', 'Copyright (C) 2026 Cxsmo_AI. All rights reserved.'),
           StringStruct('OriginalFilename', 'LivePad.exe'),
-          StringStruct('ProductName', 'DeepAscension LivePad'),
-          StringStruct('ProductVersion', '1.2.0'),
+          StringStruct('ProductName', 'LivePad'),
+          StringStruct('ProductVersion', '1.3.0'),
           StringStruct('Comments', 'Live Stream Chat Plays Xbox Controller Engine by Cxsmo_AI')
         ]
       )

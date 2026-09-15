@@ -1,0 +1,30 @@
+name: Bug report
+description: Report a reproducible LivePad problem
+title: "bug: "
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior and expected behavior.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: LivePad version
+      placeholder: "1.3.0"
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Include a minimal command, platform, and relevant log text. Remove credentials and personal data.
+    validations:
+      required: true

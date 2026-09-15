@@ -2,9 +2,22 @@
 import os
 from pathlib import Path
 from PyQt6.QtCore import Qt, QRectF, QPointF
-from PyQt6.QtGui import QImage, QPainter, QColor, QPen, QBrush, QPainterPath
+from PyQt6.QtGui import QBrush, QColor, QGuiApplication, QImage, QLinearGradient, QPainter, QPainterPath, QPen
 
-def draw_gamepad(size: int) -> QImage:
+SLATE_PAGE = "#16181D"
+SLATE_PANEL = "#1F2228"
+SLATE_WELL = "#191B20"
+SLATE_INK = "#14161A"
+INDIGO = "#6366F1"
+INDIGO_LIGHT = "#818CF8"
+INDIGO_HIGHLIGHT = "#A5B4FC"
+
+
+def _scaled_rect(x: float, y: float, w: float, h: float, scale: float) -> QRectF:
+    return QRectF(x * scale, y * scale, w * scale, h * scale)
+
+
+def draw_mark(size: int) -> QImage:
     img = QImage(size, size, QImage.Format.Format_ARGB32)
     img.fill(QColor(0, 0, 0, 0))
 
@@ -14,89 +27,78 @@ def draw_gamepad(size: int) -> QImage:
 
     scale = size / 256.0
 
-    # Slate dark background tile (#16181D)
+    # A compact slate tile makes the mark survive dark, light, and browser UI
+    # surfaces while keeping the website's neutral-first visual language.
     bg_path = QPainterPath()
-    bg_path.addRoundedRect(QRectF(12 * scale, 12 * scale, 232 * scale, 232 * scale), 48 * scale, 48 * scale)
-    p.fillPath(bg_path, QColor("#16181D"))
-    # Primary Indigo border (#6366F1)
-    p.strokePath(bg_path, QPen(QColor("#6366F1"), 6 * scale))
+    bg_path.addRoundedRect(_scaled_rect(10, 10, 236, 236, scale), 48 * scale, 48 * scale)
+    tile_gradient = QLinearGradient(0, 10 * scale, 0, 246 * scale)
+    tile_gradient.setColorAt(0.0, QColor(SLATE_PANEL))
+    tile_gradient.setColorAt(1.0, QColor(SLATE_PAGE))
+    p.fillPath(bg_path, QBrush(tile_gradient))
+    p.strokePath(bg_path, QPen(QColor(INDIGO), 6 * scale))
 
-    # Inner subtle glow (#818CF8 at low opacity)
     inner_glow = QPainterPath()
-    inner_glow.addRoundedRect(QRectF(16 * scale, 16 * scale, 224 * scale, 224 * scale), 44 * scale, 44 * scale)
-    p.strokePath(inner_glow, QPen(QColor(129, 140, 248, 40), 2 * scale))
+    inner_glow.addRoundedRect(_scaled_rect(16, 16, 224, 224, scale), 44 * scale, 44 * scale)
+    p.strokePath(inner_glow, QPen(QColor(INDIGO_LIGHT), 2 * scale, Qt.PenStyle.SolidLine))
 
-    # Gamepad body outline (#1F2228 card panel)
-    pad_body = QPainterPath()
-    pad_body.moveTo(76 * scale, 86 * scale)
-    pad_body.cubicTo(100 * scale, 76 * scale, 156 * scale, 76 * scale, 180 * scale, 86 * scale)
-    pad_body.cubicTo(210 * scale, 98 * scale, 220 * scale, 130 * scale, 208 * scale, 178 * scale)
-    pad_body.cubicTo(198 * scale, 214 * scale, 164 * scale, 204 * scale, 150 * scale, 168 * scale)
-    pad_body.cubicTo(138 * scale, 142 * scale, 118 * scale, 142 * scale, 106 * scale, 168 * scale)
-    pad_body.cubicTo(92 * scale, 204 * scale, 58 * scale, 214 * scale, 48 * scale, 178 * scale)
-    pad_body.cubicTo(36 * scale, 130 * scale, 46 * scale, 98 * scale, 76 * scale, 86 * scale)
-    pad_body.closeSubpath()
+    # An original LP monogram: architectural, compact, and closer to the
+    # website's cut-out geometry than to a literal controller illustration.
+    logo = QPainterPath()
+    logo.moveTo(78 * scale, 74 * scale)
+    logo.lineTo(78 * scale, 183 * scale)
+    logo.lineTo(126 * scale, 183 * scale)
+    logo.moveTo(145 * scale, 183 * scale)
+    logo.lineTo(145 * scale, 74 * scale)
+    logo.lineTo(176 * scale, 74 * scale)
+    logo.cubicTo(203 * scale, 74 * scale, 208 * scale, 125 * scale, 176 * scale, 125 * scale)
+    logo.lineTo(145 * scale, 125 * scale)
+    p.setBrush(Qt.BrushStyle.NoBrush)
+    p.setPen(QPen(QColor(INDIGO_LIGHT), 18 * scale, Qt.PenStyle.SolidLine, Qt.PenCapStyle.SquareCap, Qt.PenJoinStyle.MiterJoin))
+    p.drawPath(logo)
 
-    p.fillPath(pad_body, QColor("#1F2228"))
-    p.strokePath(pad_body, QPen(QColor("#818CF8"), 4.5 * scale))
-
-    # Guide button (#191B20)
-    p.setPen(QPen(QColor("#6366F1"), 2 * scale))
-    p.setBrush(QColor("#191B20"))
-    p.drawEllipse(QRectF(116 * scale, 98 * scale, 24 * scale, 24 * scale))
-    # ''X'' logo in guide button
-    p.setPen(QPen(QColor("#A5B4FC"), 2.5 * scale))
-    p.drawLine(QPointF(122 * scale, 104 * scale), QPointF(134 * scale, 116 * scale))
-    p.drawLine(QPointF(134 * scale, 104 * scale), QPointF(122 * scale, 116 * scale))
-
-    # Left Analog Stick (#14161A with #6366F1 cap)
-    p.setPen(QPen(QColor("#818CF8"), 3 * scale))
-    p.setBrush(QColor("#14161A"))
-    p.drawEllipse(QRectF(74 * scale, 108 * scale, 32 * scale, 32 * scale))
-    p.setBrush(QColor("#6366F1"))
-    p.drawEllipse(QRectF(84 * scale, 118 * scale, 12 * scale, 12 * scale))
-
-    # D-pad (#191B20 with #2C3037 outline)
-    dpad = QPainterPath()
-    cx, cy = 90 * scale, 158 * scale
-    dpad.addRoundedRect(QRectF(cx - 16 * scale, cy - 5 * scale, 32 * scale, 10 * scale), 2 * scale, 2 * scale)
-    dpad.addRoundedRect(QRectF(cx - 5 * scale, cy - 16 * scale, 10 * scale, 32 * scale), 2 * scale, 2 * scale)
-    p.fillPath(dpad, QColor("#191B20"))
-    p.strokePath(dpad, QPen(QColor("#818CF8"), 1.5 * scale))
-
-    # Right Analog Stick (#14161A with #6366F1 cap)
-    p.setPen(QPen(QColor("#818CF8"), 3 * scale))
-    p.setBrush(QColor("#14161A"))
-    p.drawEllipse(QRectF(150 * scale, 142 * scale, 32 * scale, 32 * scale))
-    p.setBrush(QColor("#6366F1"))
-    p.drawEllipse(QRectF(160 * scale, 152 * scale, 12 * scale, 12 * scale))
-
-    # ABXY Buttons (colored gems on dark background)
-    btn_r = 5 * scale
+    # The small four-dot live signal is the only playful element: four states,
+    # one stream, kept deliberately secondary to the monogram.
     p.setPen(Qt.PenStyle.NoPen)
-    # Y (amber #FBBF24)
-    p.setBrush(QColor("#FBBF24"))
-    p.drawEllipse(QPointF(166 * scale, 108 * scale), btn_r, btn_r)
-    # A (emerald #4ADE80)
-    p.setBrush(QColor("#4ADE80"))
-    p.drawEllipse(QPointF(166 * scale, 128 * scale), btn_r, btn_r)
-    # X (sky blue #38BDF8)
-    p.setBrush(QColor("#38BDF8"))
-    p.drawEllipse(QPointF(156 * scale, 118 * scale), btn_r, btn_r)
-    # B (red #F87171)
-    p.setBrush(QColor("#F87171"))
-    p.drawEllipse(QPointF(176 * scale, 118 * scale), btn_r, btn_r)
+    for x, y, color in (
+        (183, 157, INDIGO),
+        (201, 157, INDIGO_LIGHT),
+        (183, 175, INDIGO_HIGHLIGHT),
+        (201, 175, INDIGO),
+    ):
+        p.setBrush(QColor(color))
+        p.drawEllipse(QPointF(x * scale, y * scale), 5.5 * scale, 5.5 * scale)
+
+    # A single stepped cut-out echoes the parent website's cube silhouette
+    # without borrowing its face artwork or wordmark.
+    cutout = QPainterPath()
+    cutout.moveTo(188 * scale, 64 * scale)
+    cutout.lineTo(212 * scale, 64 * scale)
+    cutout.lineTo(212 * scale, 88 * scale)
+    cutout.lineTo(200 * scale, 88 * scale)
+    cutout.lineTo(200 * scale, 76 * scale)
+    cutout.lineTo(188 * scale, 76 * scale)
+    cutout.closeSubpath()
+    p.fillPath(cutout, QColor(SLATE_PAGE))
 
     p.end()
     return img
 
+
 def main():
+    # QPainter can rasterize paths without a widget, but font metrics are
+    # backed by Qt's GUI subsystem.  Start a headless GUI context so the same
+    # script works in packaging and on a build machine without a display.
+    app = QGuiApplication.instance() or QGuiApplication([])
     assets_dir = Path("assets")
     assets_dir.mkdir(parents=True, exist_ok=True)
-    img256 = draw_gamepad(256)
+    img256 = draw_mark(256)
     img256.save(str(assets_dir / "app_icon.png"), "PNG")
     img256.save(str(assets_dir / "app_icon.ico"), "ICO")
-    print("Generated SAENXT Slate & Indigo icons in assets/")
+    draw_mark(128).save(str(assets_dir / "livepad_mark.png"), "PNG")
+    extension_assets = Path("controller-chat-extension") / "assets"
+    extension_assets.mkdir(parents=True, exist_ok=True)
+    draw_mark(128).save(str(extension_assets / "livepad_mark.png"), "PNG")
+    print("Generated LivePad mark and app icons in assets/")
 
 if __name__ == "__main__":
     main()

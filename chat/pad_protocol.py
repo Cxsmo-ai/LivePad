@@ -113,8 +113,8 @@ def parse_pad_frame(text: str) -> PadFrame | None:
         lease_ms = int(parts[6])
     except ValueError as error:
         raise ValueError("lease must be integer milliseconds") from error
-    if not 250 <= lease_ms <= 5000:
-        raise ValueError("lease must be between 250 and 5000 milliseconds")
+    if not 50 <= lease_ms <= 5000:
+        raise ValueError("lease must be between 50 and 5000 milliseconds")
 
     return PadFrame(
         session=session,
@@ -148,8 +148,8 @@ def _parse_friendly_pad_frame(candidate: str) -> PadFrame:
         raise ValueError("friendly controller frame is missing order fields")
     sequence = _base36(parts[2][1:], maximum=(1 << 31) - 1)
     lease_ms = _base36(parts[3][1:], maximum=5000)
-    if lease_ms < 250:
-        raise ValueError("lease must be between 250 and 5000 milliseconds")
+    if lease_ms < 50:
+        raise ValueError("lease must be between 50 and 5000 milliseconds")
 
     values: dict[str, int] = {"lx": 0, "ly": 0, "rx": 0, "ry": 0, "lt": 0, "rt": 0}
     held_mask = 0

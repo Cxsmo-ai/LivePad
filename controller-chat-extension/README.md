@@ -25,4 +25,8 @@ platform's current terms.
 
 Automatic changed-state cadence is 350 ms for TikTok, 1.55 seconds for Twitch, and 2 seconds
 for YouTube. Steady active inputs use a separate keepalive and neutral state does not generate
-repeating chat messages. The 250 ms custom setting is experimental and may be throttled.
+repeating chat messages. Custom settings below 250 ms are experimental and may be throttled.
+
+The fast path keeps one reusable extension Port for frame routing, remembers the last successful
+chat frame, and caches the visible composer/send controls. These reduce local extension overhead;
+they do not bypass chat moderation, server pacing, or platform rate limits.

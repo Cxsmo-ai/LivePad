@@ -14,7 +14,7 @@ a = Analysis(
         ("profiles/cod.json", "profiles"),
         ("QUICK_START.txt", "."),
     ],
-    hiddenimports=[],
+    hiddenimports=["gamepad_tester"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

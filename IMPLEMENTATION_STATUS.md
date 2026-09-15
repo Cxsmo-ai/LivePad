@@ -1,8 +1,8 @@
-# TikForever-HIDMaestro implementation status
+# LivePad implementation status
 
-The fork starts from TikForever commit `ddb30091c2ba0263dcd73fbcea872c13ff71aace`
-on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
-`hidmaestro-chatplays`.
+This is the LivePad source tree and production branch. Internal compatibility
+identifiers remain only where they are required by the bridge cache and existing
+local installations.
 
 ## Completed
 
@@ -18,10 +18,12 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
 - Left-stick crowd vectors are radially normalized; camera intent sums and clamps.
 - Per-user token buckets independently limit movement, camera, buttons, and triggers.
 - Command strengths, durations, and enabled states are editable live and saved atomically with backup recovery.
-- Python and the C# bridge communicate over `TikForeverGamepad` using newline-delimited JSON.
+- Python and the C# bridge communicate over the local newline-delimited JSON pipe.
 - The bridge references the official HIDMaestro v1.7.3 SDK DLL and uses `xbox-360-wired`.
 - The bridge never calls `InstallDriver()` and contains no game access, injection, hooks, or anti-cheat behavior.
-- Changed-state submission runs on a configurable 250 Hz loop with 250 ms heartbeats.
+- Changed-state submission is serviced by a configurable scheduler up to 1000 Hz
+  with precise 1 ms timer resolution; the GUI timer sleeps between the next lease deadline
+  instead of polling every millisecond while neutral, and HIDMaestro receives only changed frames.
 - TikTok disconnect, Pause Chat, Clear Controller, shutdown, and global F12 all neutralize the pad.
 - The bridge independently neutralizes once after a 1-second heartbeat timeout.
 - TikTok reconnect uses bounded exponential backoff.
@@ -35,13 +37,15 @@ on `claude/windows-tiktok-app-01PWfK7Bp8pSZ7dbZkz6hLKb`. Development is on
   replay rejection, bounded leases, explicit neutral frames, and corrected positive-forward Y.
 - TikTok uses a chat-friendly `pad ... w80 lr35` frame because current LIVE chat silently filters
   comma-heavy controller strings; the host decodes both wire spellings into the same atomic state.
+- The extension fast path uses a reusable Chrome Port, cached successful chat frame, and cached
+  composer/send nodes; YouTube honors the server continuation timeout without a client-imposed
+  one-second floor.
 - The desktop app remains one EXE, while viewers receive a separate load-unpacked Chrome extension ZIP.
 
 ## Automated verification
 
-- 73 Python tests and 8 JavaScript controller-protocol tests pass.
-- Deterministic DOM fixtures pass for all three platforms; a real Manifest V3 Chromium run loads
-  the service worker and injects a frame through the actual content script.
+- 79 Python tests and 11 JavaScript controller-protocol tests pass; extension/service-worker files
+  also pass Node syntax checks.
 - C# bridge builds with zero warnings and zero errors.
 - Required `w sprint ads fire right 35` state passes concurrently.
 - 1,000-frame real named-pipe test passes at roughly 29,000 frames/second on this machine.

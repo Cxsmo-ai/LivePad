@@ -20,6 +20,10 @@
   let lastError = "";
   let lastSentAt = 0;
   let hud = null;
+  let routePort = null;
+  let framePort = null;
+  let routeRequestSequence = 0;
+  const pendingRouteRequests = new Map();
 
   function platformFromLocation() {
     const host = location.hostname.toLowerCase();
@@ -69,7 +73,7 @@
   function ensureHud() {
     if (!isTop || hud || !document.documentElement) return;
     hud = document.createElement("div");
-    hud.id = "deepascension-livepad-hud";
+    hud.id = "livepad-hud";
     Object.assign(hud.style, {
       position: "fixed", right: "16px", bottom: "16px", zIndex: "2147483647",
       display: "none", maxWidth: "360px", padding: "9px 12px",
@@ -89,13 +93,69 @@
     hud.textContent = text;
   }
 
+  function resetRoutePort() {
+    routePort = null;
+    for (const reject of pendingRouteRequests.values()) reject(new Error("Extension relay disconnected"));
+    pendingRouteRequests.clear();
+  }
+
+  function getRoutePort() {
+    if (routePort) return routePort;
+    const port = chrome.runtime.connect({ name: "hm-route" });
+    port.onMessage.addListener((message) => {
+      if (message?.type !== "HM_ROUTE_RESULT") return;
+      const pending = pendingRouteRequests.get(message.requestId);
+      if (!pending) return;
+      pendingRouteRequests.delete(message.requestId);
+      pending.resolve(message.result);
+    });
+    port.onDisconnect.addListener(() => {
+      if (routePort === port) resetRoutePort();
+    });
+    routePort = port;
+    return port;
+  }
+
+  function routeThroughPort(packet, platform) {
+    const port = getRoutePort();
+    const requestId = `${Date.now().toString(36)}-${(++routeRequestSequence).toString(36)}`;
+    return new Promise((resolve, reject) => {
+      pendingRouteRequests.set(requestId, { resolve, reject });
+      try {
+        port.postMessage({ type: "HM_ROUTE_PACKET", requestId, packet, platform });
+      } catch (error) {
+        pendingRouteRequests.delete(requestId);
+        reject(error);
+      }
+    });
+  }
+
+  function connectFramePort() {
+    if (framePort) return;
+    const port = chrome.runtime.connect({ name: "hm-frame" });
+    port.onMessage.addListener((message) => {
+      if (message?.type !== "HM_INJECT_PACKET") return;
+      injectPacket(String(message.packet || ""), String(message.platform || ""))
+        .then((result) => port.postMessage({
+          type: "HM_INJECT_RESULT", requestId: message.requestId, result
+        }))
+        .catch((error) => port.postMessage({
+          type: "HM_INJECT_RESULT",
+          requestId: message.requestId,
+          result: { ok: false, error: String(error?.message || error) }
+        }));
+    });
+    port.onDisconnect.addListener(() => {
+      if (framePort === port) framePort = null;
+    });
+    framePort = port;
+  }
+
   async function route(packet, now) {
     if (sendPending) return;
     sendPending = true;
     try {
-      const result = await chrome.runtime.sendMessage({
-        type: "HM_ROUTE_PACKET", packet, platform: platformFromLocation()
-      });
+      const result = await routeThroughPort(packet, platformFromLocation());
       if (!result?.ok) throw new Error(result?.error || "Chat send failed");
       engine.markSent(now, packet);
       lastPacket = packet;
@@ -215,5 +275,6 @@
     return HMInjector.injectPacket(packet, platform, submit);
   }
 
+  connectFramePort();
   if (isTop) requestAnimationFrame(poll);
 })();

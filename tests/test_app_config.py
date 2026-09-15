@@ -31,6 +31,11 @@ def test_existing_config_gains_safe_twitch_defaults(tmp_path):
     }
 
 
+def test_default_controller_scheduler_is_1000_hz(tmp_path):
+    data = AppConfig(tmp_path / "chat_gamepad.json").load()
+    assert data["controller"]["scheduler_hz"] == 1000
+
+
 def test_config_rejects_unsafe_duration(tmp_path):
     config = AppConfig(tmp_path / "chat_gamepad.json")
     config.data["commands"]["w"]["duration_ms"] = 99999

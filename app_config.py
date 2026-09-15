@@ -1,4 +1,4 @@
-"""Validated, atomic configuration for HID Maestro Streamer Edition."""
+"""Validated, atomic configuration for LivePad."""
 
 from __future__ import annotations
 
@@ -14,11 +14,11 @@ from chat.commands import DEFAULT_COMMANDS, SUPPORTED_ACTIONS
 
 DEFAULT_CONFIG: dict[str, Any] = {
     "schema_version": 2,
-    "app_name": "HID Maestro Streamer Edition",
+    "app_name": "LivePad",
     "tiktok": {"enabled": True, "username": "", "auto_reconnect": True},
     "youtube": {"enabled": True, "target": "", "chat_type": "live", "auto_reconnect": True},
     "twitch": {"enabled": False, "channel": "", "auto_reconnect": True},
-    "controller": {"profile": "xbox-360-wired", "scheduler_hz": 250, "allow_seconds": True},
+    "controller": {"profile": "xbox-360-wired", "scheduler_hz": 1000, "allow_seconds": True},
     "crowd": {"mode": "balanced", "movement_window_ms": 60},
     "commands": deepcopy(DEFAULT_COMMANDS),
 }
@@ -138,8 +138,8 @@ class AppConfig:
             duration = command.get("duration_ms", 0)
             if not isinstance(strength, (int, float)) or not 0 <= strength <= 1:
                 raise ValueError(f"commands.{name}.strength must be in [0, 1]")
-            if not isinstance(duration, int) or not 25 <= duration <= 1500:
-                raise ValueError(f"commands.{name}.duration_ms must be between 25 and 1500")
+            if not isinstance(duration, int) or not 10 <= duration <= 10000:
+                raise ValueError(f"commands.{name}.duration_ms must be between 10 and 10000")
             for flag in ("enabled", "allow_strength_argument", "allow_duration_argument"):
                 if flag in command and not isinstance(command[flag], bool):
                     raise ValueError(f"commands.{name}.{flag} must be true or false")

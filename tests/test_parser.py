@@ -39,6 +39,32 @@ def test_chat_analog_arguments_are_percentages_including_one_percent():
     assert commands[1].duration_ms == 180
 
 
+def test_short_command_duration_floor_is_ten_milliseconds():
+    accepted = CommandParser().parse("right 1 10ms")
+    assert accepted.commands[0].duration_ms == 10
+    rejected = CommandParser().parse("right 1 9ms")
+    assert rejected.commands == ()
+    assert rejected.invalid_tokens == ("9ms",)
+
+
+def test_long_compound_commands_have_no_queue_delay():
+    result = CommandParser().parse("w 80 10s sprint")
+    assert [(command.action, command.strength, command.duration_ms) for command in result.commands] == [
+        ("move_forward", 0.8, 10000), ("button_l3", 1.0, 500)
+    ]
+
+
+def test_digital_commands_accept_uniform_strength_and_duration_modifiers():
+    result = CommandParser().parse("w 75 900ms sprint 100 500ms ads 80 1200ms fire 100 300ms")
+    assert [(command.action, command.strength, command.duration_ms) for command in result.commands] == [
+        ("move_forward", 0.75, 900),
+        ("button_l3", 1.0, 500),
+        ("left_trigger", 0.8, 1200),
+        ("right_trigger", 1.0, 300),
+    ]
+    assert result.invalid_tokens == ()
+
+
 def test_custom_command_profile_is_used():
     parser = CommandParser({
         "go": {

@@ -83,7 +83,7 @@
 
   function timingFor(platform, configuredCadence) {
     const defaults = PLATFORM_TIMINGS[platform] || { cadenceMs: 1000, keepaliveMs: 2500 };
-    const cadenceMs = clamp(Number(configuredCadence || defaults.cadenceMs), 250, 10000);
+    const cadenceMs = clamp(Number(configuredCadence || defaults.cadenceMs), 50, 10000);
     const keepaliveMs = clamp(Math.max(defaults.keepaliveMs, cadenceMs * 1.5), 750, 4000);
     const leaseMs = clamp(keepaliveMs + Math.max(500, Math.min(1000, cadenceMs * 2)), 750, 5000);
     return { cadenceMs, keepaliveMs, leaseMs };

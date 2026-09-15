@@ -2,6 +2,13 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $python = Join-Path $projectRoot '.venv\Scripts\python.exe'
 $dotnet = Join-Path $projectRoot '.dotnet\dotnet.exe'
+if (-not (Test-Path -LiteralPath $dotnet)) {
+    $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
+    if ($dotnetCommand) { $dotnet = $dotnetCommand.Source }
+}
+if (-not (Test-Path -LiteralPath $dotnet) -and -not (Get-Command dotnet -ErrorAction SilentlyContinue)) {
+    throw 'dotnet was not found. Install .NET 10 SDK or run the workflow setup step.'
+}
 
 & $dotnet build (Join-Path $projectRoot 'bridge\TikForever.HIDMaestro.csproj') --configuration Release --nologo
 if ($LASTEXITCODE -ne 0) { throw 'Bridge build failed' }

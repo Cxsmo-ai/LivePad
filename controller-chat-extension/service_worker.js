@@ -1,5 +1,39 @@
 "use strict";
 
+// The chat composer normally lives in the same frame for the life of a LIVE
+// page. Avoid asking webNavigation for every controller frame; keep the last
+// successful frame and fall back to discovery only after it disappears or
+// rejects the packet.
+const routeFrameCache = new Map();
+const framePorts = new Map();
+let frameRequestSequence = 0;
+const pendingFrameRequests = new Map();
+
+function frameCacheKey(tabId, platform) {
+  return `${tabId}:${platform}`;
+}
+
+function rememberRouteFrame(tabId, platform, frameId) {
+  routeFrameCache.set(frameCacheKey(tabId, platform), { frameId, lastUsed: Date.now() });
+}
+
+function forgetRouteFrame(tabId, platform) {
+  routeFrameCache.delete(frameCacheKey(tabId, platform));
+}
+
+function framePortKey(tabId, frameId) {
+  return `${tabId}:${frameId}`;
+}
+
+chrome.tabs.onRemoved?.addListener((tabId) => {
+  for (const key of routeFrameCache.keys()) {
+    if (key.startsWith(`${tabId}:`)) routeFrameCache.delete(key);
+  }
+  for (const key of framePorts.keys()) {
+    if (key.startsWith(`${tabId}:`)) framePorts.delete(key);
+  }
+});
+
 function triggerTikTokSend() {
   const send = document.querySelector("[data-e2e='room-chat-send-btn']");
   if (!send) return { ok: false, error: "TikTok send control disappeared" };
@@ -38,6 +72,25 @@ async function submitTikTok(tabId, frameId) {
 }
 
 async function sendToFrame(tabId, frameId, packet, platform) {
+  const port = framePorts.get(framePortKey(tabId, frameId));
+  if (port) {
+    const requestId = `${Date.now().toString(36)}-${(++frameRequestSequence).toString(36)}`;
+    const result = await new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        pendingFrameRequests.delete(requestId);
+        resolve(null);
+      }, 1500);
+      pendingFrameRequests.set(requestId, { resolve, timeout });
+      try {
+        port.postMessage({ type: "HM_INJECT_PACKET", requestId, packet, platform });
+      } catch (_) {
+        clearTimeout(timeout);
+        pendingFrameRequests.delete(requestId);
+        resolve(null);
+      }
+    });
+    if (result) return result;
+  }
   try {
     return await chrome.tabs.sendMessage(tabId, {
       type: "HM_INJECT_PACKET", packet, platform
@@ -48,8 +101,19 @@ async function sendToFrame(tabId, frameId, packet, platform) {
 }
 
 async function routePacket(tabId, packet, platform) {
+  const cached = routeFrameCache.get(frameCacheKey(tabId, platform));
+  if (cached) {
+    const cachedResult = await sendToFrame(tabId, cached.frameId, packet, platform);
+    if (cachedResult?.ok) {
+      cached.lastUsed = Date.now();
+      return cachedResult;
+    }
+    if (cachedResult?.handled) return cachedResult;
+    forgetRouteFrame(tabId, platform);
+  }
+
   const frames = await chrome.webNavigation.getAllFrames({ tabId });
-  if (!frames) return { ok: false, error: "No chat frame is available" };
+  if (!frames?.length) return { ok: false, error: "No chat frame is available" };
   const errors = [];
   const ordered = [...frames].sort((a, b) => {
     if (platform === "youtube") return Number(b.frameId !== 0) - Number(a.frameId !== 0);
@@ -57,7 +121,10 @@ async function routePacket(tabId, packet, platform) {
   });
   for (const frame of ordered) {
     const result = await sendToFrame(tabId, frame.frameId, packet, platform);
-    if (result?.ok) return result;
+    if (result?.ok) {
+      rememberRouteFrame(tabId, platform, frame.frameId);
+      return result;
+    }
     if (result?.error) errors.push(result.error);
     if (result?.handled) return result;
   }
@@ -68,6 +135,50 @@ async function routePacket(tabId, packet, platform) {
       || "Live chat composer was not found or already contains text"
   };
 }
+
+// High-rate controller frames use one reusable Port instead of creating a new
+// runtime message channel for every frame. Popup/status traffic continues to
+// use the one-shot listener below.
+chrome.runtime.onConnect.addListener((port) => {
+  if (port.name === "hm-frame") {
+    const tabId = port.sender?.tab?.id;
+    const frameId = port.sender?.frameId ?? 0;
+    if (tabId === undefined) return;
+    const key = framePortKey(tabId, frameId);
+    const previous = framePorts.get(key);
+    previous?.disconnect();
+    framePorts.set(key, port);
+    port.onMessage.addListener((message) => {
+      if (message?.type !== "HM_INJECT_RESULT") return;
+      const pending = pendingFrameRequests.get(message.requestId);
+      if (!pending) return;
+      clearTimeout(pending.timeout);
+      pendingFrameRequests.delete(message.requestId);
+      pending.resolve(message.result);
+    });
+    port.onDisconnect.addListener(() => {
+      if (framePorts.get(key) === port) framePorts.delete(key);
+    });
+    return;
+  }
+  if (port.name !== "hm-route") return;
+  port.onMessage.addListener((message) => {
+    if (message?.type !== "HM_ROUTE_PACKET" || !port.sender?.tab?.id) return;
+    routePacket(
+      port.sender.tab.id,
+      String(message.packet || ""),
+      String(message.platform || "")
+    ).then((result) => {
+      port.postMessage({ type: "HM_ROUTE_RESULT", requestId: message.requestId, result });
+    }).catch((error) => {
+      port.postMessage({
+        type: "HM_ROUTE_RESULT",
+        requestId: message.requestId,
+        result: { ok: false, error: String(error?.message || error) }
+      });
+    });
+  });
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "HM_TIKTOK_SUBMIT" && sender.tab?.id) {

@@ -3,7 +3,7 @@
 body{margin:0;width:370px;min-height:560px;background:#16181D}
 main{padding:18px}
 header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
-.mark{display:grid;place-items:center;width:40px;height:40px;border:1px solid #818CF8;border-radius:8px;background:#1F2228;color:#A5B4FC;font-size:13px;font-weight:800;letter-spacing:.06em}
+.mark{display:block;width:40px;height:40px;border:1px solid #818CF8;border-radius:8px;background:#1F2228;object-fit:cover}
 h1,h2,p{margin:0}
 h1{font-size:17px;line-height:1.25;font-weight:700;letter-spacing:-.01em;color:#E8EAEE}
 header p{margin-top:2px;color:#A6ADB8;font-size:11px}

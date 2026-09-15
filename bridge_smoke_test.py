@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import time
 
@@ -17,10 +18,11 @@ def main() -> int:
     published = root / "build" / "bridge" / "TikForever.HIDMaestro.exe"
     assembly = root / "bridge" / "bin" / "Release" / "net10.0-windows" / "TikForever.HIDMaestro.dll"
     dotnet = root / ".dotnet" / "dotnet.exe"
+    dotnet_command = str(dotnet) if dotnet.exists() else shutil.which("dotnet")
     # Source verification must exercise the assembly just produced by
     # `dotnet build`, never a potentially stale published executable.
-    if assembly.exists() and dotnet.exists():
-        command = [str(dotnet), str(assembly), "--mock"]
+    if assembly.exists() and dotnet_command:
+        command = [dotnet_command, str(assembly), "--mock"]
         working_directory = assembly.parent
     elif published.exists():
         command = [str(published), "--mock"]

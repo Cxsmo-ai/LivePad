@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "DeepAscension LivePad — Controller Extension",
-  "version": "1.2.0",
-  "description": "Turns a physical gamepad into low-latency live chat controller frames for DeepAscension LivePad.",
+  "name": "LivePad — Controller Extension",
+  "version": "1.3.0",
+  "description": "Turns a physical gamepad into low-latency live chat controller frames for LivePad.",
   "permissions": ["storage", "tabs", "webNavigation", "scripting"],
   "host_permissions": [
     "https://www.twitch.tv/*",
@@ -13,7 +13,7 @@
     "service_worker": "service_worker.js"
   },
   "action": {
-    "default_title": "DeepAscension LivePad",
+    "default_title": "LivePad",
     "default_popup": "popup.html"
   },
   "content_scripts": [

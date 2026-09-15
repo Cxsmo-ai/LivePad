@@ -1,6 +1,12 @@
 (function (root) {
   "use strict";
 
+  // LIVE sites keep the composer mounted while new chat messages arrive. A
+  // small per-platform cache removes repeated querySelectorAll/style/layout
+  // work from the hot path, while connectivity and visibility checks keep it
+  // safe across SPA route changes.
+  const nodeCache = new Map();
+
   function visible(element) {
     if (!element || element.disabled) return false;
     const style = getComputedStyle(element);
@@ -24,6 +30,24 @@
       }
     }
     return fallback;
+  }
+
+  function cachedNode(platform, kind, selectors, requireVisible = true) {
+    const key = `${platform}:${kind}`;
+    const cached = nodeCache.get(key);
+    if (cached && cached.isConnected && (!requireVisible || visible(cached))) return cached;
+    const next = requireVisible ? firstVisible(selectors) : firstAvailable(selectors);
+    if (next) nodeCache.set(key, next);
+    else nodeCache.delete(key);
+    return next;
+  }
+
+  function clearCache(platform = null) {
+    if (!platform) {
+      nodeCache.clear();
+      return;
+    }
+    for (const key of nodeCache.keys()) if (key.startsWith(`${platform}:`)) nodeCache.delete(key);
   }
 
   function composerValue(element) {
@@ -61,6 +85,32 @@
       await sleep(intervalMs);
     }
     return check();
+  }
+
+  // Wake on the same DOM turn as a site mounting/enabling its send control.
+  // A timeout fallback covers frameworks that only change layout/property
+  // state without mutating the tree.
+  function waitForDom(check, timeoutMs) {
+    const immediate = check();
+    if (immediate) return Promise.resolve(immediate);
+    return new Promise((resolve) => {
+      let finished = false;
+      const observer = new MutationObserver(() => {
+        const result = check();
+        if (result) finish(result);
+      });
+      const timer = setTimeout(() => finish(check()), timeoutMs);
+      function finish(result) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        observer.disconnect();
+        resolve(result || null);
+      }
+      observer.observe(document.documentElement || document, {
+        childList: true, subtree: true, attributes: true, characterData: true
+      });
+    });
   }
 
   function clearOwnedPacket(element, packet) {
@@ -110,17 +160,17 @@
       return { ok: false, error: "Invalid controller packet" };
     }
     const set = selectors(platform);
-    const input = firstVisible(set.inputs);
+    const input = cachedNode(platform, "input", set.inputs);
     if (!input) return { ok: false, error: "Composer not found in this frame" };
     if (composerValue(input)) return { ok: false, error: "Composer contains your text; controller send paused" };
     writeComposer(input, packet);
 
-    const send = await waitFor(() => {
+    const send = await waitForDom(() => {
       if (!input.isConnected || composerValue(input) !== packet) return null;
       // TikTok can briefly report zero-size/disabled styling while React promotes
       // this already-mounted control to its active state. Composer-clear
       // confirmation below is the authoritative readiness check.
-      return firstAvailable(set.sends);
+      return cachedNode(platform, "send", set.sends, false);
     }, platform === "tiktok" ? 1500 : 750);
 
     if (!send) {
@@ -164,7 +214,7 @@
     return { ok: true, handled: true, frameUrl: location.href };
   }
 
-  const api = Object.freeze({ clearOwnedPacket, composerValue, injectPacket, selectors, waitFor });
+  const api = Object.freeze({ clearOwnedPacket, clearCache, composerValue, injectPacket, selectors, waitFor, waitForDom });
   root.HMInjector = api;
   if (typeof module !== "undefined" && module.exports) module.exports = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

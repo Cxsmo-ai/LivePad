@@ -1,4 +1,4 @@
-"""Primary source entry point for TikForever-HIDMaestro."""
+"""Primary source entry point for LivePad."""
 
 from chat_gamepad_app import main
 

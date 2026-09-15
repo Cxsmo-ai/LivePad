@@ -1,6 +1,6 @@
 # Safety boundary
 
-TikForever-HIDMaestro only translates TikTok comments into ordinary virtual Xbox controller
+LivePad only translates TikTok comments into ordinary virtual Xbox controller
 state. It does not inspect or modify a game.
 
 - No process or DLL injection

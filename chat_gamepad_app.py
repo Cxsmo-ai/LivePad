@@ -1,4 +1,4 @@
-"""HID Maestro Streamer Edition.
+"""LivePad.
 
 Unified TikTok, YouTube, and Twitch chat controls emulating an Xbox 360 controller.
 """
@@ -18,7 +18,7 @@ from datetime import datetime
 from pathlib import Path
 
 from PyQt6.QtCore import Qt, QThread, QTimer, pyqtSignal
-from PyQt6.QtGui import QIcon, QKeySequence, QShortcut
+from PyQt6.QtGui import QIcon, QKeySequence, QPixmap, QShortcut
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -340,6 +340,7 @@ class TikTokWorker(QThread):
         def _on_comment(data: dict) -> None:
             data_with_platform = dict(data)
             data_with_platform.setdefault("platform", "tiktok")
+            data_with_platform["_received_monotonic_ns"] = time.monotonic_ns()
             self.comment_received.emit(data_with_platform)
 
         self.manager.on_event("comment", _on_comment)
@@ -403,7 +404,12 @@ class YouTubeWorker(QThread):
         from youtube_client import YouTubeLiveManager
         self.stop_event = asyncio.Event()
         self.manager = YouTubeLiveManager(self.target, chat_type=self.chat_type)
-        self.manager.on_event("comment", self.comment_received.emit)
+        self.manager.on_event(
+            "comment",
+            lambda data: self.comment_received.emit({
+                **data, "_received_monotonic_ns": time.monotonic_ns(),
+            }),
+        )
         self.manager.on_event("connect", lambda _: self.state_changed.emit("Connected"))
         retry_seconds = 2
         while not self.stop_requested:
@@ -463,7 +469,12 @@ class TwitchWorker(QThread):
         from twitch_client import TwitchLiveManager
         self.stop_event = asyncio.Event()
         self.manager = TwitchLiveManager(self.channel)
-        self.manager.on_event("comment", self.comment_received.emit)
+        self.manager.on_event(
+            "comment",
+            lambda data: self.comment_received.emit({
+                **data, "_received_monotonic_ns": time.monotonic_ns(),
+            }),
+        )
         self.manager.on_event("connect", lambda _: self.state_changed.emit("Connected"))
         retry_seconds = 1
         while not self.stop_requested:
@@ -515,7 +526,7 @@ class ChatGamepadWindow(QMainWindow):
     def __init__(self, mock_bridge: bool = False, automation_mode: bool = False):
         t0 = time.perf_counter()
         super().__init__()
-        self.setWindowTitle("LivePad • DeepAscension by Cxsmo_AI")
+        self.setWindowTitle("LivePad by Cxsmo_AI")
         self.resize(920, 840)
         icon_candidates = [
             Path(__file__).resolve().parent / "assets" / "app_icon.png",
@@ -549,9 +560,13 @@ class ChatGamepadWindow(QMainWindow):
 
         self.state_timer = QTimer(self)
         scheduler_hz = self.config.data["controller"]["scheduler_hz"]
-        self.state_timer.setInterval(max(1, round(1000 / scheduler_hz)))
+        self._state_timer_interval_ms = max(1, round(1000 / scheduler_hz))
+        self.state_timer.setInterval(self._state_timer_interval_ms)
+        self.state_timer.setTimerType(Qt.TimerType.PreciseTimer)
         self.state_timer.timeout.connect(self._tick)
-        self.state_timer.start()
+        # Keep the configured 1000 Hz ceiling for lease expiry precision, but
+        # do not wake the GUI thread every millisecond while neutral.
+        self._schedule_state_timer()
 
         self.heartbeat_timer = QTimer(self)
         self.heartbeat_timer.setInterval(250)
@@ -590,7 +605,21 @@ class ChatGamepadWindow(QMainWindow):
         header_layout.setSpacing(3)
 
         title_row = QHBoxLayout()
-        title_label = QLabel("DEEPASCENSION LIVEPAD")
+        brand_mark = QLabel()
+        brand_mark.setObjectName("brandMark")
+        brand_mark.setFixedSize(34, 34)
+        brand_mark.setScaledContents(True)
+        mark_candidates = [
+            Path(__file__).resolve().parent / "assets" / "livepad_mark.png",
+            Path(getattr(sys, "_MEIPASS", sys.executable)).resolve() / "assets" / "livepad_mark.png",
+            Path(sys.executable).resolve().parent / "assets" / "livepad_mark.png",
+        ]
+        for mark_path in mark_candidates:
+            if mark_path.exists():
+                brand_mark.setPixmap(QPixmap(str(mark_path)))
+                break
+        title_row.addWidget(brand_mark)
+        title_label = QLabel("LIVEPAD")
         title_label.setStyleSheet("color: #E8EAEE; font-size: 16px; font-weight: 800; letter-spacing: 0.06em;")
         title_row.addWidget(title_label)
 
@@ -608,7 +637,7 @@ class ChatGamepadWindow(QMainWindow):
         title_row.addWidget(badge_label)
         title_row.addStretch()
 
-        subtitle = QLabel("Low-Latency Live Chat Virtual Xbox Controller • deepascension.net")
+        subtitle = QLabel("Low-Latency Live Chat Virtual Xbox Controller")
         subtitle.setStyleSheet("color: #A6ADB8; font-size: 11px;")
 
         header_layout.addLayout(title_row)
@@ -842,7 +871,7 @@ class ChatGamepadWindow(QMainWindow):
         commands_layout.addWidget(apply_commands)
         root.addWidget(commands_group)
 
-        footer = QLabel("DeepAscension LivePad • Created by Cxsmo_AI • Pure Virtual Controller Engine")
+        footer = QLabel("LivePad • Created by Cxsmo_AI • Pure Virtual Controller Engine")
         footer.setAlignment(Qt.AlignmentFlag.AlignCenter)
         footer.setStyleSheet("color: #6B7280; font-size: 11px; padding: 8px 0 2px 0;")
         root.addWidget(footer)
@@ -1109,6 +1138,7 @@ class ChatGamepadWindow(QMainWindow):
 
         result = self.runtime.handle_comment(event_data, platform=source)
         self._render_state(self.runtime.engine.resolve())
+        self._schedule_state_timer()
 
         result_text = f"{len(result.accepted)} accepted"
         if result.rate_limited:
@@ -1144,6 +1174,7 @@ class ChatGamepadWindow(QMainWindow):
             self.runtime.engine.schedule(cmd, "local-hold", now_ns)
         self.runtime.flush(now_ns)
         self._render_state(self.runtime.engine.resolve(now_ns))
+        self._schedule_state_timer()
         self._log("HOLD TEST (10s) active: Button A, LY+1.0, RX+0.35, LT 100%, RT 100%, L3 — switch to joy.cpl")
 
     def _open_joy_cpl(self) -> None:
@@ -1161,6 +1192,18 @@ class ChatGamepadWindow(QMainWindow):
             return
         if submission is not None:
             self._render_state(submission.state)
+        self._schedule_state_timer()
+
+    def _schedule_state_timer(self) -> None:
+        deadline_ns = self.runtime.engine.next_expiry_ns
+        if deadline_ns is None:
+            self.state_timer.stop()
+            return
+        remaining_ns = deadline_ns - time.monotonic_ns()
+        remaining_ms = max(1, (remaining_ns + 999_999) // 1_000_000)
+        self.state_timer.setInterval(max(1, min(self._state_timer_interval_ms, remaining_ms)))
+        if not self.state_timer.isActive():
+            self.state_timer.start()
 
     def _heartbeat(self) -> None:
         try:
@@ -1173,6 +1216,7 @@ class ChatGamepadWindow(QMainWindow):
         self.runtime.clear()
         self._set_status_label(self.bridge_status, "Disconnected — local test only")
         self._render_state(ControllerState())
+        self._schedule_state_timer()
         self._log(f"Bridge disconnected: {error}")
 
     def _clear(self) -> None:
@@ -1181,6 +1225,7 @@ class ChatGamepadWindow(QMainWindow):
         except OSError as error:
             self._bridge_failed(error)
         self._render_state(ControllerState())
+        self._schedule_state_timer()
         self._log("CONTROLLER CLEARED")
 
     def _toggle_pause(self) -> None:

@@ -108,3 +108,13 @@ def test_neutral_frame_clears_held_frame_controls_immediately():
     engine.replace_owner_frame(_frame(1, ly=1.0, held_mask=BUTTON_BITS["a"]), owner, 0)
     engine.replace_owner_frame(_frame(2), owner, 1)
     assert engine.resolve(2) == ControllerState()
+
+
+def test_next_expiry_tracks_earliest_active_lease():
+    engine = StateEngine()
+    now = 10_000_000_000
+    engine.schedule(Command("move_forward", 1.0, 500), "viewer-a", now)
+    engine.schedule(Command("button_a", 1.0, 120), "viewer-b", now)
+    assert engine.next_expiry_ns == now + 120_000_000
+    engine.resolve(now + 121_000_000)
+    assert engine.next_expiry_ns == now + 500_000_000

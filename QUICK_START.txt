@@ -122,7 +122,7 @@ COD ZOMBIES & FPS COMMAND LIST
      - Checkbox in GUI: "Enable seconds duration (e.g. 1.2s, 0.5s) — uncheck for ms only"
      - When checked: Chat viewers can write either seconds (1.2s) or ms (250ms / 250).
      - When unchecked: Chat only accepts milliseconds (ms), ignoring/rejecting 's' suffixes.
-     - Strength must be 1-100; duration must be 25-1500ms.
+     - Strength must be 1-100; duration must be 10-10000ms.
 
 4. Combat & Weapons:
    fire / shoot     - Pull Right Trigger (RT 100%)

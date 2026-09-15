@@ -7,7 +7,9 @@ from controller.state import ControllerState
 
 
 def encode_message(message: dict[str, Any]) -> bytes:
-    return (json.dumps(message, separators=(",", ":"), sort_keys=True) + "\n").encode("utf-8")
+    # Field insertion order is already deterministic for our protocol. Avoid
+    # sorting every tiny frame because this runs on the low-latency hot path.
+    return (json.dumps(message, separators=(",", ":")) + "\n").encode("utf-8")
 
 
 def encode_state(state: ControllerState, sequence: int) -> bytes:

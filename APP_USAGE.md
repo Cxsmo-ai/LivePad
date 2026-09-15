@@ -1,8 +1,8 @@
-# HID Maestro Streamer Edition
+# LivePad
 
 ## Ready-to-run build
 
-Run `release/HIDMaestroStreamerEdition.exe`. The single file includes the self-contained C# bridge and the official
+Run `release/LivePad-Instant/LivePad.exe`. The packaged build includes the self-contained C# bridge and the official
 HIDMaestro v1.7.3 SDK assembly; Python, Visual Studio, and a separate .NET installation are not
 needed to run it.
 
@@ -64,7 +64,7 @@ smoke test, and produces the single release EXE plus its SHA-256 checksum.
 
 ## Viewer physical-controller extension
 
-Send the separate `release/HIDMaestroControllerChat.zip` file to the viewer. The viewer unzips it,
+Send the separate `release/LivePad-Extension.zip` file to the viewer. The viewer unzips it,
 opens `chrome://extensions`, enables Developer mode, chooses **Load unpacked**, and selects the
 unzipped folder. They then open the supported live chat, press any gamepad button once while the
 page is visible, open the extension, and select **Arm Controller Chat**.

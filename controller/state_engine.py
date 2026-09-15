@@ -116,21 +116,29 @@ class StateEngine:
             key: lease for key, lease in self._leases.items()
             if lease.expires_ns > now_ns
         }
-        axes = {"lx": 0.0, "ly": 0.0, "rx": 0.0, "ry": 0.0}
-        triggers = {"lt": 0.0, "rt": 0.0}
+        lx = ly = rx = ry = 0.0
+        lt = rt = 0.0
         buttons: set[str] = set()
         for lease in self._leases.values():
-            if lease.control in axes:
-                axes[lease.control] += float(lease.value)
-            elif lease.control in triggers:
-                triggers[lease.control] = max(triggers[lease.control], float(lease.value))
+            if lease.control == "lx":
+                lx += float(lease.value)
+            elif lease.control == "ly":
+                ly += float(lease.value)
+            elif lease.control == "rx":
+                rx += float(lease.value)
+            elif lease.control == "ry":
+                ry += float(lease.value)
+            elif lease.control == "lt":
+                lt = max(lt, float(lease.value))
+            elif lease.control == "rt":
+                rt = max(rt, float(lease.value))
             elif lease.control == "buttons":
                 buttons.add(str(lease.value))
-        movement_magnitude = math.hypot(axes["lx"], axes["ly"])
+        movement_magnitude = math.hypot(lx, ly)
         if movement_magnitude > 1.0:
-            axes["lx"] /= movement_magnitude
-            axes["ly"] /= movement_magnitude
-        return ControllerState(**axes, **triggers, buttons=frozenset(buttons)).clamped()
+            lx /= movement_magnitude
+            ly /= movement_magnitude
+        return ControllerState(lx, ly, rx, ry, lt, rt, frozenset(buttons)).clamped()
 
     def tick(self, now_ns: int | None = None) -> Submission | None:
         state = self.resolve(now_ns)
@@ -147,3 +155,10 @@ class StateEngine:
     @property
     def active_lease_count(self) -> int:
         return len(self._leases)
+
+    @property
+    def next_expiry_ns(self) -> int | None:
+        """Return the next lease deadline for event-driven scheduling."""
+        if not self._leases:
+            return None
+        return min(lease.expires_ns for lease in self._leases.values())

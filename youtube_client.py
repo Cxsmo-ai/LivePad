@@ -118,7 +118,7 @@ def parse_action_to_comment(action: dict[str, Any]) -> dict[str, Any] | None:
 class YouTubeLiveManager:
     """Stream comments from YouTube Live InnerTube API without credentials."""
 
-    def __init__(self, target: str, chat_type: str = "live", interval_seconds: float = 1.0):
+    def __init__(self, target: str, chat_type: str = "live", interval_seconds: float = 0.1):
         self.target = target
         self.chat_type = chat_type.lower()
         self.interval_seconds = interval_seconds
@@ -266,4 +266,3 @@ class YouTubeLiveManager:
         self.stop_requested = True
         self.is_connected = False
         self._trigger_callbacks("disconnect", {"reason": "user stopped", "platform": "youtube"})
-

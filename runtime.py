@@ -13,6 +13,7 @@ from chat.youtube_adapter import YouTubeCommentAdapter
 from controller.safety import SafetyWatchdog
 from controller.state_engine import StateEngine, Submission
 from ipc.named_pipe import NamedPipeClient
+from runtime_latency import LatencyMetrics
 
 
 class ControllerRuntime:
@@ -38,16 +39,23 @@ class ControllerRuntime:
         self.watchdog = SafetyWatchdog()
         self.pipe = pipe
         self.sequence = 0
+        self.latency = LatencyMetrics()
 
     def start(self) -> None:
         if self.pipe is not None:
-            self.pipe.connect()
+            # HIDMaestro may initialize its driver/shared-memory mapping before
+            # opening the pipe. Give a fresh packaged install enough time for
+            # that one-time setup instead of incorrectly falling back to local
+            # test mode after the old three-second window.
+            self.pipe.connect(timeout_seconds=12.0)
             ready = self.pipe.receive()
             if ready.get("type") != "ready":
                 raise RuntimeError(f"unexpected bridge handshake: {ready}")
         self.watchdog.heartbeat()
 
     def handle_comment(self, event_data: dict, platform: str | None = None) -> ProcessingResult:
+        started_ns = time.monotonic_ns()
+        received_ns = event_data.get("_received_monotonic_ns")
         source = platform or event_data.get("platform", "tiktok")
         if source == "youtube":
             result = self.youtube_comments.handle(event_data)
@@ -57,12 +65,19 @@ class ControllerRuntime:
             result = self.tiktok_comments.handle(event_data)
         self.watchdog.heartbeat()
         self.flush()
+        finished_ns = time.monotonic_ns()
+        if received_ns is not None:
+            self.latency.observe_ns("chat_to_bridge_write", finished_ns - int(received_ns))
+        self.latency.observe_ns("runtime_processing", finished_ns - started_ns)
         return result
 
     def handle_event(self, event: ChatEvent) -> ProcessingResult:
+        started_ns = time.monotonic_ns()
         result = self.processor.process(event)
         self.watchdog.heartbeat()
         self.flush()
+        self.latency.observe_ns("chat_to_bridge_write", time.monotonic_ns() - event.timestamp_ns)
+        self.latency.observe_ns("runtime_processing", time.monotonic_ns() - started_ns)
         return result
 
     def heartbeat(self, now_ns: int | None = None) -> None:
@@ -76,7 +91,7 @@ class ControllerRuntime:
         if submission is not None:
             self.sequence = max(self.sequence + 1, submission.sequence)
             if self.pipe is not None:
-                self.pipe.send({"type": "state", **submission.state.to_wire(self.sequence)})
+                self.pipe.send(submission.state.to_wire(self.sequence))
         return submission
 
     def clear(self) -> None:

@@ -26,7 +26,7 @@ def test_optional_twitch_prefix_and_neutral_frame():
     "hm1 abc 1 101,0,0,0,0,0 0 0 500",
     "hm1 abc 1 0,0,0,0,-1,0 0 0 500",
     "hm1 abc 1 0,0,0,0,0,0 8000 0 500",
-    "hm1 abc 1 0,0,0,0,0,0 0 0 249",
+    "hm1 abc 1 0,0,0,0,0,0 0 0 49",
     "hm1 abc 1 0,0,0,0,0 0 0 500",
 ])
 def test_malformed_or_out_of_range_frames_are_rejected_atomically(message):

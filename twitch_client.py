@@ -264,6 +264,10 @@ class TwitchLiveManager:
                 open_timeout=10,
                 close_timeout=2,
                 ping_interval=None,
+                # IRC chat frames are tiny. Skip per-message deflate
+                # negotiation and compression work; correctness is unchanged
+                # and the socket still uses TLS/WebSocket framing.
+                compression=None,
                 max_size=2 * 1024 * 1024,
             ) as websocket:
                 self._websocket = websocket

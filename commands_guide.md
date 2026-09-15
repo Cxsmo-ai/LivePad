@@ -1,5 +1,5 @@
-# DeepAscension LivePad — Streamer & Viewer Guide
-**Created by Cxsmo_AI** • [deepascension.net](https://deepascension.net)
+# LivePad — Streamer & Viewer Guide
+**Created by Cxsmo_AI**
 Control Call of Duty: Black Ops Zombies or any Xbox controller PC game in real time through TikTok, YouTube, and Twitch chat.
 
 ---
@@ -70,11 +70,11 @@ LivePad executes all actions in your message **simultaneously**!
 
 ## 5. Playing with a Real Controller (LivePad Extension)
 Viewers who want to use a real Xbox or PlayStation controller:
-1. Load the **DeepAscension LivePad** extension in Edge or Chrome.
+1. Load the **LivePad** extension in Edge or Chrome.
 2. Open the stream chat.
 3. Click **ARM CONTROLLER CHAT**.
 4. Moving your physical controller automatically sends chat commands!
 
 ---
-*DeepAscension LivePad • Created by Cxsmo_AI • deepascension.net*
+*LivePad • Created by Cxsmo_AI*
 

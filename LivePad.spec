@@ -17,7 +17,7 @@ a = Analysis(
         ("assets/app_icon.ico", "assets"),
     ],
     hiddenimports=[
-        "gamepad_tester", "stream_icons", "youtube_client", "tiktok_client", "twitch_client"
+        "gamepad_tester", "stream_icons", "youtube_client", "tiktok_client", "twitch_client",
     ],
     hookspath=[],
     hooksconfig={},

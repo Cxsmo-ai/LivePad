@@ -26,9 +26,12 @@ class ParseResult:
 class CommandParser:
     """Parse all recognized commands in one comment; never stop at the first match."""
 
+    _tokenize = re.compile(r"[^\s,;]+")
     _number = re.compile(r"^(\d+(?:\.\d+)?)%?$")
     _milliseconds = re.compile(r"^(\d+)ms$")
     _seconds = re.compile(r"^(\d+(?:\.\d+)?)s$")
+    MIN_DURATION_MS = 10
+    MAX_DURATION_MS = 10000
 
     def __init__(
         self,
@@ -47,7 +50,7 @@ class CommandParser:
         if pad_frame is not None:
             return ParseResult((), (), pad_frame)
 
-        tokens = re.findall(r"[^\s,;]+", text.casefold())
+        tokens = self._tokenize.findall(text.casefold())
         commands: list[Command] = []
         invalid: list[str] = []
         i = 0
@@ -61,15 +64,35 @@ class CommandParser:
                 consumed = 0
                 reject_command = False
 
-                # Digital buttons take a duration only: "jump 250ms" or legacy "jump 250".
+                # Digital buttons normally take a duration; they also accept
+                # an optional ignored strength for uniform mixed combos.
                 if action.startswith("button_") and spec.get("allow_duration_argument"):
-                    if i + 1 < len(tokens):
-                        parsed_dur = self._parse_duration(tokens[i + 1])
+                    arg1 = tokens[i + 1] if i + 1 < len(tokens) else None
+                    arg2 = tokens[i + 2] if i + 2 < len(tokens) else None
+                    # Accept the same readable strength+duration shape as
+                    # analog commands. Digital controls ignore strength, but
+                    # accepting it keeps mixed combos uniform, e.g.
+                    # "w 75 900ms sprint 100 500ms".
+                    if (
+                        arg1 is not None
+                        and arg2 is not None
+                        and self._parse_strength(arg1) is not None
+                    ):
+                        parsed_dur = self._parse_duration(arg2)
+                        if parsed_dur is not None:
+                            duration = parsed_dur
+                            consumed = 2
+                        else:
+                            invalid.append(arg2)
+                            reject_command = True
+                            consumed = 2
+                    elif arg1 is not None:
+                        parsed_dur = self._parse_duration(arg1)
                         if parsed_dur is not None:
                             duration = parsed_dur
                             consumed = 1
-                        elif self._looks_numeric(tokens[i + 1]):
-                            invalid.append(tokens[i + 1])
+                        elif self._looks_numeric(arg1):
+                            invalid.append(arg1)
                             reject_command = True
                             consumed = 1
 
@@ -145,7 +168,7 @@ class CommandParser:
                 value = int(token)
             except ValueError:
                 return None
-        return value if 25 <= value <= 1500 else None
+        return value if self.MIN_DURATION_MS <= value <= self.MAX_DURATION_MS else None
 
     def _looks_numeric(self, token: str) -> bool:
         return bool(
