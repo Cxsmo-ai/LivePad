@@ -6,7 +6,7 @@ can be reviewed without installing the application.
 | Asset | Use |
 | --- | --- |
 | [livepad-desktop-preview.png](images/livepad-desktop-preview.png) | Readable README preview of the complete desktop workspace |
-| [livepad-desktop-full.png](images/livepad-desktop-full.png) | Full-height desktop app capture |
+| [livepad-desktop-full-latest.png](images/livepad-desktop-full-latest.png) | Full-height desktop app capture |
 | [commands_guide_16x9.png](images/commands_guide_16x9.png) | Stream overlay / desktop guide format |
 | [commands_guide_9x16.png](images/commands_guide_9x16.png) | Mobile and vertical-stream guide format |
 | [livepad_mark.png](images/livepad_mark.png) | Indigo LP brand mark |

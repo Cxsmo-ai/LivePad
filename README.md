@@ -19,9 +19,9 @@ and the test console in one dark, high-contrast workspace. The screenshot is a
 mock-bridge capture from the same UI used by the packaged build; it does not
 contain real viewer data or credentials.
 
-[![LivePad desktop application](docs/images/livepad-desktop-full.png)](docs/images/livepad-desktop-full.png)
+[![LivePad desktop application](docs/images/livepad-desktop-full-latest.png)](docs/images/livepad-desktop-full-latest.png)
 
-[Open the full-size desktop screenshot](docs/images/livepad-desktop-full.png) ·
+[Open the full-size desktop screenshot](docs/images/livepad-desktop-full-latest.png) ·
 [Browse all visual assets](docs/SCREENSHOTS.md)
 
 ## Highlights
