@@ -13,8 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "docs" / "images"
 sys.path.insert(0, str(ROOT))
 
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QScrollArea
 
 from chat_gamepad_app import ChatGamepadWindow
 
@@ -50,13 +49,26 @@ def capture() -> int:
     )
     app.processEvents()
 
-    full_size = window.size()
-    window.grab().save(str(OUTPUT / "livepad-desktop-full.png"), "PNG")
+    scroll = window.findChild(QScrollArea)
+    if scroll is None or scroll.widget() is None:
+        raise RuntimeError("LivePad scrollable content was not found")
+
+    # The live app viewport is intentionally scrollable. Capture the content
+    # widget itself at its natural layout height so the repository image shows
+    # the complete workspace, including chat and safety controls below the fold.
+    content = scroll.widget()
+    content_width = max(1280, content.sizeHint().width())
+    content_height = content.layout().sizeHint().height()
+    scroll.setWidgetResizable(False)
+    content.resize(content_width, content_height)
+    app.processEvents()
+    full_capture = content.grab()
+    full_capture.save(str(OUTPUT / "livepad-desktop-full.png"), "PNG")
 
     # A compact crop keeps the README preview readable without hiding the
     # controller tester and test-mode controls.
-    crop_height = min(full_size.height(), 820)
-    window.grab().copy(0, 0, full_size.width(), crop_height).save(
+    crop_height = min(full_capture.height(), 900)
+    full_capture.copy(0, 0, full_capture.width(), crop_height).save(
         str(OUTPUT / "livepad-desktop-preview.png"), "PNG"
     )
     window.close()
