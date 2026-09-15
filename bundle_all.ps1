@@ -74,6 +74,10 @@ $readmeSrc = Join-Path $projectRoot 'README.md'
 if (Test-Path $readmeSrc) {
     Copy-Item -LiteralPath $readmeSrc -Destination (Join-Path $bundleDir 'README.md') -Force
 }
+$docsSource = Join-Path $projectRoot 'docs'
+if (Test-Path -LiteralPath $docsSource) {
+    Copy-Item -LiteralPath $docsSource -Destination (Join-Path $bundleDir 'docs') -Recurse -Force
+}
 
 $completeZip = Join-Path $release 'LivePad-Complete.zip'
 if (Test-Path $completeZip) { Remove-Item -LiteralPath $completeZip -Force }

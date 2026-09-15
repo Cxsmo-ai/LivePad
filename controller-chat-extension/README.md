@@ -13,8 +13,8 @@ TikTok. It never connects directly to the streamer computer.
 5. Press any controller button while the page is visible.
 6. Open the extension and select **Arm Controller Chat**.
 
-For a click-by-click Edge and Chrome walkthrough, see
-[`docs/EXTENSION_INSTALL.md`](../docs/EXTENSION_INSTALL.md) in the repository.
+For a click-by-click Edge and Chrome walkthrough, see the
+[LivePad extension install guide](https://github.com/Cxsmo-ai/LivePad/blob/main/docs/EXTENSION_INSTALL.md).
 
 The extension disarms when the tab becomes hidden. When neutral, no chat commands are sent;
 the streamer engine automatically returns controls to center when leases expire.

@@ -32,7 +32,7 @@ class BridgeProcess:
             # bridges can have the same byte length. Include the packaged
             # archive timestamp and bump the bridge cache schema so an older
             # extracted bridge cannot survive a production rebuild.
-            archive_signature = f"{archive_stat.st_size}:{archive_stat.st_mtime_ns}:v1.3.4"
+            archive_signature = f"{archive_stat.st_size}:{archive_stat.st_mtime_ns}:v1.3.5"
             cached_signature = (
                 version_marker.read_text(encoding="utf-8").strip()
                 if version_marker.exists()
