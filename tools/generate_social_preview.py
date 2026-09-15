@@ -95,7 +95,9 @@ def render_tester() -> QImage:
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     app = QApplication.instance() or QApplication([])
     tester = GamepadTesterWidget()
-    tester.resize(900, 330)
+    # Render at 2x so the controller remains crisp after it is composed into
+    # the 1280x640 social card.
+    tester.resize(1800, 660)
     tester.set_state(
         ControllerState(
             ly=1.0,
@@ -105,7 +107,7 @@ def render_tester() -> QImage:
             buttons=frozenset({"l3"}),
         )
     )
-    image = QImage(900, 330, QImage.Format.Format_RGB32)
+    image = QImage(1800, 660, QImage.Format.Format_RGB32)
     image.fill(PAGE)
     painter = QPainter(image)
     tester.render(painter)
@@ -156,8 +158,8 @@ def draw_preview() -> None:
     # Reuse the actual Qt tester render. This keeps the social preview's
     # controller geometry, labels, state readout, and palette 1:1 with the
     # controller shown in the desktop application.
-    tester_image = render_tester().copy(50, 0, 800, 330)
-    painter.drawImage(QRectF(735, 272, 480, 198), tester_image)
+    tester_image = render_tester().copy(100, 0, 1600, 660)
+    painter.drawImage(QRectF(675, 274, 550, 227), tester_image)
     painter.setPen(QPen(INDIGO, 2))
     painter.drawLine(82, 526, 1198, 526)
     painter.setPen(MUTED)
