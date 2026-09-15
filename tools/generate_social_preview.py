@@ -95,9 +95,9 @@ def render_tester() -> QImage:
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     app = QApplication.instance() or QApplication([])
     tester = GamepadTesterWidget()
-    # Render at 2x so the controller remains crisp after it is composed into
+    # Render at 4x so the controller remains crisp after it is composed into
     # the 1280x640 social card.
-    tester.resize(1800, 660)
+    tester.resize(3600, 1320)
     tester.set_state(
         ControllerState(
             ly=1.0,
@@ -107,7 +107,7 @@ def render_tester() -> QImage:
             buttons=frozenset({"l3"}),
         )
     )
-    image = QImage(1800, 660, QImage.Format.Format_RGB32)
+    image = QImage(3600, 1320, QImage.Format.Format_RGB32)
     image.fill(PAGE)
     painter = QPainter(image)
     tester.render(painter)
@@ -117,18 +117,22 @@ def render_tester() -> QImage:
 
 def draw_preview() -> None:
     app = QApplication.instance() or QApplication([])
-    width, height = 1280, 640
+    logical_width, logical_height = 1280, 640
+    output_scale = 2
+    width, height = logical_width * output_scale, logical_height * output_scale
     image = QImage(width, height, QImage.Format.Format_RGB32)
     image.fill(PAGE)
     painter = QPainter(image)
     painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+    painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
+    painter.scale(output_scale, output_scale)
 
     # Soft indigo glow behind the brand card.
-    glow = QLinearGradient(0, 0, width, height)
+    glow = QLinearGradient(0, 0, logical_width, logical_height)
     glow.setColorAt(0.0, QColor(99, 102, 241, 35))
     glow.setColorAt(0.45, QColor(22, 24, 29, 0))
     glow.setColorAt(1.0, QColor(22, 24, 29, 0))
-    painter.fillRect(0, 0, width, height, glow)
+    painter.fillRect(0, 0, logical_width, logical_height, glow)
 
     rounded(painter, QRectF(42, 42, 1196, 556), 28, PANEL, BORDER, 2)
     painter.setPen(QPen(INDIGO, 6))
@@ -158,8 +162,15 @@ def draw_preview() -> None:
     # Reuse the actual Qt tester render. This keeps the social preview's
     # controller geometry, labels, state readout, and palette 1:1 with the
     # controller shown in the desktop application.
-    tester_image = render_tester().copy(100, 0, 1600, 660)
-    painter.drawImage(QRectF(675, 274, 550, 227), tester_image)
+    tester_image = render_tester().copy(200, 0, 3200, 1320)
+    tester_image = tester_image.scaled(
+        1050,
+        432,
+        Qt.AspectRatioMode.IgnoreAspectRatio,
+        Qt.TransformationMode.SmoothTransformation,
+    )
+    painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform, True)
+    painter.drawImage(QRectF(700, 270, 525, 216), tester_image)
     painter.setPen(QPen(INDIGO, 2))
     painter.drawLine(82, 526, 1198, 526)
     painter.setPen(MUTED)
