@@ -18,7 +18,9 @@ def test_controller_clears_only_after_every_connected_stream_is_gone(
     try:
         window._on_tiktok_state("Connected")
         window._on_twitch_state("Connected")
-        window.runtime.engine.schedule(Command("button_a", 1.0, 500), "viewer")
+        # This test exercises stream ownership, not lease expiry. Use a generous
+        # lease so slow CI hosts cannot expire it during Qt window construction.
+        window.runtime.engine.schedule(Command("button_a", 1.0, 5000), "viewer")
         assert "a" in window.runtime.engine.resolve().buttons
 
         window._on_tiktok_state("Disconnected")

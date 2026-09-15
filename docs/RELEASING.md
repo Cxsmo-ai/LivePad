@@ -21,7 +21,7 @@ scripts write SHA-256 files beside each release artifact.
 3. Create and push an annotated tag, for example:
 
    ```powershell
-   git tag -a v1.3.3 -m "LivePad v1.3.3"
+   git tag -a v1.3.4 -m "LivePad v1.3.4"
    git push origin main --follow-tags
    ```
 
