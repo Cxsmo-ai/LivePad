@@ -9,6 +9,7 @@ can be reviewed without installing the application.
 | [livepad-desktop-full-latest.png](images/livepad-desktop-full-latest.png) | Full-height desktop app capture |
 | [commands_guide_16x9.png](images/commands_guide_16x9.png) | Stream overlay / desktop guide format |
 | [commands_guide_9x16.png](images/commands_guide_9x16.png) | Mobile and vertical-stream guide format |
+| [livepad-social-preview.png](images/livepad-social-preview.png) | GitHub repository and Discord link preview artwork |
 | [livepad_mark.png](images/livepad_mark.png) | Indigo LP brand mark |
 | [app_icon.png](images/app_icon.png) | Desktop and package icon |
 
