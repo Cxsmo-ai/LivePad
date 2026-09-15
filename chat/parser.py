@@ -59,7 +59,10 @@ class CommandParser:
         i = 0
         while i < len(tokens):
             token = tokens[i]
-            combo = COMBO_ALIASES.get(token)
+            # A user profile must be able to override a built-in macro name.
+            # Built-in macros are only expanded when the token is not an
+            # explicitly configured command.
+            combo = None if token in self.command_specs else COMBO_ALIASES.get(token)
             if combo:
                 first, consumed, first_invalid = self._parse_one(tokens, i, combo[0])
                 invalid.extend(first_invalid)

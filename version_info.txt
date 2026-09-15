@@ -18,12 +18,12 @@ VSVersionInfo(
         [
           StringStruct('CompanyName', 'Cxsmo_AI'),
           StringStruct('FileDescription', 'LivePad'),
-          StringStruct('FileVersion', '1.3.5.0'),
+          StringStruct('FileVersion', '1.3.7.0'),
           StringStruct('InternalName', 'LivePad'),
           StringStruct('LegalCopyright', 'Copyright (C) 2026 Cxsmo_AI. All rights reserved.'),
           StringStruct('OriginalFilename', 'LivePad.exe'),
           StringStruct('ProductName', 'LivePad'),
-          StringStruct('ProductVersion', '1.3.5'),
+          StringStruct('ProductVersion', '1.3.7'),
           StringStruct('Comments', 'Live Stream Chat Plays Xbox Controller Engine by Cxsmo_AI')
         ]
       )

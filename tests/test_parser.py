@@ -198,6 +198,17 @@ def test_chat_friendly_short_forms_prefixes_and_plus_separators():
     assert result.invalid_tokens == ()
 
 
+def test_natural_language_aliases_and_fast_macros_are_chat_friendly():
+    result = CommandParser().parse("walk duck attack frag monkey go 75 900ms aimfire")
+    assert [command.action for command in result.commands] == [
+        "move_forward", "button_b", "right_trigger", "button_rb", "button_lb",
+        "move_forward", "button_l3", "left_trigger", "right_trigger",
+    ]
+    assert result.commands[5].strength == 0.75
+    assert result.commands[5].duration_ms == 900
+    assert result.invalid_tokens == ()
+
+
 def test_seconds_toggle_disables_seconds_syntax():
     parser_ms_only = CommandParser(allow_seconds=False)
 

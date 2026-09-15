@@ -95,7 +95,7 @@ async function sendToFrame(tabId, frameId, packet, platform) {
         pendingFrameRequests.delete(requestId);
         resolve(null);
       }, 1500);
-      pendingFrameRequests.set(requestId, { resolve, timeout });
+        pendingFrameRequests.set(requestId, { resolve, timeout, port });
       try {
         port.postMessage({ type: "HM_INJECT_PACKET", requestId, packet, platform });
       } catch (_) {
@@ -173,6 +173,12 @@ chrome.runtime.onConnect.addListener((port) => {
     });
     port.onDisconnect.addListener(() => {
       if (framePorts.get(key) === port) framePorts.delete(key);
+      for (const [requestId, pending] of pendingFrameRequests) {
+        if (pending.port !== port) continue;
+        clearTimeout(pending.timeout);
+        pendingFrameRequests.delete(requestId);
+        pending.resolve(null);
+      }
     });
     return;
   }

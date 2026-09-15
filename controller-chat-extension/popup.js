@@ -15,7 +15,7 @@ const previewApi = {
         ok: true, platform: "twitch", armed: previewArmed, visible: true,
         gamepad: { id: "Xbox Wireless Controller", index: 0, mapping: "standard" },
         packet: previewArmed ? "hm1 mfr5z7k0 1 0,80,35,0,100,100 40 1 1470" : "",
-        lastError: "", lastSentAt: 0, version: "1.3.5",
+        lastError: "", lastSentAt: 0, version: "1.3.7",
         timing: { cadenceMs: 1550, keepaliveMs: 2500, leaseMs: 3500 }
       };
     }
@@ -138,14 +138,26 @@ async function refresh() {
 }
 
 async function togglePlatform(platform) {
-  armedPlatforms[platform] = !armedPlatforms[platform];
-  await extensionApi.storage.sync.set({ armedPlatforms });
-  updatePlatformUI();
+  const previous = Boolean(armedPlatforms[platform]);
+  const next = !previous;
+  const updated = { ...armedPlatforms, [platform]: next };
   const activePlatform = (elements.platform.textContent || "").toLowerCase();
   if (activePlatform.includes(platform)) {
-    const result = await sendToTop({ type: "HM_SET_ARMED", armed: armedPlatforms[platform] });
+    const result = await sendToTop({ type: "HM_SET_ARMED", armed: next });
+    if (!result?.ok) {
+      setMessage(result?.error || `Could not ${next ? "arm" : "disarm"} ${platform}`, true);
+      updatePlatformUI();
+      return result;
+    }
+    armedPlatforms = updated;
+    await extensionApi.storage.sync.set({ armedPlatforms });
     render(result);
+    return result;
   }
+  armedPlatforms = updated;
+  await extensionApi.storage.sync.set({ armedPlatforms });
+  updatePlatformUI();
+  return { ok: true, armed: next, platform };
 }
 
 elements.btnTiktok?.addEventListener("click", () => togglePlatform("tiktok"));

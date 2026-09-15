@@ -14,6 +14,14 @@ You can type one word, or string multiple words together in ONE message for comb
 - `ads fire` — Aim down sights and shoot weapon
 - `w sprint ads fire right 40` — Run, aim, shoot, and turn right all at once!
 
+### Say it your way
+You can use plain words, keyboard shortcuts, or short chat aliases. They all do
+the same thing: `walk`, `move`, `forward`, `w`, `fwd`, or `fw` move forward;
+`back`, `reverse`, `retreat`, `s`, `bk`, or `bw` move backward; `strafeleft`,
+`a`, or `lsleft` strafe left; and `straferight`, `d`, or `lsright` strafe right.
+For combat, `fire`, `shoot`, `attack`, `atk`, `f`, or `rt` fire; `ads`, `aim`,
+`zoom`, `aimdown`, or `lt` aim; and `reload`, `rel`, or `rl` reload.
+
 ---
 
 ## 2. Complete Commands Reference
@@ -71,11 +79,14 @@ LivePad executes all actions in your message **simultaneously**!
 These are shortcuts for common combinations. They create the same independent
 leases as writing the words separately:
 
-- `run` / `dash` / `rush` — `w sprint`
+- `go` / `run` / `dash` / `rush` — `w sprint`
 - `runfire` / `runshoot` / `panic` — `w sprint fire`
 - `runaim` — `w sprint ads`
 - `runaimfire` — `w sprint ads fire`
-- `combat` / `fight` — `ads fire`
+- `combat` / `fight` / `aimfire` / `shootaim` — `ads fire`
+- `jumpfire` — `jump fire`
+- `slidefire` — `w sprint slide fire`
+- `reloadmove` — `w reload`
 - `dodgeleft` / `dodgeright` — strafe plus sprint
 - `slideleft` / `slideright` — strafe, sprint, and slide
 
@@ -83,9 +94,10 @@ Modifiers after a macro apply to its first action, so `run 80 1.2s` means
 `w 80 1.2s sprint`. Use `+` instead of spaces if that is easier to type:
 `w+sprint+ads+fire`.
 
-Short aliases include `fwd`, `bk`, `fw`, `bw`, `j`, `cr`, `rl`, `sw`, `sp`,
-`m`, `g`, `t`, `i`, `rev`, `lt`, `rt`, `lb`, `rb`, `l3`, `r3`, `du`, `dd`,
-`dl`, and `dr`. A leading `!` is optional, so `!runfire` also works.
+Short aliases include `fwd`, `bk`, `fw`, `bw`, `sl`, `cr`, `j`, `hop`, `rl`,
+`rel`, `sw`, `wpn`, `sp`, `m`, `g`, `gren`, `frag`, `t`, `i`, `pick`, `rev`,
+`lt`, `rt`, `f`, `lb`, `rb`, `l3`, `r3`, `du`, `dd`, `dl`, and `dr`. A leading
+`!` is optional, so `!runfire` also works.
 
 `a` remains strafe-left. Use `jump`, `facea`, or `btn_a` for the Xbox A button.
 
